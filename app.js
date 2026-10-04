@@ -101,7 +101,7 @@ async function calculate(){
     const comparison=baseline&&depth>baseline.depth&&!r.truncated?newKeys.size?`Dodano ${newKeys.size} nowych wyników względem głębokości ${baseline.depth}. Nowe wyniki są na górze. `:`Brak nowych nazw względem głębokości ${baseline.depth} — ta pula składników daje te same wyniki w wybranym zakresie. `:'';
     completedRun={inventorySignature,depth,keys:new Set(results.map(resultKey)),truncated:r.truncated};
     $('status').className=r.truncated?'status warning':'status';
-    $('status').textContent=`${r.truncated?'Wyniki częściowe — osiągnięto limit czasu lub bezpiecznej liczby kombinacji. Zwiększ czas albo zawęź ekwipunek. ':''}${r.results.length.toLocaleString('pl')} różnych nazw · głębokość do ${depth} · ${((performance.now()-start)/1000).toFixed(2)} s. ${comparison}Dla każdej nazwy pokazujemy najkrótszą znalezioną ścieżkę. Wyniki to alternatywy korzystające ze wspólnej puli.`;
+    $('status').textContent=`${r.truncated?'Wyniki częściowe — osiągnięto limit czasu. Zwiększ czas albo zawęź ekwipunek. ':''}${r.results.length.toLocaleString('pl')} różnych nazw · głębokość do ${depth} · ${((performance.now()-start)/1000).toFixed(2)} s. ${comparison}Dla każdej nazwy pokazujemy najkrótszą znalezioną ścieżkę. Wyniki to alternatywy korzystające ze wspólnej puli.`;
     renderResults();resolve({count:results.length,partial:r.truncated,depth});
    }
   };
