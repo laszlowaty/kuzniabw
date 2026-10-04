@@ -45,6 +45,20 @@ try{
  await page.route('**/item-requirements.json',route=>route.abort());
  await page.reload();
  await page.waitForFunction(()=>document.querySelector('#catalogStatus').textContent.includes('Nie wczytano dokładnych wymagań'));
+ await page.locator('#gunExample').click();
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ assert.ok(Number(await page.locator('#resultCount').textContent())>1);
+ await page.locator('#resultOrder [data-order="most"]').click();
+ assert.equal(await page.locator('#resultOrder [data-order="most"]').getAttribute('aria-pressed'),'true');
+ assert.match(await page.locator('#resultsList .result .pill.cost').first().textContent(),/^2 spawy$/);
+ await page.locator('#resultOrder [data-order="fewest"]').click();
+ assert.match(await page.locator('#resultsList .result .pill.cost').first().textContent(),/^1 spaw$/);
+ await page.locator('#resultOrder [data-order="best"]').click();
+ assert.equal(await page.locator('#resultOrder [data-order="best"]').getAttribute('aria-pressed'),'true');
+ await page.setViewportSize({width:375,height:800});
+ for(const order of ['best','fewest','most'])assert.ok(await page.locator(`#resultOrder [data-order="${order}"]`).isVisible());
+ await page.locator('#resultOrder [data-order="most"]').click();
+ assert.match(await page.locator('#resultsList .result .pill.cost').first().textContent(),/^2 spawy$/);
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
- console.log('Browser QA passed: empty start, import, worker, recipe costs, prefix-only and ancient tooltips, missing-data warning; no external requests.');
+ console.log('Browser QA passed: empty start, import, worker, recipe costs, tooltips, sort buttons, missing-data warning; no external requests.');
 }finally{await browser.close();server.close();}

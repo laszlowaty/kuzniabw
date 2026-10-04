@@ -17,6 +17,7 @@ const axisLabels={base:'Baza',prefix:'Prefiks',suffix:'Sufiks'};
 let data,inventory=[],inventoryText='',results=[],lastRun=null,worker,selected,visibleLimit=50,running=false,runCounter=0,activeReject=null;
 let loadingTimer,deadlineTimer;
 let depthTimer,completedRun=null,newKeys=new Set();
+let resultOrder='fewest';
 const simulationHistory=[];
 const enteredCosts=new Map();
 let renderedRecipeKey=null;
@@ -43,10 +44,11 @@ function filterOptions(){
 function filtered(){
  const category=$('category').value;
  const matching=results.filter(n=>(category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>$(id).value==='all'||($(id).value==='none'?!n[key]:n[key]===$(id).value)));
- return sortResults(matching,$('resultOrder').value);
+ return sortResults(matching,resultOrder);
 }
 function renderResults(){
  itemPopover.close();
+ document.querySelectorAll('#resultOrder [data-order]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.order===resultOrder)));
  const list=filtered();$('resultCount').textContent=list.length.toLocaleString('pl');
  if(!list.some(n=>resultKey(n)===selected))selected=list[0]?resultKey(list[0]):null;
  $('resultsList').innerHTML=list.slice(0,visibleLimit).map(n=>`<button class="result ${resultKey(n)===selected?'selected':''} ${isStrongCombo(n)?'strongResult':''}" data-key="${esc(resultKey(n))}" aria-pressed="${resultKey(n)===selected}"><div class="resultName">${newKeys.has(resultKey(n))?'<span class="newBadge">NOWY</span> ':''}${itemPopover.inline(n,itemName(n))} ${strongBadge(n)}</div><div class="resultMeta"><span class="pill cost">${n.steps} ${n.steps===1?'spaw':n.steps<5?'spawy':'spawów'}</span><span>${esc(categoryName(n.category))}</span><span>·</span><span>głębokość ${n.depth}</span></div></button>`).join('');
@@ -176,7 +178,7 @@ async function init(){
  $('depth').oninput=()=>{$('depthValue').value=$('depth').value;clearTimeout(depthTimer);$('status').textContent=`Głębokość ${$('depth').value} — za chwilę automatycznie przeliczę wyniki…`;depthTimer=setTimeout(()=>calculate().catch(()=>{}),250);};
  $('calculate').onclick=()=>calculate().catch(()=>{});
  $('stop').onclick=()=>{clearTimeout(depthTimer);runCounter++;worker?.terminate();worker=null;activeReject?.(new Error('Obliczenia zatrzymane.'));activeReject=null;setBusy(false);results=[];newKeys=new Set();$('status').textContent='Obliczenia zatrzymane. Zmniejsz głębokość lub listę i przelicz ponownie.';renderResults();};
- $('resultOrder').onchange=()=>{visibleLimit=50;selected=null;renderResults();};
+ $('resultOrder').querySelectorAll('[data-order]').forEach(button=>button.onclick=()=>{resultOrder=button.dataset.order;visibleLimit=50;selected=null;renderResults();});
  for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).onchange=()=>{visibleLimit=50;renderResults();};$('category').onchange=()=>{filterOptions();visibleLimit=50;renderResults();};
  $('clearFilters').onclick=()=>{$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';renderResults();};
  $('timeBudget').onchange=()=>calculate().catch(()=>{});
