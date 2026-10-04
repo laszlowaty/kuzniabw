@@ -28,6 +28,8 @@ Koszt zwykłego spawu to suma many i nanitów **obu zużywanych składników**, 
 
 ## Kontrola danych
 
+Oznaczenia dobrych par oraz pojedynczych afiksów opisuje [Przydatność afiksów na Morii](AFFIXES.md). Popup przedmiotu pokazuje zastosowanie i źródło. Są to wskazówki dla konkretnych buildów, nie wycena ani ranking DPS.
+
 Wymagany Node.js 22 lub nowszy. Testy nie wymagają instalowania zależności i nie wykonują zapytań do BloodWars:
 
 ```powershell

@@ -3,7 +3,7 @@ import {costKey,parseCost,totalCosts} from './costs.js';
 import {fusionCost,fullItemName} from './item-details.js';
 import {createItemPopover} from './item-popover.js';
 import {importInventory} from './inventory-import.js';
-import {isStrongCombo} from './strong-combos.js';
+import {isStrongCombo,assessAffixes} from './strong-combos.js';
 import {sortResults} from './result-sort.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,7 +23,12 @@ const enteredCosts=new Map();
 let renderedRecipeKey=null;
 let itemDetails=null,itemCatalog=null;
 const itemPopover=createItemPopover(()=>itemDetails,()=>itemCatalog);
-const strongBadge=n=>isStrongCombo(n)?'<span class="strongBadge" title="Para polecana w buildach Morii; przydatność zależy od postaci" aria-label="Mocna para prefiksu i sufiksu">MOCNA PARA</span>':'';
+const strongBadge=n=>{
+ const {pair,prefix,suffix}=assessAffixes(n);
+ const badge=(kind,text,reason)=>`<span class="strongBadge ${kind}" title="${esc(reason)}">${text}</span>`;
+ if(pair)return badge('pairBadge','DOBRA PARA',pair.reason);
+ return (prefix.length?badge('prefixBadge','DOBRY PREFIKS',`${label(n.prefix)}: ${prefix[0].reason}`):'')+(suffix.length?badge('suffixBadge','DOBRY SUFIKS',`${label(n.suffix)}: ${suffix[0].reason}`):'');
+};
 const itemMarkup=(n,text)=>itemPopover.markup(n,text)+strongBadge(n);
 function effectiveCosts(step){return {...(fusionCost(step,itemDetails)||{}),...enteredCosts.get(costKey(step))};}
 const categoryName=id=>data.categories.find(c=>c.id===id)?.label||id;

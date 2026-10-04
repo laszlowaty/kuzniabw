@@ -17,7 +17,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin=`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({channel:'msedge',headless:true});
 try{
- const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[],external=[];
+ const page=await browser.newPage({viewport:{width:1440,height:1000},hasTouch:true}),errors=[],external=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{if(!route.request().url().startsWith(origin)){external.push(route.request().url());return route.abort();}return route.continue();});
  await page.goto(origin);
@@ -28,6 +28,20 @@ try{
   await page.locator('#inventoryForm button[type=submit]').click();
   await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  }
+ await inventory('Śmiercionośna Bandana Prekognicji (+1)\nŚmiercionośna Bandana Adrenaliny (+1)\nJastrzębi Pierścień (+1)\nNóż do rzucania Driady (+1)');
+ assert.equal(await page.locator('#inventoryList .pairBadge').count(),1);
+ assert.equal(await page.locator('#inventoryList .prefixBadge').count(),2);
+ assert.equal(await page.locator('#inventoryList .suffixBadge').count(),2);
+ await page.locator('#inventoryList .itemInfoTrigger').first().click();
+ assert.match(await page.locator('#itemInfo').textContent(),/Dobra para/);
+ assert.ok(await page.locator('#itemInfo .affixAdvice a').first().getAttribute('href'));
+ await page.keyboard.press('Escape');
+ await page.setViewportSize({width:375,height:800});
+ await page.locator('#inventoryList .itemInfoTrigger').last().tap();
+ assert.match(await page.locator('#itemInfo').textContent(),/Dobry sufiks: driady/);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
+ await page.keyboard.press('Escape');
+ await page.setViewportSize({width:1440,height:1000});
  await inventory('Kusza Doskonałości (+1)\nKusza Doskonałości (+1)');
  await page.locator('#resultsList .result').first().click();
  assert.equal(await page.locator('#step-mana-0').inputValue(),'216');

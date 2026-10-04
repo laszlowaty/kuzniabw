@@ -1,9 +1,19 @@
 import {detailKey,itemClass,qualityLabel,officialUrl,lookupItem} from './item-details.js';
-import {itemName} from './engine.js';
+import {itemName,label} from './engine.js';
+import {assessAffixes,recommendationSources} from './strong-combos.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function affixContent(n){
+ const {pair,prefix,suffix}=assessAffixes(n);
+ const sections=pair?[['Dobra para', [pair]]]:[
+  [`Dobry prefiks: ${label(n?.prefix||'')}`,prefix],
+  [`Dobry sufiks: ${label(n?.suffix||'')}`,suffix]
+ ].filter(([,rules])=>rules.length);
+ if(!sections.length)return '';
+ return `<section class="affixAdvice"><h4>Przydatność afiksów · Moria</h4>${sections.map(([title,rules])=>`<p><strong>${esc(title)}</strong></p>${rules.map(rule=>`<p>${pair?'':'Przykładowe zastosowanie: '}${esc(rule.reason)} <a href="${esc(recommendationSources[rule.source].url)}" target="_blank" rel="noreferrer">Źródło</a></p>`).join('')}`).join('')}<p class="itemSourceNote">Przykłady ze starszych poradników Morii. Dobierz bazę, jakość, tatuaż i cały zestaw do postaci. To wskazówka zastosowania, nie wycena ani ranking DPS.${pair?'':' Dobre pojedyncze afiksy nie potwierdzają synergii tej pary.'}</p></section>`;
+}
 export function detailContent(n,details,catalog){
  const row=lookupItem(n,details,catalog),c=itemClass(n),url=row?.url||officialUrl(n,catalog,c??1);
- return `<header><div><p class="eyebrow">KATALOG R21 · ${esc(qualityLabel(c))}</p><h3>${esc(row?.name||itemName(n))}</h3></div><button type="button" id="closeItemInfo" class="textButton" aria-label="Zamknij dane przedmiotu">×</button></header>${row?`<div class="itemStats">${row.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div><p class="itemSourceNote">${row.composed?'Statystyki złożone z danych bazy, prefiksu i sufiksu.':'Dokładny wariant z oficjalnego katalogu.'} Dane: 03–04.10.2026. Poziom postaci: 80. Bonusy opisane jako „niekompletny” wymagają zestawu — nie traktuj ich jako aktywnych bonusów samego itemu.</p>`:`<p class="missingStats">Brak tego wariantu w zapisanej bazie. Nie podstawiamy statystyk innej jakości. ${c===null?'Link otworzy wariant zwykły (+1); wybierz właściwą jakość w katalogu.':''}</p>`}${n.left?'<p class="itemSourceNote">Jakość wyniku wyznaczona z jakości składników według reguł Morii. Lista planów nadal wybiera najkrótszą ścieżkę dla każdej nazwy, nie najtańszy wariant.</p>':''}${url?`<a href="${esc(url)}" target="_blank" rel="noreferrer">Sprawdź ten wariant w oficjalnym katalogu R21</a>`:''}`;
+ return `<header><div><p class="eyebrow">KATALOG R21 · ${esc(qualityLabel(c))}</p><h3>${esc(row?.name||itemName(n))}</h3></div><button type="button" id="closeItemInfo" class="textButton" aria-label="Zamknij dane przedmiotu">×</button></header>${affixContent(n)}${row?`<div class="itemStats">${row.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div><p class="itemSourceNote">${row.composed?'Statystyki złożone z danych bazy, prefiksu i sufiksu.':'Dokładny wariant z oficjalnego katalogu.'} Dane: 03–04.10.2026. Poziom postaci: 80. Bonusy opisane jako „niekompletny” wymagają zestawu — nie traktuj ich jako aktywnych bonusów samego itemu.</p>`:`<p class="missingStats">Brak tego wariantu w zapisanej bazie. Nie podstawiamy statystyk innej jakości. ${c===null?'Link otworzy wariant zwykły (+1); wybierz właściwą jakość w katalogu.':''}</p>`}${n.left?'<p class="itemSourceNote">Jakość wyniku wyznaczona z jakości składników według reguł Morii. Lista planów nadal wybiera najkrótszą ścieżkę dla każdej nazwy, nie najtańszy wariant.</p>':''}${url?`<a href="${esc(url)}" target="_blank" rel="noreferrer">Sprawdź ten wariant w oficjalnym katalogu R21</a>`:''}`;
 }
 export function createItemPopover(getDetails,getCatalog){
  const nodes=new Map();let target=null,closeTimer,skipFocusOnce=null;
