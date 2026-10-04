@@ -1,8 +1,18 @@
 export const normalize = s => String(s).toLowerCase().replaceAll('ł','l').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+export function itemClass(n){
+ if(n.left){const a=itemClass(n.left),b=itemClass(n.right);if(a===null||b===null||a<1||b<1||a>=18||b>=18||a===17&&b===17)return null;const c=Math.min(a,b)+(n.left.base===n.right.base?1:0);return c<18?c:null;}
+ const s=normalize(n.original||'');if(!s)return null;
+ const plus=Number(s.match(/\(\+(\d+)\)/)?.[1]||0);if(plus>5)return null;
+ // Quality is a leading word, never an affix (e.g. Kusza Doskonałości).
+ const name=s.replace(/^(?:\d+[.)]\s*)?(?:legendarn\S*\s+)?/,'');
+ const q=/^starozytn\S*\s/.test(name)?24:/^epick\S*\s/.test(name)?18:/^doskonal[yae]\s/.test(name)?12:/^dobr[yae]\s/.test(name)?6:0;
+ return q+plus;
+}
 const displayWords = {'utwardzony':'utwardzany','helm':'hełm','obrecz':'obręcz','zlosliwy':'złośliwy','smiercionosny':'śmiercionośny','szamanski':'szamański','podroznika':'podróżnika','przezornosci':'przezorności','wytrzymalosci':'wytrzymałości','zmyslow':'zmysłów','slonca':'słońca','luski':'łuski','zolwia':'żółwia','skory':'skóry','cwiekowany':'ćwiekowany','wladczy':'władczy','luskowy':'łuskowy','plytowy':'płytowy','gietki':'giętki','lowiecki':'łowiecki','straznika':'strażnika','zlodzieja':'złodzieja','silacza':'siłacza','zabojcy':'zabójcy','unikow':'uników','grabiezcy':'grabieżcy','odpornosci':'odporności','smierci':'śmierci','szybkosci':'szybkości','krotkie':'krótkie','cwiekowane':'ćwiekowane','gietkie':'giętkie','szamanskie':'szamańskie','smiercionosne':'śmiercionośne','ruchow':'ruchów','skrytosci':'skrytości','bronia':'bronią','lowcy':'łowcy','weza':'węża','inkow':'inków','pierscien':'pierścień','lancuch':'łańcuch','zloty':'złoty','przebiegly':'przebiegły','gwiezdny':'gwiezdny','niedzwiedzi':'niedźwiedzi','msciwy':'mściwy','tanczacy':'tańczący','zwierzecy':'zwierzęcy','sloneczny':'słoneczny','pajeczy':'pajęczy','jastrzebi':'jastrzębi','wystepku':'występku','wladzy':'władzy','sily':'siły','madrosci':'mądrości','celnosci':'celności','mlodosci':'młodości','szczescia':'szczęścia','zdolnosci':'zdolności','przebieglosci':'przebiegłości','szalenca':'szaleńca','latwosci':'łatwości','palka':'pałka','noz':'nóż','topor':'topór','piesc':'pięść','zebaty':'zębaty','kosciany':'kościany','wzmacniajacy':'wzmacniający','kasajacy':'kąsający','opiekunczy':'opiekuńczy','swiecacy':'świecący','zabojczy':'zabójczy','przeklety':'przeklęty','dowodcy':'dowódcy','bolu':'bólu','zwinnosci':'zwinności','przodkow':'przodków','mestwa':'męstwa','bieglosci':'biegłości','samobojcy':'samobójcy','lom':'łom','dwureczny':'dwuręczny','pila':'piła','lancuchowa':'łańcuchowa','ciezki':'ciężki','podstepu':'podstępu','olowiu':'ołowiu','bazyliszka':'bazyliszka','luk':'łuk','krotki':'krótki','dlugi':'długi','ciezka':'ciężka','zasiegu':'zasięgu','doskonalosci':'doskonałości','szybkostrzelnosci':'szybkostrzelności','polautomat':'półautomat'};
 export function label(s) { return String(s).split(' ').map(w=>displayWords[w]||w).join(' '); }
-const feminine = new Set(['czapka','maska','obrecz','kominiarka','opaska','bandana','korona','koszulka','kurtka','marynarka','kamizelka','peleryna','kolczuga','zbroja warstwowa','pelna zbroja','spodnica','bransoleta','apaszka','palka','kama','piesc niebios','maczuga','kosa','pika','halabarda','katana','pila lancuchowa','kusza','ciezka kusza','strzelba']);
-const plural = new Set(['szorty','spodnie','wakizashi','mp5k']);
+Object.assign(displayWords,{pelna:'pełna',spodnica:'spódnica',wilkolaka:'wilkołaka',krysztalowy:'kryształowy'});
+const feminine = new Set(['czapka','maska','obrecz','kominiarka','opaska','bandana','korona','koszulka','kurtka','marynarka','kamizelka','peleryna','kolczuga','zbroja warstwowa','pelna zbroja','spodnica','bransoleta','apaszka','palka','kama','piesc niebios','maczuga','kosa','pika','halabarda','katana','pila lancuchowa','kusza','ciezka kusza','strzelba','beretta']);
+const plural = new Set(['szorty','spodnie','wakizashi','mp5k','pilum','uzi','magnum','ak-47']);
 const prefSpecial={'utwardzony':['utwardzany','utwardzana','utwardzane'],'kolcze':['kolczy','kolcza','kolcze'],'krotkie':['krotki','krotka','krotkie'],'lekkie':['lekki','lekka','lekkie'],'gietkie':['gietki','gietka','gietkie'],'elfie':['elfi','elfia','elfie'],'tygrysie':['tygrysi','tygrysia','tygrysie']};
 export function variants(s) {
  if(prefSpecial[s])return prefSpecial[s];
@@ -21,7 +31,7 @@ export const itemGender=item=>plural.has(item.base)?2:feminine.has(item.base)?1:
 export function itemName(item){
  let p=item.prefix;
  if(p){let v=variants(p);p=v[plural.has(item.base)?2:feminine.has(item.base)?1:0];}
- const text=[item.rarity==='legendary'?'Legendarny':'',label(p||''),baseLabels[item.base]||label(item.base),label(item.suffix||'')].filter(Boolean).join(' ');
+ const text=[item.rarity==='legendary'?['Legendarny','Legendarna','Legendarne'][itemGender(item)]:'',label(p||''),baseLabels[item.base]||label(item.base),label(item.suffix||'')].filter(Boolean).join(' ');
  return text.charAt(0).toUpperCase()+text.slice(1);
 }
 export function parseInventory(text,data){
@@ -47,6 +57,9 @@ export function parseInventory(text,data){
 }
 export function merge(a,b,data){
  if(a.category!==b.category||a.rarity!==b.rarity)return null;
+ // This planner handles ordinary Studnia fusions (+1 through Doskonały +5).
+ // Epic/ancient transfer and Kuźnia Kaina use separate rules and costs.
+ if(itemClass({left:a,right:b})===null)return null;
  const c=data.categories.find(c=>c.id===a.category);const result={category:a.category,rarity:a.rarity};const evidence=[];
  for(const axis of ['base','prefix','suffix']){
   if(axis!=='base'&&(!a[axis]||!b[axis])){result[axis]='';evidence.push({axis,a:a[axis],b:b[axis],result:'',rule:'Brak afiksu w składniku usuwa go z wyniku.'});continue;}
@@ -80,7 +93,7 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
      if(a.mask&b.mask||left===right&&a.mask>=b.mask)continue;
      const depth=Math.max(a.depth,b.depth)+1;if(depth>maxDepth)continue;
      const m=merge(a,b,data);if(!m)continue;
-     const mask=a.mask|b.mask;const key=mask+'|'+resultKey(m);const old=layers[leaves].get(key);
+     const mask=a.mask|b.mask;const key=mask+'|'+resultKey(m)+'|'+itemClass({left:a,right:b});const old=layers[leaves].get(key);
      if(old&&old.depth<=depth)continue;
      const n={...m,mask,depth,steps:leaves-1,left:a,right:b};layers[leaves].set(key,n);
      if(!old&&++states>limits.states){truncated=true;stopReason='memory';break outer;}

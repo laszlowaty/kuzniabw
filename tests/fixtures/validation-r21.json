@@ -1,0 +1,1958 @@
+[
+  {
+    "node": {
+      "id": 0,
+      "original": "Utwardzany Kask",
+      "category": "head",
+      "base": "kask",
+      "prefix": "utwardzony",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Utwardzany Kask",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 6",
+      "Cechy: trafienie wszystkich broni +1, ODPORNOŚĆ +1, obrona przedmiotu +3",
+      "Wymagania: POZIOM: 6, SIŁA: 6",
+      "Cena: 1 200 PLN ; Cena sprzedaży: 600 PLN ; Mana: 3 ; Nanity: 2"
+    ],
+    "mana": 3,
+    "nanites": 2,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=0&baseType=1&prefix=9&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Wzmocniony Hełm Pasterza (+1)",
+      "category": "head",
+      "base": "helm",
+      "prefix": "wzmocniony",
+      "suffix": "pasterza",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Wzmocniony Hełm Pasterza (+1)",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 9",
+      "Cechy: trafienie wszystkich broni +5, obrona przedmiotu +1, ODPORNOŚĆ -4, SPOSTRZEGAWCZOŚĆ +8, szansa trafienia bronią białą -16, obrona postaci +12 (niekompletny)",
+      "Wymagania: POZIOM: 16, SIŁA: 14, Postać musi być w akcie: 2",
+      "Cena: 22 350 PLN ; Cena sprzedaży: 11 175 PLN ; Mana: 64 ; Nanity: 20"
+    ],
+    "mana": 64,
+    "nanites": 20,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=2&prefix=6&sufix=17&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Dobra Złośliwa Opaska Podróżnika",
+      "category": "head",
+      "base": "opaska",
+      "prefix": "zlosliwy",
+      "suffix": "podroznika",
+      "rarity": "normal"
+    },
+    "name": "Dobra Złośliwa Opaska Podróżnika",
+    "lines": [
+      "Hełm (PŁEĆ : Tylko dla kobiet)",
+      "Obrona: 14",
+      "Cechy: WYGLĄD +11, SPOSTRZEGAWCZOŚĆ +7, szansa trafienia bronią białą -17, SZCZĘŚCIE +3, PKT KRWI +14 %, obrona przedmiotu +6",
+      "Wymagania: POZIOM: 60, SIŁA: 25, ODPORNOŚĆ: 24, WYGLĄD: 25",
+      "Cena: 34 800 PLN ; Cena sprzedaży: 17 400 PLN ; Mana: 905 ; Nanity: 438"
+    ],
+    "mana": 905,
+    "nanites": 438,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=6&baseType=34&prefix=3&sufix=12&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Dobry Krwawy Hełm (+5)",
+      "category": "head",
+      "base": "helm",
+      "prefix": "krwawy",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Dobry Krwawy Hełm (+5)",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 30",
+      "Cechy: trafienie wszystkich broni +11, zadaje dodatkowe obrażenia równe 35 % PKT KRWI przeciwnika przy pierwszym uderzeniu w każdej rundzie walki, SPOSTRZEGAWCZOŚĆ +26 (niekompletny), szansa trafienia bronią białą +31 (niekompletny), zadaje dodatkowe obrażenia równe 65 % PKT KRWI przeciwnika przy pierwszym uderzeniu w każdej rundzie walki (nie więcej niż 10% maksymalnych punktów życia przeciwnika) (niekompletny)",
+      "Wymagania: POZIOM: 54, SIŁA: 23, ODPORNOŚĆ: 28, Postać musi być w akcie: 2",
+      "Cena: 171 300 PLN ; Cena sprzedaży: 85 650 PLN ; Mana: 1531 ; Nanity: 386"
+    ],
+    "mana": 1531,
+    "nanites": 386,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=11&baseType=2&prefix=4&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Doskonała Runiczna Bandana Smoczej Łuski (+5)",
+      "category": "head",
+      "base": "bandana",
+      "prefix": "runiczny",
+      "suffix": "smoczej luski",
+      "rarity": "normal"
+    },
+    "name": "Doskonała Runiczna Bandana Smoczej Łuski (+5)",
+    "lines": [
+      "Hełm (PŁEĆ : Tylko dla mężczyzn)",
+      "Obrona: 127",
+      "Cechy: WYGLĄD +26, obrażenia maksymalne wszystkich broni +10, obrażenia minimalne wszystkich broni +7, SPOSTRZEGAWCZOŚĆ +4, obrażenia wszystkich broni +1 na każde 4 poziomy postaci, szansa trafienia bronią białą -35, SZCZĘŚCIE +13, twardość +7 %, obrona przedmiotu +90, SZCZĘŚCIE +20 (niekompletny), obrona postaci +54 (niekompletny), obrona postaci +3 na każde 4 poziomy postaci (niekompletny)",
+      "Wymagania: POZIOM: 171, SIŁA: 159, WYGLĄD: 53, WIEDZA: 75",
+      "Cena: 480 400 PLN ; Cena sprzedaży: 240 200 PLN ; Mana: 8374 ; Nanity: 2638"
+    ],
+    "mana": 8374,
+    "nanites": 2638,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=17&baseType=35&prefix=5&sufix=4&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Rytualna Korona Podróżnika",
+      "category": "head",
+      "base": "korona",
+      "prefix": "rytualny",
+      "suffix": "podroznika",
+      "rarity": "normal"
+    },
+    "name": "Epicka Rytualna Korona Podróżnika",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 82",
+      "Cechy: CHARYZMA +29, WPŁYWY +29, twardość +9 %, obrona przedmiotu zwiększona o 1 na każde 4 poziomy postaci, SZCZĘŚCIE +18, PKT KRWI +29 %, obrona przedmiotu +20",
+      "Wymagania: POZIOM: 156, SIŁA: 140, CHARYZMA: 50, WPŁYWY: 64, WIEDZA: 80, Postać musi być w akcie: 3",
+      "Cena: 838 000 PLN ; Cena sprzedaży: 419 000 PLN ; Mana: 19015 ; Nanity: 5870"
+    ],
+    "mana": 19015,
+    "nanites": 5870,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=18&baseType=33&prefix=8&sufix=12&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Wzmocniony Kask (+2)",
+      "category": "head",
+      "base": "kask",
+      "prefix": "wzmocniony",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Epicki Wzmocniony Kask (+2)",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 65",
+      "Cechy: trafienie wszystkich broni +6, obrona przedmiotu +30, +30 do PKT ŻYCIA za każde trafienie (niekompletny), obrona postaci +80 (niekompletny), twardość +18 % (niekompletny)",
+      "Wymagania: POZIOM: 68, SIŁA: 69, Postać musi być w akcie: 3",
+      "Cena: 1 523 800 PLN ; Cena sprzedaży: 761 900 PLN ; Mana: 2650 ; Nanity: 1610"
+    ],
+    "mana": 2650,
+    "nanites": 1610,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=20&baseType=1&prefix=6&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Elegancka Obręcz Smoczej Łuski (+5)",
+      "category": "head",
+      "base": "obrecz",
+      "prefix": "elegancki",
+      "suffix": "smoczej luski",
+      "rarity": "normal"
+    },
+    "name": "Epicka Elegancka Obręcz Smoczej Łuski (+5)",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 141",
+      "Cechy: CHARYZMA +47, obrona przedmiotu zwiększona o 3 na każde 4 poziomy postaci, WYGLĄD +45, twardość +12 %, obrona przedmiotu +53",
+      "Wymagania: POZIOM: 176, SIŁA: 116, CHARYZMA: 52, Postać musi być w akcie: 3",
+      "Cena: 3 269 750 PLN ; Cena sprzedaży: 1 634 875 PLN ; Mana: 20065 ; Nanity: 3820"
+    ],
+    "mana": 20065,
+    "nanites": 3820,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=23&baseType=4&prefix=13&sufix=4&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Rogata Kominiarka Podróżnika",
+      "category": "head",
+      "base": "kominiarka",
+      "prefix": "rogaty",
+      "suffix": "podroznika",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Rogata Kominiarka Podróżnika",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 45",
+      "Cechy: WYGLĄD -13, WPŁYWY +41, obrażenia wszystkich broni +15, obrona przedmiotu +21",
+      "Wymagania: POZIOM: 172, SIŁA: 130, WPŁYWY: 54, Postać musi być w akcie: 4",
+      "Cena: 3 554 050 PLN ; Cena sprzedaży: 1 777 025 PLN ; Mana: 18016 ; Nanity: 5745"
+    ],
+    "mana": 18016,
+    "nanites": 5745,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=31&prefix=1&sufix=12&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Śmiercionośna Bandana (+3)",
+      "category": "head",
+      "base": "bandana",
+      "prefix": "smiercionosny",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Śmiercionośna Bandana (+3)",
+    "lines": [
+      "Hełm (PŁEĆ : Tylko dla mężczyzn)",
+      "Obrona: 37",
+      "Cechy: WYGLĄD +47, obrażenia maksymalne wszystkich broni +21, obrażenia minimalne wszystkich broni +10, SPOSTRZEGAWCZOŚĆ +8, obrażenia wszystkich broni +2 na każde 4 poziomy postaci, szansa trafienia bronią białą -73, ODPORNOŚĆ -19, obrażenia wszystkich broni +30, ilość dodatkowych ataków każdą bronią: 4 (niekompletny), modyfikator obrażeń od trafienia krytycznego +40 % (niekompletny)",
+      "Wymagania: POZIOM: 154, SIŁA: 119, WYGLĄD: 77, Postać musi być w akcie: 4",
+      "Cena: 5 080 400 PLN ; Cena sprzedaży: 2 540 200 PLN ; Mana: 21023 ; Nanity: 8940"
+    ],
+    "mana": 21023,
+    "nanites": 8940,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=27&baseType=35&prefix=16&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Magnetyczna Czapka Smoczej Łuski (+5)",
+      "category": "head",
+      "base": "czapka",
+      "prefix": "magnetyczny",
+      "suffix": "smoczej luski",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Magnetyczna Czapka Smoczej Łuski (+5)",
+    "lines": [
+      "Hełm (PŁEĆ : Dowolna)",
+      "Obrona: 80",
+      "Cechy: INTELIGENCJA +73, WIEDZA -23, twardość +18 %, obrona przedmiotu +59",
+      "Wymagania: POZIOM: 213, SIŁA: 160, WIEDZA: 42, Postać musi być w akcie: 4",
+      "Cena: 6 298 800 PLN ; Cena sprzedaży: 3 149 400 PLN ; Mana: 30381 ; Nanity: 5792"
+    ],
+    "mana": 30381,
+    "nanites": 5792,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=29&baseType=30&prefix=17&sufix=4&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Lekka Marynarka",
+      "category": "chest",
+      "base": "marynarka",
+      "prefix": "lekki",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Lekka Marynarka",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 1",
+      "Cechy: CHARYZMA +2, WYGLĄD +3, ZWINNOŚĆ +4, szansa trafienia krytycznego +1 %, obrona przedmiotu -1",
+      "Wymagania: POZIOM: 12, SIŁA: 1, WYGLĄD: 14",
+      "Cena: 3 400 PLN ; Cena sprzedaży: 1 700 PLN ; Mana: 5 ; Nanity: 2"
+    ],
+    "mana": 5,
+    "nanites": 2,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=0&baseType=43&prefix=9&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarna Łuskowa Kamizelka Narkomana (+1)",
+      "category": "chest",
+      "base": "kamizelka",
+      "prefix": "luskowy",
+      "suffix": "narkomana",
+      "rarity": "legendary"
+    },
+    "name": "Legendarna Łuskowa Kamizelka Narkomana (+1)",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 25",
+      "Cechy: ODPORNOŚĆ +16, obrona przedmiotu +13, ZWINNOŚĆ -2, INTELIGENCJA -7, WYGLĄD -6, SIŁA -9",
+      "Wymagania: POZIOM: 23, SIŁA: 24, ZWINNOŚĆ: 12, ODPORNOŚĆ: 9, Postać musi być w akcie: 2",
+      "Cena: 39 000 PLN ; Cena sprzedaży: 19 500 PLN ; Mana: 124 ; Nanity: 33"
+    ],
+    "mana": 124,
+    "nanites": 33,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=8&prefix=3&sufix=18&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Dobra Łowiecka Zbroja warstwowa Orchidei",
+      "category": "chest",
+      "base": "zbroja warstwowa",
+      "prefix": "lowiecki",
+      "suffix": "orchidei",
+      "rarity": "normal"
+    },
+    "name": "Dobra Łowiecka Zbroja warstwowa Orchidei",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 5",
+      "Cechy: SPOSTRZEGAWCZOŚĆ +9, WIEDZA +16, szansa trafienia krytycznego bronią palną -30 %, szansa trafienia bronią białą -24, ZWINNOŚĆ -4, obrażenia wszystkich broni +1 na każde 6 poziomów postaci, obrona przedmiotu -19, obrażenia wszystkich broni +19",
+      "Wymagania: POZIOM: 100, SIŁA: 102, ZWINNOŚĆ: 88, ODPORNOŚĆ: 49",
+      "Cena: 341 400 PLN ; Cena sprzedaży: 170 700 PLN ; Mana: 2086 ; Nanity: 637"
+    ],
+    "mana": 2086,
+    "nanites": 637,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=6&baseType=10&prefix=16&sufix=15&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarna Dobra Runiczna Kamizelka (+5)",
+      "category": "chest",
+      "base": "kamizelka",
+      "prefix": "runiczny",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarna Dobra Runiczna Kamizelka (+5)",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 65",
+      "Cechy: SZCZĘŚCIE +7, obrona przedmiotu +34, SZCZĘŚCIE +9 (niekompletny), obrona postaci +35 (niekompletny), obrona postaci +2 na każde 4 poziomy postaci (niekompletny)",
+      "Wymagania: POZIOM: 56, SIŁA: 69, ZWINNOŚĆ: 32, ODPORNOŚĆ: 28, Postać musi być w akcie: 2",
+      "Cena: 860 100 PLN ; Cena sprzedaży: 430 050 PLN ; Mana: 1902 ; Nanity: 388"
+    ],
+    "mana": 1902,
+    "nanites": 388,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=11&baseType=8&prefix=7&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Doskonała Łuskowa Pełna zbroja Mistrza (+5)",
+      "category": "chest",
+      "base": "pelna zbroja",
+      "prefix": "luskowy",
+      "suffix": "mistrza",
+      "rarity": "normal"
+    },
+    "name": "Doskonała Łuskowa Pełna zbroja Mistrza (+5)",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 272",
+      "Cechy: twardość +8 %, ODPORNOŚĆ +20, obrona przedmiotu +39, obrona przedmiotu +128 %",
+      "Wymagania: POZIOM: 193, SIŁA: 173, ZWINNOŚĆ: 102, ODPORNOŚĆ: 86",
+      "Cena: 211 600 PLN ; Cena sprzedaży: 105 800 PLN ; Mana: 9699 ; Nanity: 3526"
+    ],
+    "mana": 9699,
+    "nanites": 3526,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=17&baseType=44&prefix=3&sufix=3&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Bojowa Koszulka Odporności",
+      "category": "chest",
+      "base": "koszulka",
+      "prefix": "bojowy",
+      "suffix": "odpornosci",
+      "rarity": "normal"
+    },
+    "name": "Epicka Bojowa Koszulka Odporności",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 112",
+      "Cechy: SZCZĘŚCIE +6, obrona przedmiotu +91, twardość +7 %",
+      "Wymagania: POZIOM: 120, SIŁA: 105, ZWINNOŚĆ: 34, WYGLĄD: 48, Postać musi być w akcie: 3",
+      "Cena: 835 200 PLN ; Cena sprzedaży: 417 600 PLN ; Mana: 10925 ; Nanity: 1890"
+    ],
+    "mana": 10925,
+    "nanites": 1890,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=18&baseType=42&prefix=5&sufix=5&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Giętka Marynarka (+2)",
+      "category": "chest",
+      "base": "marynarka",
+      "prefix": "gietki",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Epicka Giętka Marynarka (+2)",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 9",
+      "Cechy: CHARYZMA +15, WYGLĄD +33, ZWINNOŚĆ +41, szansa trafienia krytycznego +29 %, obrona przedmiotu -20",
+      "Wymagania: POZIOM: 93, SIŁA: 18, WYGLĄD: 54, Postać musi być w akcie: 3",
+      "Cena: 1 596 200 PLN ; Cena sprzedaży: 798 100 PLN ; Mana: 8270 ; Nanity: 1675"
+    ],
+    "mana": 8270,
+    "nanites": 1675,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=20&baseType=43&prefix=10&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Szamańska Peleryna Uników (+5)",
+      "category": "chest",
+      "base": "peleryna",
+      "prefix": "szamanski",
+      "suffix": "unikow",
+      "rarity": "normal"
+    },
+    "name": "Epicka Szamańska Peleryna Uników (+5)",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 64",
+      "Cechy: ODPORNOŚĆ +43, ZWINNOŚĆ +23, WPŁYWY +43, obrażenia wszystkich broni +2 na każde 4 poziomy postaci, SZCZĘŚCIE +7, PKT KRWI +43 %, obrona przedmiotu +37, PKT KRWI +50 % (niekompletny), ODPORNOŚĆ +70 (niekompletny), INTELIGENCJA +45 (niekompletny), WIEDZA +50 (niekompletny), SZCZĘŚCIE +20 (niekompletny)",
+      "Wymagania: POZIOM: 196, SIŁA: 151, ZWINNOŚĆ: 132, CHARYZMA: 50, Postać musi być w akcie: 3",
+      "Cena: 3 278 400 PLN ; Cena sprzedaży: 1 639 200 PLN ; Mana: 24375 ; Nanity: 5390"
+    ],
+    "mana": 24375,
+    "nanites": 5390,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=23&baseType=45&prefix=6&sufix=7&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Kuloodporny Smoking Adrenaliny",
+      "category": "chest",
+      "base": "smoking",
+      "prefix": "kuloodporny",
+      "suffix": "adrenaliny",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Kuloodporny Smoking Adrenaliny",
+    "lines": [
+      "Zbroja (PŁEĆ : Tylko dla mężczyzn)",
+      "Obrona: 37",
+      "Cechy: ZWINNOŚĆ +47, WYGLĄD +51, WPŁYWY +44, ODPORNOŚĆ +57, twardość +18 %, SPOSTRZEGAWCZOŚĆ -7, SIŁA +37, ODPORNOŚĆ +60 (niekompletny), unik przed bronią palną +40 % (niekompletny), zmniejsza otrzymywane obrażenia o 5 % (niekompletny)",
+      "Wymagania: POZIOM: 196, SIŁA: 158, ZWINNOŚĆ: 42, WYGLĄD: 78, CHARYZMA: 72, Postać musi być w akcie: 4",
+      "Cena: 3 929 600 PLN ; Cena sprzedaży: 1 964 800 PLN ; Mana: 24388 ; Nanity: 5838"
+    ],
+    "mana": 24388,
+    "nanites": 5838,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=47&prefix=12&sufix=16&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Runiczna Pełna zbroja (+3)",
+      "category": "chest",
+      "base": "pelna zbroja",
+      "prefix": "runiczny",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Runiczna Pełna zbroja (+3)",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 133",
+      "Cechy: twardość +63 %, SZCZĘŚCIE +23, obrona przedmiotu +53, SZCZĘŚCIE +80 (niekompletny), obrona postaci +280 (niekompletny), obrona postaci +5 na każde 4 poziomy postaci (niekompletny), twardość +25 % (niekompletny)",
+      "Wymagania: POZIOM: 242, SIŁA: 320, ZWINNOŚĆ: 250, ODPORNOŚĆ: 176, Postać musi być w akcie: 4",
+      "Cena: 5 434 900 PLN ; Cena sprzedaży: 2 717 450 PLN ; Mana: 34224 ; Nanity: 14336"
+    ],
+    "mana": 34224,
+    "nanites": 14336,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=27&baseType=44&prefix=7&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Wzmocniona Kurtka Kobry (+5)",
+      "category": "chest",
+      "base": "kurtka",
+      "prefix": "wzmocniony",
+      "suffix": "kobry",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Wzmocniona Kurtka Kobry (+5)",
+    "lines": [
+      "Zbroja (PŁEĆ : Dowolna)",
+      "Obrona: 86",
+      "Cechy: obrona przedmiotu +51, ZWINNOŚĆ +65, obrażenia wszystkich broni +29, +50 do PKT ŻYCIA za każde trafienie (niekompletny), obrona postaci +200 (niekompletny), twardość +60 % (niekompletny)",
+      "Wymagania: POZIOM: 195, SIŁA: 160, ZWINNOŚĆ: 151, Postać musi być w akcie: 4",
+      "Cena: 6 086 800 PLN ; Cena sprzedaży: 3 043 400 PLN ; Mana: 19158 ; Nanity: 5620"
+    ],
+    "mana": 19158,
+    "nanites": 5620,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=29&baseType=7&prefix=1&sufix=13&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Kuloodporny Kilt",
+      "category": "legs",
+      "base": "kilt",
+      "prefix": "kuloodporne",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Kuloodporny Kilt",
+    "lines": [
+      "Spodnie (PŁEĆ : Tylko dla mężczyzn)",
+      "Obrona: 1",
+      "Cechy: ZWINNOŚĆ -1, WYGLĄD +4, SZCZĘŚCIE +1, ODPORNOŚĆ +6, ODPORNOŚĆ +3 (niekompletny), unik przed bronią palną +10 % (niekompletny)",
+      "Wymagania: POZIOM: 25, SIŁA: 17, ZWINNOŚĆ: 14, ODPORNOŚĆ: 18",
+      "Cena: 13 900 PLN ; Cena sprzedaży: 6 950 PLN ; Mana: 11 ; Nanity: 3"
+    ],
+    "mana": 11,
+    "nanites": 3,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=0&baseType=50&prefix=13&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarne Giętkie Szorty Uników (+1)",
+      "category": "legs",
+      "base": "szorty",
+      "prefix": "gietkie",
+      "suffix": "unikow",
+      "rarity": "legendary"
+    },
+    "name": "Legendarne Giętkie Szorty Uników (+1)",
+    "lines": [
+      "Spodnie (PŁEĆ : Dowolna)",
+      "Obrona: 1",
+      "Cechy: ZWINNOŚĆ +14, obrona przedmiotu -2",
+      "Wymagania: POZIOM: 16, SIŁA: 19, ZWINNOŚĆ: 6, Postać musi być w akcie: 2",
+      "Cena: 77 400 PLN ; Cena sprzedaży: 38 700 PLN ; Mana: 89 ; Nanity: 24"
+    ],
+    "mana": 89,
+    "nanites": 24,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=48&prefix=10&sufix=1&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Dobre Tygrysie Spodnie Uników",
+      "category": "legs",
+      "base": "spodnie",
+      "prefix": "tygrysie",
+      "suffix": "unikow",
+      "rarity": "normal"
+    },
+    "name": "Dobre Tygrysie Spodnie Uników",
+    "lines": [
+      "Spodnie (PŁEĆ : Dowolna)",
+      "Obrona: 8",
+      "Cechy: ODPORNOŚĆ +6, ZWINNOŚĆ +19, obrona przedmiotu -12, szansa trafienia krytycznego +18 % (niekompletny), unik przed bronią białą +10 % (niekompletny)",
+      "Wymagania: POZIOM: 63, SIŁA: 71, ZWINNOŚĆ: 14",
+      "Cena: 118 300 PLN ; Cena sprzedaży: 59 150 PLN ; Mana: 999 ; Nanity: 269"
+    ],
+    "mana": 999,
+    "nanites": 269,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=6&baseType=11&prefix=15&sufix=1&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarna Dobra Krótka Spódnica (+5)",
+      "category": "legs",
+      "base": "spodnica",
+      "prefix": "krotkie",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarna Dobra Krótka Spódnica (+5)",
+    "lines": [
+      "Spodnie (PŁEĆ : Tylko dla kobiet)",
+      "Obrona: 23",
+      "Cechy: ZWINNOŚĆ +5, WYGLĄD +18, SZCZĘŚCIE +3, obrona przedmiotu -13",
+      "Wymagania: POZIOM: 49, SIŁA: 48, ZWINNOŚĆ: 37, ODPORNOŚĆ: 39, Postać musi być w akcie: 2",
+      "Cena: 54 900 PLN ; Cena sprzedaży: 27 450 PLN ; Mana: 1329 ; Nanity: 568"
+    ],
+    "mana": 1329,
+    "nanites": 568,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=11&baseType=49&prefix=17&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Doskonałe Kuloodporne Szorty Handlarza Bronią (+5)",
+      "category": "legs",
+      "base": "szorty",
+      "prefix": "kuloodporne",
+      "suffix": "handlarza bronia",
+      "rarity": "normal"
+    },
+    "name": "Doskonałe Kuloodporne Szorty Handlarza Bronią (+5)",
+    "lines": [
+      "Spodnie (PŁEĆ : Dowolna)",
+      "Obrona: 87",
+      "Cechy: ZWINNOŚĆ +12, obrona przedmiotu zwiększona o 1 na każde 4 poziomy postaci, ODPORNOŚĆ +38, twardość +3 %, WPŁYWY +45, obrona przedmiotu +38, ODPORNOŚĆ +21 (niekompletny), unik przed bronią palną +40 % (niekompletny)",
+      "Wymagania: POZIOM: 129, SIŁA: 127, ZWINNOŚĆ: 46",
+      "Cena: 160 400 PLN ; Cena sprzedaży: 80 200 PLN ; Mana: 5272 ; Nanity: 1318"
+    ],
+    "mana": 5272,
+    "nanites": 1318,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=17&baseType=48&prefix=13&sufix=10&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epickie Giętkie Spodnie Węża",
+      "category": "legs",
+      "base": "spodnie",
+      "prefix": "gietkie",
+      "suffix": "weza",
+      "rarity": "normal"
+    },
+    "name": "Epickie Giętkie Spodnie Węża",
+    "lines": [
+      "Spodnie (PŁEĆ : Dowolna)",
+      "Obrona: 15",
+      "Cechy: twardość +5 %, ZWINNOŚĆ +35, obrona przedmiotu -28, SZCZĘŚCIE +9, WPŁYWY +35",
+      "Wymagania: POZIOM: 120, SIŁA: 124, Postać musi być w akcie: 3",
+      "Cena: 769 100 PLN ; Cena sprzedaży: 384 550 PLN ; Mana: 9255 ; Nanity: 1885"
+    ],
+    "mana": 9255,
+    "nanites": 1885,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=18&baseType=11&prefix=10&sufix=2&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Szamański Kilt (+2)",
+      "category": "legs",
+      "base": "kilt",
+      "prefix": "szamanskie",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Epicki Szamański Kilt (+2)",
+    "lines": [
+      "Spodnie (PŁEĆ : Tylko dla mężczyzn)",
+      "Obrona: 90",
+      "Cechy: ZWINNOŚĆ -5, WYGLĄD +35, SZCZĘŚCIE +12, obrona przedmiotu zwiększona o 2 na każde 4 poziomy postaci, obrażenia wszystkich broni +1 na każde 4 poziomy postaci, obrona przedmiotu +20, PKT KRWI +39 %, PKT KRWI +44 % (niekompletny), ODPORNOŚĆ +55 (niekompletny), INTELIGENCJA +30 (niekompletny), WIEDZA +35 (niekompletny), SZCZĘŚCIE +6 (niekompletny)",
+      "Wymagania: POZIOM: 108, SIŁA: 85, ZWINNOŚĆ: 54, ODPORNOŚĆ: 74, Postać musi być w akcie: 3",
+      "Cena: 1 583 100 PLN ; Cena sprzedaży: 791 550 PLN ; Mana: 12080 ; Nanity: 2675"
+    ],
+    "mana": 12080,
+    "nanites": 2675,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=20&baseType=50&prefix=2&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Tygrysia Spódnica Węża (+5)",
+      "category": "legs",
+      "base": "spodnica",
+      "prefix": "tygrysie",
+      "suffix": "weza",
+      "rarity": "normal"
+    },
+    "name": "Epicka Tygrysia Spódnica Węża (+5)",
+    "lines": [
+      "Spodnie (PŁEĆ : Tylko dla kobiet)",
+      "Obrona: 17",
+      "Cechy: ZWINNOŚĆ +35, WYGLĄD +45, SZCZĘŚCIE +45, obrażenia wszystkich broni +2 na każde 4 poziomy postaci, ODPORNOŚĆ +32, obrona przedmiotu -33, WPŁYWY +49, szansa trafienia krytycznego +80 % (niekompletny), unik przed bronią białą +40 % (niekompletny), trafienie wszystkich broni zwiększone o 20 % (niekompletny)",
+      "Wymagania: POZIOM: 197, SIŁA: 167, ZWINNOŚĆ: 88, ODPORNOŚĆ: 91, Postać musi być w akcie: 3",
+      "Cena: 3 389 700 PLN ; Cena sprzedaży: 1 694 850 PLN ; Mana: 26260 ; Nanity: 5390"
+    ],
+    "mana": 26260,
+    "nanites": 5390,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=23&baseType=49&prefix=15&sufix=2&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Pancerny Kilt Nocy",
+      "category": "legs",
+      "base": "kilt",
+      "prefix": "pancerne",
+      "suffix": "nocy",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Pancerny Kilt Nocy",
+    "lines": [
+      "Spodnie (PŁEĆ : Tylko dla mężczyzn)",
+      "Obrona: 152",
+      "Cechy: ZWINNOŚĆ +58, WYGLĄD +45, SZCZĘŚCIE +7, obrona przedmiotu zwiększona o 3 na każde 4 poziomy postaci, obrażenia wszystkich broni +2 na każde 4 poziomy postaci, ODPORNOŚĆ +53, twardość +13 %, obrona przedmiotu +62",
+      "Wymagania: POZIOM: 240, SIŁA: 243, ZWINNOŚĆ: 76, ODPORNOŚĆ: 168, Postać musi być w akcie: 4",
+      "Cena: 4 128 800 PLN ; Cena sprzedaży: 2 064 400 PLN ; Mana: 36831 ; Nanity: 9230"
+    ],
+    "mana": 36831,
+    "nanites": 9230,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=50&prefix=8&sufix=4&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Śmiercionośna Spódnica (+3)",
+      "category": "legs",
+      "base": "spodnica",
+      "prefix": "smiercionosne",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Śmiercionośna Spódnica (+3)",
+    "lines": [
+      "Spodnie (PŁEĆ : Tylko dla kobiet)",
+      "Obrona: 50",
+      "Cechy: ZWINNOŚĆ -11, WYGLĄD +57, SZCZĘŚCIE +45, obrażenia wszystkich broni +2 na każde 4 poziomy postaci, ODPORNOŚĆ -12, obrażenia wszystkich broni +25, ilość dodatkowych ataków każdą bronią: 4 (niekompletny), modyfikator obrażeń od trafienia krytycznego +40 % (niekompletny)",
+      "Wymagania: POZIOM: 169, SIŁA: 154, ZWINNOŚĆ: 108, ODPORNOŚĆ: 110, Postać musi być w akcie: 4",
+      "Cena: 5 341 900 PLN ; Cena sprzedaży: 2 670 950 PLN ; Mana: 24974 ; Nanity: 5650"
+    ],
+    "mana": 24974,
+    "nanites": 5650,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=27&baseType=49&prefix=14&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytne Pikowane Szorty Nocy (+5)",
+      "category": "legs",
+      "base": "szorty",
+      "prefix": "pikowane",
+      "suffix": "nocy",
+      "rarity": "normal"
+    },
+    "name": "Starożytne Pikowane Szorty Nocy (+5)",
+    "lines": [
+      "Spodnie (PŁEĆ : Dowolna)",
+      "Obrona: 140",
+      "Cechy: ZWINNOŚĆ +114, obrona przedmiotu zwiększona o 4 na każde 4 poziomy postaci, obrona przedmiotu +31",
+      "Wymagania: POZIOM: 212, SIŁA: 235, Postać musi być w akcie: 4",
+      "Cena: 6 443 100 PLN ; Cena sprzedaży: 3 221 550 PLN ; Mana: 29072 ; Nanity: 8107"
+    ],
+    "mana": 29072,
+    "nanites": 8107,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=29&baseType=48&prefix=12&sufix=4&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Elastyczny Sygnet",
+      "category": "rings",
+      "base": "sygnet",
+      "prefix": "elastyczny",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Elastyczny Sygnet",
+    "lines": [
+      "Pierścień (PŁEĆ : Tylko dla mężczyzn)",
+      "Cechy: WYGLĄD +1, WPŁYWY +2, SZCZĘŚCIE +1, PKT KRWI -5 %, obrona postaci +1, ZWINNOŚĆ +4 (niekompletny)",
+      "Wymagania: POZIOM: 30, SIŁA: 4, WYGLĄD: 10",
+      "Cena: 29 700 PLN ; Cena sprzedaży: 14 850 PLN ; Mana: 14 ; Nanity: 3"
+    ],
+    "mana": 14,
+    "nanites": 3,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=0&baseType=36&prefix=21&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarna Nekromancka Bransoleta Twardej Skóry (+1)",
+      "category": "rings",
+      "base": "bransoleta",
+      "prefix": "nekromancki",
+      "suffix": "twardej skory",
+      "rarity": "legendary"
+    },
+    "name": "Legendarna Nekromancka Bransoleta Twardej Skóry (+1)",
+    "lines": [
+      "Pierścień (PŁEĆ : Dowolna)",
+      "Cechy: CHARYZMA +4, WPŁYWY -1, SZCZĘŚCIE +1, PKT KRWI -6 %, obrona postaci +1, ODPORNOŚĆ +4, ZWINNOŚĆ -1, WIEDZA +4 (niekompletny)",
+      "Wymagania: POZIOM: 28, SIŁA: 5, WYGLĄD: 31, Postać musi być w akcie: 2",
+      "Cena: 103 800 PLN ; Cena sprzedaży: 51 900 PLN ; Mana: 161 ; Nanity: 35"
+    ],
+    "mana": 161,
+    "nanites": 35,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=37&prefix=23&sufix=7&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Dobry Tańczący Sygnet Urody",
+      "category": "rings",
+      "base": "sygnet",
+      "prefix": "tanczacy",
+      "suffix": "urody",
+      "rarity": "normal"
+    },
+    "name": "Dobry Tańczący Sygnet Urody",
+    "lines": [
+      "Pierścień (PŁEĆ : Tylko dla mężczyzn)",
+      "Cechy: WYGLĄD +7, WPŁYWY +6, ZWINNOŚĆ +3, SZCZĘŚCIE +3, PKT KRWI -12 %, obrona postaci +2, ZWINNOŚĆ +15 (niekompletny), pozwala używać arkana Krew Życia (niekompletny), pozwala używać arkana Kocie Ścieżki (niekompletny), bazowe PKT ŻYCIA +22 % (niekompletny)",
+      "Wymagania: POZIOM: 84, SIŁA: 14, WYGLĄD: 31",
+      "Cena: 99 200 PLN ; Cena sprzedaży: 49 600 PLN ; Mana: 1628 ; Nanity: 442"
+    ],
+    "mana": 1628,
+    "nanites": 442,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=6&baseType=36&prefix=14&sufix=2&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Dobry Spaczony Pierścień (+5)",
+      "category": "rings",
+      "base": "pierscien",
+      "prefix": "spaczony",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Dobry Spaczony Pierścień (+5)",
+    "lines": [
+      "Pierścień (PŁEĆ : Dowolna)",
+      "Cechy: WYGLĄD +7, CHARYZMA +13, WPŁYWY +13, obrażenia maksymalne wszystkich broni +26 (niekompletny), SPOSTRZEGAWCZOŚĆ +19 (niekompletny), ZWINNOŚĆ -8 (niekompletny), unik +23 % (niekompletny), pozwala używać arkana Skóra Bestii (niekompletny), pozwala używać arkana Krew Życia (niekompletny)",
+      "Wymagania: POZIOM: 56, WYGLĄD: 61, Postać musi być w akcie: 2",
+      "Cena: 631 500 PLN ; Cena sprzedaży: 315 750 PLN ; Mana: 1910 ; Nanity: 566"
+    ],
+    "mana": 1910,
+    "nanites": 566,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=11&baseType=5&prefix=4&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Doskonały Jastrzębi Pierścień Nietoperza (+5)",
+      "category": "rings",
+      "base": "pierscien",
+      "prefix": "jastrzebi",
+      "suffix": "nietoperza",
+      "rarity": "normal"
+    },
+    "name": "Doskonały Jastrzębi Pierścień Nietoperza (+5)",
+    "lines": [
+      "Pierścień (PŁEĆ : Dowolna)",
+      "Cechy: WYGLĄD -1, SPOSTRZEGAWCZOŚĆ +59, WPŁYWY +12, szansa trafienia bronią białą -85, ZWINNOŚĆ +24, obrażenia wszystkich broni +3 na każde 4 poziomy postaci (niekompletny), unik +6 % (niekompletny), bazowe PKT ŻYCIA +34 % (niekompletny), SZCZĘŚCIE +22 (niekompletny)",
+      "Wymagania: POZIOM: 166, WYGLĄD: 170",
+      "Cena: 745 400 PLN ; Cena sprzedaży: 372 700 PLN ; Mana: 8810 ; Nanity: 1765"
+    ],
+    "mana": 8810,
+    "nanites": 1765,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=17&baseType=5&prefix=27&sufix=16&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Czarny Sygnet Przebiegłości",
+      "category": "rings",
+      "base": "sygnet",
+      "prefix": "czarny",
+      "suffix": "przebieglosci",
+      "rarity": "normal"
+    },
+    "name": "Epicki Czarny Sygnet Przebiegłości",
+    "lines": [
+      "Pierścień (PŁEĆ : Tylko dla mężczyzn)",
+      "Cechy: WYGLĄD -10, WPŁYWY +86, CHARYZMA +29, PKT ŻYCIA (bazowe i z budynków) +4 %, ilość dodatkowych ataków każdą bronią: 4 (niekompletny), obrona postaci +3 na każde 4 poziomy postaci (niekompletny), unik -22 % (niekompletny), ignoruje 4 % obrony przeciwnika (niekompletny), bazowe PKT ŻYCIA +45 % (niekompletny), SZCZĘŚCIE +26 (niekompletny)",
+      "Wymagania: POZIOM: 153, SIŁA: 33, WYGLĄD: 160, Postać musi być w akcie: 3",
+      "Cena: 1 458 200 PLN ; Cena sprzedaży: 729 100 PLN ; Mana: 19090 ; Nanity: 2710"
+    ],
+    "mana": 19090,
+    "nanites": 2710,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=18&baseType=36&prefix=7&sufix=15&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Srebrny Pierścień (+2)",
+      "category": "rings",
+      "base": "pierscien",
+      "prefix": "srebrny",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Epicki Srebrny Pierścień (+2)",
+    "lines": [
+      "Pierścień (PŁEĆ : Dowolna)",
+      "Cechy: WYGLĄD +30, INTELIGENCJA +38 (niekompletny), WIEDZA +38 (niekompletny), łatwość +3 % (niekompletny)",
+      "Wymagania: POZIOM: 80, WYGLĄD: 82, Postać musi być w akcie: 3",
+      "Cena: 1 533 550 PLN ; Cena sprzedaży: 766 775 PLN ; Mana: 5165 ; Nanity: 1635"
+    ],
+    "mana": 5165,
+    "nanites": 1635,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=20&baseType=5&prefix=9&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Platynowy Pierścień Szczęścia (+5)",
+      "category": "rings",
+      "base": "pierscien",
+      "prefix": "platynowy",
+      "suffix": "szczescia",
+      "rarity": "normal"
+    },
+    "name": "Epicki Platynowy Pierścień Szczęścia (+5)",
+    "lines": [
+      "Pierścień (PŁEĆ : Dowolna)",
+      "Cechy: WYGLĄD +65, SZCZĘŚCIE +33, CHARYZMA +120 (niekompletny), WPŁYWY +120 (niekompletny), WIEDZA +50 (niekompletny), ZWINNOŚĆ +60 (niekompletny), SPOSTRZEGAWCZOŚĆ +90 (niekompletny)",
+      "Wymagania: POZIOM: 176, WYGLĄD: 114, Postać musi być w akcie: 3",
+      "Cena: 3 127 500 PLN ; Cena sprzedaży: 1 563 750 PLN ; Mana: 20140 ; Nanity: 3800"
+    ],
+    "mana": 20140,
+    "nanites": 3800,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=23&baseType=5&prefix=11&sufix=9&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Rubinowy Sygnet Koncentracji",
+      "category": "rings",
+      "base": "sygnet",
+      "prefix": "rubinowy",
+      "suffix": "koncentracji",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Rubinowy Sygnet Koncentracji",
+    "lines": [
+      "Pierścień (PŁEĆ : Tylko dla mężczyzn)",
+      "Cechy: WYGLĄD +44, WPŁYWY +24, CHARYZMA +41, INTELIGENCJA +41, WIEDZA +49, CHARYZMA +75 (niekompletny), WPŁYWY +70 (niekompletny), INTELIGENCJA +65 (niekompletny), regeneruje 100 PKT ŻYCIA po każdej rundzie walki (niekompletny), wszystkie podstawowe parametry postaci +20 (niekompletny)",
+      "Wymagania: POZIOM: 204, SIŁA: 42, WYGLĄD: 232, Postać musi być w akcie: 4",
+      "Cena: 3 686 900 PLN ; Cena sprzedaży: 1 843 450 PLN ; Mana: 26750 ; Nanity: 4218"
+    ],
+    "mana": 26750,
+    "nanites": 4218,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=36&prefix=1&sufix=13&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Kardynalski Sygnet (+3)",
+      "category": "rings",
+      "base": "sygnet",
+      "prefix": "kardynalski",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Kardynalski Sygnet (+3)",
+    "lines": [
+      "Pierścień (PŁEĆ : Tylko dla mężczyzn)",
+      "Cechy: WYGLĄD +8, WPŁYWY +27, SZCZĘŚCIE +9, PKT KRWI -1 %, obrona postaci +300, INTELIGENCJA +60 (niekompletny), pozwala używać arkana Cisza Krwi (niekompletny), SZCZĘŚCIE +40 (niekompletny)",
+      "Wymagania: POZIOM: 178, SIŁA: 47, WYGLĄD: 77, Postać musi być w akcie: 4",
+      "Cena: 5 110 600 PLN ; Cena sprzedaży: 2 555 300 PLN ; Mana: 26802 ; Nanity: 5594"
+    ],
+    "mana": 26802,
+    "nanites": 5594,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=27&baseType=36&prefix=22&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Nekromancki Pierścień Młodości (+5)",
+      "category": "rings",
+      "base": "pierscien",
+      "prefix": "nekromancki",
+      "suffix": "mlodosci",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Nekromancki Pierścień Młodości (+5)",
+    "lines": [
+      "Pierścień (PŁEĆ : Dowolna)",
+      "Cechy: WYGLĄD +69, SZCZĘŚCIE +9, PKT KRWI -1 %, obrona postaci +350, ZWINNOŚĆ +44, SIŁA +51, WIEDZA +60 (niekompletny), pozwala używać arkana Wyssanie Mocy (niekompletny), SZCZĘŚCIE +40 (niekompletny)",
+      "Wymagania: POZIOM: 266, WYGLĄD: 268, Postać musi być w akcie: 4",
+      "Cena: 6 170 900 PLN ; Cena sprzedaży: 3 085 450 PLN ; Mana: 40666 ; Nanity: 8262"
+    ],
+    "mana": 40666,
+    "nanites": 8262,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=29&baseType=5&prefix=23&sufix=17&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Niedźwiedzi Naszyjnik",
+      "category": "neck",
+      "base": "naszyjnik",
+      "prefix": "niedzwiedzi",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Niedźwiedzi Naszyjnik",
+    "lines": [
+      "Amulet (PŁEĆ : Tylko dla kobiet)",
+      "Cechy: CHARYZMA -1, WYGLĄD +6, WPŁYWY +1, ODPORNOŚĆ +1, SZCZĘŚCIE +1, PKT KRWI -13 %, obrażenia wszystkich broni +1, SIŁA +4 (niekompletny)",
+      "Wymagania: POZIOM: 30, SIŁA: 5, WYGLĄD: 10, WPŁYWY: 8",
+      "Cena: 35 700 PLN ; Cena sprzedaży: 17 850 PLN ; Mana: 16 ; Nanity: 3"
+    ],
+    "mana": 16,
+    "nanites": 3,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=0&baseType=39&prefix=18&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Twardy Łańcuch Pielgrzyma (+1)",
+      "category": "neck",
+      "base": "lancuch",
+      "prefix": "twardy",
+      "suffix": "pielgrzyma",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Twardy Łańcuch Pielgrzyma (+1)",
+    "lines": [
+      "Amulet (PŁEĆ : Dowolna)",
+      "Cechy: CHARYZMA -1, WPŁYWY +4, ODPORNOŚĆ +7, SZCZĘŚCIE +1, PKT KRWI -13 %, obrażenia wszystkich broni +1, WIEDZA +6, ODPORNOŚĆ +3 (niekompletny)",
+      "Wymagania: POZIOM: 36, SIŁA: 6, WYGLĄD: 16, CHARYZMA: 12, Postać musi być w akcie: 2",
+      "Cena: 145 500 PLN ; Cena sprzedaży: 72 750 PLN ; Mana: 210 ; Nanity: 47"
+    ],
+    "mana": 210,
+    "nanites": 47,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=38&prefix=19&sufix=16&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Dobry Hipnotyczny Łańcuch Władzy",
+      "category": "neck",
+      "base": "lancuch",
+      "prefix": "hipnotyczny",
+      "suffix": "wladzy",
+      "rarity": "normal"
+    },
+    "name": "Dobry Hipnotyczny Łańcuch Władzy",
+    "lines": [
+      "Amulet (PŁEĆ : Dowolna)",
+      "Cechy: CHARYZMA +8, WPŁYWY +10, SPOSTRZEGAWCZOŚĆ +5, SZCZĘŚCIE +4, PKT KRWI -15 %, szansa trafienia bronią białą -12, CHARYZMA +22 (niekompletny), WPŁYWY +22 (niekompletny), pozwala używać arkana Maska Adonisa (niekompletny), pozwala używać arkana Maska Kaliguli (niekompletny)",
+      "Wymagania: POZIOM: 94, SIŁA: 23, WYGLĄD: 39, CHARYZMA: 26",
+      "Cena: 144 900 PLN ; Cena sprzedaży: 72 450 PLN ; Mana: 1906 ; Nanity: 451"
+    ],
+    "mana": 1906,
+    "nanites": 451,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=6&baseType=38&prefix=13&sufix=3&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Dobry Tytanowy Łańcuch (+5)",
+      "category": "neck",
+      "base": "lancuch",
+      "prefix": "tytanowy",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Dobry Tytanowy Łańcuch (+5)",
+    "lines": [
+      "Amulet (PŁEĆ : Dowolna)",
+      "Cechy: CHARYZMA +19, WPŁYWY +16, SIŁA +17, SIŁA +11 (niekompletny), ODPORNOŚĆ +28 (niekompletny)",
+      "Wymagania: POZIOM: 63, SIŁA: 24, WYGLĄD: 68, CHARYZMA: 31, Postać musi być w akcie: 2",
+      "Cena: 1 210 500 PLN ; Cena sprzedaży: 605 250 PLN ; Mana: 2292 ; Nanity: 572"
+    ],
+    "mana": 2292,
+    "nanites": 572,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=11&baseType=38&prefix=28&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Doskonały Srebrny Amulet Koncentracji (+5)",
+      "category": "neck",
+      "base": "amulet",
+      "prefix": "srebrny",
+      "suffix": "koncentracji",
+      "rarity": "normal"
+    },
+    "name": "Doskonały Srebrny Amulet Koncentracji (+5)",
+    "lines": [
+      "Amulet (PŁEĆ : Dowolna)",
+      "Cechy: WYGLĄD +56, INTELIGENCJA +37, WIEDZA +37, INTELIGENCJA +22 (niekompletny), WIEDZA +22 (niekompletny)",
+      "Wymagania: POZIOM: 162, SIŁA: 37, WYGLĄD: 169, CHARYZMA: 46, WPŁYWY: 46",
+      "Cena: 298 100 PLN ; Cena sprzedaży: 149 050 PLN ; Mana: 7497 ; Nanity: 1763"
+    ],
+    "mana": 7497,
+    "nanites": 1763,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=17&baseType=6&prefix=9&sufix=13&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Szmaragdowy Krawat Szaleńca",
+      "category": "neck",
+      "base": "krawat",
+      "prefix": "szmaragdowy",
+      "suffix": "szalenca",
+      "rarity": "normal"
+    },
+    "name": "Epicki Szmaragdowy Krawat Szaleńca",
+    "lines": [
+      "Amulet (PŁEĆ : Tylko dla mężczyzn)",
+      "Cechy: CHARYZMA +12, WYGLĄD +23, WPŁYWY +51, -85 do PKT ŻYCIA za każde trafienie, WIEDZA +39, obrażenia wszystkich broni +2 na każde 6 poziomów postaci, INTELIGENCJA +25 (niekompletny), WIEDZA +25 (niekompletny), +60 litrów krwi / h (niekompletny), wszystkie podstawowe parametry postaci +1 (niekompletny)",
+      "Wymagania: POZIOM: 124, SIŁA: 35, WYGLĄD: 140, CHARYZMA: 53, Postać musi być w akcie: 3",
+      "Cena: 1 264 900 PLN ; Cena sprzedaży: 632 450 PLN ; Mana: 11145 ; Nanity: 2645"
+    ],
+    "mana": 11145,
+    "nanites": 2645,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=18&baseType=41&prefix=3&sufix=20&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Platynowy Naszyjnik (+2)",
+      "category": "neck",
+      "base": "naszyjnik",
+      "prefix": "platynowy",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Epicki Platynowy Naszyjnik (+2)",
+    "lines": [
+      "Amulet (PŁEĆ : Tylko dla kobiet)",
+      "Cechy: CHARYZMA -8, WYGLĄD +81, WPŁYWY +8, CHARYZMA +70 (niekompletny), WPŁYWY +70 (niekompletny), WIEDZA +35 (niekompletny), ZWINNOŚĆ +40 (niekompletny), SPOSTRZEGAWCZOŚĆ +50 (niekompletny)",
+      "Wymagania: POZIOM: 100, SIŁA: 38, WYGLĄD: 104, WPŁYWY: 43, Postać musi być w akcie: 3",
+      "Cena: 1 551 500 PLN ; Cena sprzedaży: 775 750 PLN ; Mana: 12900 ; Nanity: 2635"
+    ],
+    "mana": 12900,
+    "nanites": 2635,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=20&baseType=39&prefix=11&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Przebiegły Krawat Krwi (+5)",
+      "category": "neck",
+      "base": "krawat",
+      "prefix": "przebiegly",
+      "suffix": "krwi",
+      "rarity": "normal"
+    },
+    "name": "Epicki Przebiegły Krawat Krwi (+5)",
+    "lines": [
+      "Amulet (PŁEĆ : Tylko dla mężczyzn)",
+      "Cechy: CHARYZMA +7, WYGLĄD +23, WPŁYWY +7, ODPORNOŚĆ +8, SZCZĘŚCIE +7, PKT KRWI +37 %, obrażenia wszystkich broni +10, WPŁYWY +90 (niekompletny), pozwala używać arkana Maska Kaliguli (niekompletny), SZCZĘŚCIE +40 (niekompletny)",
+      "Wymagania: POZIOM: 225, SIŁA: 44, WYGLĄD: 64, CHARYZMA: 76, Postać musi być w akcie: 3",
+      "Cena: 3 233 200 PLN ; Cena sprzedaży: 1 616 600 PLN ; Mana: 34395 ; Nanity: 8420"
+    ],
+    "mana": 34395,
+    "nanites": 8420,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=23&baseType=41&prefix=17&sufix=10&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Kardynalska Apaszka Lewitacji",
+      "category": "neck",
+      "base": "apaszka",
+      "prefix": "kardynalski",
+      "suffix": "lewitacji",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Kardynalska Apaszka Lewitacji",
+    "lines": [
+      "Amulet (PŁEĆ : Tylko dla kobiet)",
+      "Cechy: CHARYZMA +45, WYGLĄD +44, ODPORNOŚĆ +8, SZCZĘŚCIE +7, PKT KRWI -6 %, obrażenia wszystkich broni +11, ZWINNOŚĆ +51, SIŁA +50, zmniejsza otrzymywane obrażenia o 4 %, INTELIGENCJA +60 (niekompletny), pozwala używać arkana Cisza Krwi (niekompletny), SZCZĘŚCIE +40 (niekompletny)",
+      "Wymagania: POZIOM: 244, SIŁA: 44, WYGLĄD: 149, CHARYZMA: 72, Postać musi być w akcie: 4",
+      "Cena: 3 952 500 PLN ; Cena sprzedaży: 1 976 250 PLN ; Mana: 38816 ; Nanity: 9219"
+    ],
+    "mana": 38816,
+    "nanites": 9219,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=40&prefix=22&sufix=14&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Gwiezdny Amulet (+3)",
+      "category": "neck",
+      "base": "amulet",
+      "prefix": "gwiezdny",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Gwiezdny Amulet (+3)",
+    "lines": [
+      "Amulet (PŁEĆ : Dowolna)",
+      "Cechy: WYGLĄD +51, ODPORNOŚĆ +9, SZCZĘŚCIE +7, PKT KRWI -5 %, obrażenia wszystkich broni +14, bazowe PKT ŻYCIA +60 % (niekompletny), pozwala używać arkana Krew Życia (niekompletny), SZCZĘŚCIE +40 (niekompletny)",
+      "Wymagania: POZIOM: 183, SIŁA: 47, WYGLĄD: 61, CHARYZMA: 61, WPŁYWY: 61, Postać musi być w akcie: 4",
+      "Cena: 5 128 000 PLN ; Cena sprzedaży: 2 564 000 PLN ; Mana: 30190 ; Nanity: 5650"
+    ],
+    "mana": 30190,
+    "nanites": 5650,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=27&baseType=6&prefix=20&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Twarda Apaszka Młodości (+5)",
+      "category": "neck",
+      "base": "apaszka",
+      "prefix": "twardy",
+      "suffix": "mlodosci",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Twarda Apaszka Młodości (+5)",
+    "lines": [
+      "Amulet (PŁEĆ : Tylko dla kobiet)",
+      "Cechy: CHARYZMA +55, WYGLĄD +124, ODPORNOŚĆ +10, SZCZĘŚCIE +8, PKT KRWI -5 %, obrażenia wszystkich broni +16, WPŁYWY +72, ODPORNOŚĆ +60 (niekompletny), pozwala używać arkana Skóra Bestii (niekompletny), SZCZĘŚCIE +40 (niekompletny)",
+      "Wymagania: POZIOM: 285, SIŁA: 56, WYGLĄD: 186, CHARYZMA: 92, Postać musi być w akcie: 4",
+      "Cena: 6 265 500 PLN ; Cena sprzedaży: 3 132 750 PLN ; Mana: 50398 ; Nanity: 10738"
+    ],
+    "mana": 50398,
+    "nanites": 10738,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=29&baseType=40&prefix=19&sufix=18&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Przeklęta Kama",
+      "category": "melee1",
+      "base": "kama",
+      "prefix": "przeklety",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Przeklęta Kama",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 8 - 18",
+      "Cechy: SPOSTRZEGAWCZOŚĆ +2, SIŁA +4, szansa trafienia bronią białą -6",
+      "Wymagania: POZIOM: 21, SIŁA: 20, ZWINNOŚĆ: 24, INTELIGENCJA: 18, WIEDZA: 20",
+      "Cena: 22 900 PLN ; Cena sprzedaży: 11 450 PLN ; Mana: 8 ; Nanity: 3"
+    ],
+    "mana": 8,
+    "nanites": 3,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=0&baseType=52&prefix=4&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Zwinny Topór Trafienia (+1)",
+      "category": "melee1",
+      "base": "topor",
+      "prefix": "zwinny",
+      "suffix": "trafienia",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Zwinny Topór Trafienia (+1)",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 9 - 25",
+      "Cechy: ignoruje 15 % obrony przeciwnika, trafienie +9, ZWINNOŚĆ +16, szansa trafienia krytycznego bronią +10 %, unik +5 %",
+      "Wymagania: POZIOM: 28, SIŁA: 27, ZWINNOŚĆ: 26, INTELIGENCJA: 9, WIEDZA: 10, Postać musi być w akcie: 2",
+      "Cena: 139 200 PLN ; Cena sprzedaży: 69 600 PLN ; Mana: 149 ; Nanity: 47"
+    ],
+    "mana": 149,
+    "nanites": 47,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=18&prefix=2&sufix=9&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Dobry Zębaty Sztylet Sekty",
+      "category": "melee1",
+      "base": "sztylet",
+      "prefix": "zebaty",
+      "suffix": "sekty",
+      "rarity": "normal"
+    },
+    "name": "Dobry Zębaty Sztylet Sekty",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 16 - 17",
+      "Cechy: ilość ataków na rundę: 2, trafienie +38, ZWINNOŚĆ +7, obrażenia wszystkich broni +5, CHARYZMA -8, WPŁYWY +9",
+      "Wymagania: POZIOM: 60, SIŁA: 62, ZWINNOŚĆ: 45, INTELIGENCJA: 26, WIEDZA: 25",
+      "Cena: 13 600 PLN ; Cena sprzedaży: 6 800 PLN ; Mana: 627 ; Nanity: 258"
+    ],
+    "mana": 627,
+    "nanites": 258,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=6&baseType=13&prefix=8&sufix=19&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Dobry Lekki Topór (+5)",
+      "category": "melee1",
+      "base": "topor",
+      "prefix": "lekki",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Dobry Lekki Topór (+5)",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 41 - 66",
+      "Cechy: ilość ataków na rundę: 2, ignoruje 15 % obrony przeciwnika, trafienie +25, ZWINNOŚĆ +16, obrażenia wszystkich broni -5, szansa trafienia krytycznego bronią +10 %, unik +5 %",
+      "Wymagania: POZIOM: 20, SIŁA: 24, ZWINNOŚĆ: 30, INTELIGENCJA: 26, WIEDZA: 24, Postać musi być w akcie: 2",
+      "Cena: 76 500 PLN ; Cena sprzedaży: 38 250 PLN ; Mana: 1139 ; Nanity: 750"
+    ],
+    "mana": 1139,
+    "nanites": 750,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=11&baseType=18&prefix=1&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Doskonały Jadowity Kastet Męstwa (+5)",
+      "category": "melee1",
+      "base": "kastet",
+      "prefix": "jadowity",
+      "suffix": "mestwa",
+      "rarity": "normal"
+    },
+    "name": "Doskonały Jadowity Kastet Męstwa (+5)",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 19 - 20",
+      "Cechy: ilość ataków na rundę: 4, trafienie -24, ODPORNOŚĆ +20, bazowe PKT ŻYCIA +22 %, szansa trafienia krytycznego bronią +31 %, CHARYZMA +34, ZWINNOŚĆ +36",
+      "Wymagania: POZIOM: 137, SIŁA: 120, ZWINNOŚĆ: 151, INTELIGENCJA: 98, WIEDZA: 99",
+      "Cena: 159 300 PLN ; Cena sprzedaży: 79 650 PLN ; Mana: 4849 ; Nanity: 1319"
+    ],
+    "mana": 4849,
+    "nanites": 1319,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=17&baseType=51&prefix=13&sufix=13&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicki Zabójczy Miecz Zemsty",
+      "category": "melee1",
+      "base": "miecz",
+      "prefix": "zabojczy",
+      "suffix": "zemsty",
+      "rarity": "normal"
+    },
+    "name": "Epicki Zabójczy Miecz Zemsty",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 44 - 50",
+      "Cechy: ilość ataków na rundę: 3, trafienie +26, ZWINNOŚĆ +30, szansa trafienia krytycznego +26 %, obrażenia wszystkich broni +43, maksymalna obrona wynikająca z przedmiotów = 0, szansa trafienia krytycznego bronią +10 %, unik +5 %, ignoruje 15 % obrony przeciwnika",
+      "Wymagania: POZIOM: 124, SIŁA: 124, ZWINNOŚĆ: 114, INTELIGENCJA: 44, WIEDZA: 44, Postać musi być w akcie: 3",
+      "Cena: 778 700 PLN ; Cena sprzedaży: 389 350 PLN ; Mana: 9530 ; Nanity: 2645"
+    ],
+    "mana": 9530,
+    "nanites": 2645,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=18&baseType=15&prefix=9&sufix=2&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Przeklęta Kama (+2)",
+      "category": "melee1",
+      "base": "kama",
+      "prefix": "przeklety",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Epicka Przeklęta Kama (+2)",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 134 - 146",
+      "Cechy: dodatkowe ataki przeciwko potworom: 2, ilość ataków na rundę: 5, szansa trafienia krytycznego +60 %, SPOSTRZEGAWCZOŚĆ +25, SIŁA +28, obrażenia zwiększone o 4 na każde 4 poziomy postaci, szansa trafienia bronią białą -47, szansa trafienia krytycznego bronią +10 %, unik +5 %, ignoruje 15 % obrony przeciwnika",
+      "Wymagania: POZIOM: 100, SIŁA: 93, ZWINNOŚĆ: 113, INTELIGENCJA: 90, WIEDZA: 96, Postać musi być w akcie: 3",
+      "Cena: 1 627 200 PLN ; Cena sprzedaży: 813 600 PLN ; Mana: 8930 ; Nanity: 2650"
+    ],
+    "mana": 8930,
+    "nanites": 2650,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=20&baseType=52&prefix=4&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Szybka Pięść Niebios Trafienia (+5)",
+      "category": "melee1",
+      "base": "piesc niebios",
+      "prefix": "szybki",
+      "suffix": "trafienia",
+      "rarity": "normal"
+    },
+    "name": "Epicka Szybka Pięść Niebios Trafienia (+5)",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 75 - 90",
+      "Cechy: ilość ataków na rundę: 12, obrażenia przeciwko potworom +100, trafienie -42, szansa trafienia bronią przeciwko potworom zwiększona o 25 %, ZWINNOŚĆ +94, szansa trafienia krytycznego bronią +10 %, unik +5 %, ignoruje 15 % obrony przeciwnika",
+      "Wymagania: POZIOM: 215, SIŁA: 114, ZWINNOŚĆ: 200, INTELIGENCJA: 129, WIEDZA: 144, Postać musi być w akcie: 3",
+      "Cena: 3 332 500 PLN ; Cena sprzedaży: 1 666 250 PLN ; Mana: 25640 ; Nanity: 9490"
+    ],
+    "mana": 25640,
+    "nanites": 9490,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=23&baseType=16&prefix=15&sufix=9&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Demoniczna Pałka Kontuzji",
+      "category": "melee1",
+      "base": "palka",
+      "prefix": "demoniczny",
+      "suffix": "kontuzji",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Demoniczna Pałka Kontuzji",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 157 - 162",
+      "Cechy: ilość ataków na rundę: 4, trafienie +40, ZWINNOŚĆ +46, obrażenia zwiększone o 6 na każde 4 poziomy postaci, WIEDZA +60, szansa trafienia krytycznego bronią +10 %, unik +5 %, ignoruje 15 % obrony przeciwnika",
+      "Wymagania: POZIOM: 173, SIŁA: 172, ZWINNOŚĆ: 154, INTELIGENCJA: 49, WIEDZA: 56, Postać musi być w akcie: 4",
+      "Cena: 3 934 100 PLN ; Cena sprzedaży: 1 967 050 PLN ; Mana: 21318 ; Nanity: 4281"
+    ],
+    "mana": 21318,
+    "nanites": 4281,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=14&prefix=5&sufix=18&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Kościany Kastet (+3)",
+      "category": "melee1",
+      "base": "kastet",
+      "prefix": "kosciany",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Kościany Kastet (+3)",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 39 - 47",
+      "Cechy: ilość ataków na rundę: 7, trafienie -65, ODPORNOŚĆ +64, PKT KRWI +42 %, obrażenia wszystkich broni -16, szansa trafienia krytycznego bronią +10 %, unik +5 %, ignoruje 15 % obrony przeciwnika",
+      "Wymagania: POZIOM: 119, SIŁA: 93, ZWINNOŚĆ: 129, INTELIGENCJA: 93, WIEDZA: 97, Postać musi być w akcie: 4",
+      "Cena: 5 035 600 PLN ; Cena sprzedaży: 2 517 800 PLN ; Mana: 7330 ; Nanity: 3500"
+    ],
+    "mana": 7330,
+    "nanites": 3500,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=27&baseType=51&prefix=17&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Kryształowy Rapier Zwinności (+5)",
+      "category": "melee1",
+      "base": "rapier",
+      "prefix": "krysztalowy",
+      "suffix": "zwinnosci",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Kryształowy Rapier Zwinności (+5)",
+    "lines": [
+      "Broń biała jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 110 - 110",
+      "Cechy: ilość ataków na rundę: 7, obrona postaci +5 na każde 4 poziomy postaci, trafienie +110, WYGLĄD +70, obrażenia wszystkich broni +35, ZWINNOŚĆ +51, szansa trafienia krytycznego bronią +10 %, unik +5 %, ignoruje 15 % obrony przeciwnika",
+      "Wymagania: POZIOM: 226, SIŁA: 198, ZWINNOŚĆ: 212, INTELIGENCJA: 148, WIEDZA: 140, Postać musi być w akcie: 4",
+      "Cena: 6 059 000 PLN ; Cena sprzedaży: 3 029 500 PLN ; Mana: 26444 ; Nanity: 9040"
+    ],
+    "mana": 26444,
+    "nanites": 9040,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=29&baseType=17&prefix=20&sufix=8&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Zwinna Halabarda",
+      "category": "melee2",
+      "base": "halabarda",
+      "prefix": "zwinny",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Zwinna Halabarda",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 35 - 88",
+      "Cechy: trafienie -5, ZWINNOŚĆ +13",
+      "Wymagania: POZIOM: 53, SIŁA: 45, ZWINNOŚĆ: 15, INTELIGENCJA: 14, WIEDZA: 13",
+      "Cena: 66 400 PLN ; Cena sprzedaży: 33 200 PLN ; Mana: 20 ; Nanity: 8"
+    ],
+    "mana": 20,
+    "nanites": 8,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=0&baseType=58&prefix=2&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarna Antyczna Katana Władzy (+1)",
+      "category": "melee2",
+      "base": "katana",
+      "prefix": "antyczny",
+      "suffix": "wladzy",
+      "rarity": "legendary"
+    },
+    "name": "Legendarna Antyczna Katana Władzy (+1)",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 52 - 88",
+      "Cechy: trafienie -5, ZWINNOŚĆ +16, obrażenia broni +9, CHARYZMA +11, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 57, SIŁA: 56, ZWINNOŚĆ: 5, INTELIGENCJA: 28, WIEDZA: 31, Postać musi być w akcie: 2",
+      "Cena: 320 400 PLN ; Cena sprzedaży: 160 200 PLN ; Mana: 289 ; Nanity: 105"
+    ],
+    "mana": 289,
+    "nanites": 105,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=56&prefix=6&sufix=7&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Dobry Zębaty Topór dwuręczny Inkwizytora",
+      "category": "melee2",
+      "base": "topor dwureczny",
+      "prefix": "zebaty",
+      "suffix": "inkwizytora",
+      "rarity": "normal"
+    },
+    "name": "Dobry Zębaty Topór dwuręczny Inkwizytora",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 78 - 122",
+      "Cechy: ilość ataków na rundę: 2, trafienie -12, ZWINNOŚĆ +14, obrażenia broni +12, WPŁYWY +20, obrażenia maksymalne +32, obrażenia minimalne +16",
+      "Wymagania: POZIOM: 90, SIŁA: 89, ZWINNOŚĆ: 14, INTELIGENCJA: 41, WIEDZA: 33",
+      "Cena: 39 550 PLN ; Cena sprzedaży: 19 775 PLN ; Mana: 1451 ; Nanity: 541"
+    ],
+    "mana": 1451,
+    "nanites": 541,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=6&baseType=19&prefix=10&sufix=10&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarna Dobra Kąsająca Katana (+5)",
+      "category": "melee2",
+      "base": "katana",
+      "prefix": "kasajacy",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarna Dobra Kąsająca Katana (+5)",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 81 - 127",
+      "Cechy: ilość ataków na rundę: 2, trafienie +15, SIŁA +16, szansa trafienia krytycznego bronią +27 %, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 87, SIŁA: 72, ZWINNOŚĆ: 12, INTELIGENCJA: 56, WIEDZA: 63, Postać musi być w akcie: 2",
+      "Cena: 139 200 PLN ; Cena sprzedaży: 69 600 PLN ; Mana: 3817 ; Nanity: 1531"
+    ],
+    "mana": 3817,
+    "nanites": 1531,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=11&baseType=56&prefix=16&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Doskonały Opiekuńczy Korbacz Hazardzisty (+5)",
+      "category": "melee2",
+      "base": "korbacz",
+      "prefix": "opiekunczy",
+      "suffix": "hazardzisty",
+      "rarity": "normal"
+    },
+    "name": "Doskonały Opiekuńczy Korbacz Hazardzisty (+5)",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 125 - 189",
+      "Cechy: ilość ataków na rundę: 3, trafienie -93, ZWINNOŚĆ +34, SPOSTRZEGAWCZOŚĆ +33, bazowe PKT ŻYCIA +88 %, SZCZĘŚCIE +10, PKT KRWI -8 %, WPŁYWY +37, obrażenia maksymalne +49, obrażenia minimalne +34",
+      "Wymagania: POZIOM: 170, SIŁA: 165, ZWINNOŚĆ: 72, INTELIGENCJA: 100, WIEDZA: 90",
+      "Cena: 126 450 PLN ; Cena sprzedaży: 63 225 PLN ; Mana: 7494 ; Nanity: 3079"
+    ],
+    "mana": 7494,
+    "nanites": 3079,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=17&baseType=55&prefix=13&sufix=9&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Jadowita Kosa Inkwizytora",
+      "category": "melee2",
+      "base": "kosa",
+      "prefix": "jadowity",
+      "suffix": "inkwizytora",
+      "rarity": "normal"
+    },
+    "name": "Epicka Jadowita Kosa Inkwizytora",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 139 - 269",
+      "Cechy: ilość ataków na rundę: 3, ignoruje 20 % obrony przeciwko potworom, obrażenia przeciwko potworom +50, trafienie -28, ODPORNOŚĆ +37, bazowe PKT ŻYCIA +64 %, szansa trafienia krytycznego bronią +58 %, WPŁYWY +46, obrażenia maksymalne +59, obrażenia minimalne +41, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 168, SIŁA: 159, ZWINNOŚĆ: 72, INTELIGENCJA: 84, WIEDZA: 72, Postać musi być w akcie: 3",
+      "Cena: 673 200 PLN ; Cena sprzedaży: 336 600 PLN ; Mana: 19765 ; Nanity: 6465"
+    ],
+    "mana": 19765,
+    "nanites": 6465,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=18&baseType=21&prefix=15&sufix=10&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Przeklęta Halabarda (+2)",
+      "category": "melee2",
+      "base": "halabarda",
+      "prefix": "przeklety",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Epicka Przeklęta Halabarda (+2)",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 246 - 397",
+      "Cechy: SPOSTRZEGAWCZOŚĆ +63, ilość ataków na rundę: 3, modyfikator obrażeń od trafienia krytycznego bronią przeciwko potworom +50 %, ignoruje 16 % obrony przeciwko potworom, trafienie -66, SIŁA +43, obrażenia zwiększone o 6 na każde 4 poziomy postaci, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 157, SIŁA: 153, ZWINNOŚĆ: 52, INTELIGENCJA: 92, WIEDZA: 92, Postać musi być w akcie: 3",
+      "Cena: 1 724 000 PLN ; Cena sprzedaży: 862 000 PLN ; Mana: 19995 ; Nanity: 8235"
+    ],
+    "mana": 19995,
+    "nanites": 8235,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=20&baseType=58&prefix=4&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Epicka Demoniczna Maczuga Hazardzisty (+5)",
+      "category": "melee2",
+      "base": "maczuga",
+      "prefix": "demoniczny",
+      "suffix": "hazardzisty",
+      "rarity": "normal"
+    },
+    "name": "Epicka Demoniczna Maczuga Hazardzisty (+5)",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 286 - 363",
+      "Cechy: ilość ataków na rundę: 4, trafienie -95, ZWINNOŚĆ +65, obrażenia zwiększone o 7 na każde 4 poziomy postaci, WPŁYWY +52, obrażenia maksymalne +63, obrażenia minimalne +39, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 156, SIŁA: 178, ZWINNOŚĆ: 110, INTELIGENCJA: 84, WIEDZA: 88, Postać musi być w akcie: 3",
+      "Cena: 3 410 550 PLN ; Cena sprzedaży: 1 705 275 PLN ; Mana: 17540 ; Nanity: 5250"
+    ],
+    "mana": 17540,
+    "nanites": 5250,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=23&baseType=22&prefix=5&sufix=9&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Kosztowny Łom Inkwizytora",
+      "category": "melee2",
+      "base": "lom",
+      "prefix": "kosztowny",
+      "suffix": "inkwizytora",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Kosztowny Łom Inkwizytora",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 195 - 265",
+      "Cechy: ilość ataków na rundę: 4, trafienie -109, WPŁYWY +113, obrażenia maksymalne +75, obrażenia minimalne +50, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 171, SIŁA: 184, ZWINNOŚĆ: 79, INTELIGENCJA: 36, WIEDZA: 36, Postać musi być w akcie: 4",
+      "Cena: 3 563 400 PLN ; Cena sprzedaży: 1 781 700 PLN ; Mana: 15052 ; Nanity: 5755"
+    ],
+    "mana": 15052,
+    "nanites": 5755,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=54&prefix=21&sufix=10&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Zębaty Korbacz (+3)",
+      "category": "melee2",
+      "base": "korbacz",
+      "prefix": "zebaty",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Zębaty Korbacz (+3)",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 174 - 353",
+      "Cechy: ilość ataków na rundę: 5, trafienie -110, ZWINNOŚĆ +68, obrażenia broni +25, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 207, SIŁA: 212, INTELIGENCJA: 146, WIEDZA: 127, Postać musi być w akcie: 4",
+      "Cena: 5 035 550 PLN ; Cena sprzedaży: 2 517 775 PLN ; Mana: 26252 ; Nanity: 12085"
+    ],
+    "mana": 26252,
+    "nanites": 12085,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=27&baseType=55&prefix=10&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Okrutna Pika Hazardzisty (+5)",
+      "category": "melee2",
+      "base": "pika",
+      "prefix": "okrutny",
+      "suffix": "hazardzisty",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Okrutna Pika Hazardzisty (+5)",
+    "lines": [
+      "Broń biała dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 267 - 701",
+      "Cechy: SPOSTRZEGAWCZOŚĆ +45, ilość ataków na rundę: 5, trafienie -89, SIŁA +93, obrażenia maksymalne +176, WPŁYWY +73, obrażenia minimalne +47, szansa trafienia krytycznego +25 %, szansa trafienia bronią zwiększona o 25 %",
+      "Wymagania: POZIOM: 342, SIŁA: 268, ZWINNOŚĆ: 121, INTELIGENCJA: 92, WIEDZA: 94, Postać musi być w akcie: 4",
+      "Cena: 6 072 750 PLN ; Cena sprzedaży: 3 036 375 PLN ; Mana: 39004 ; Nanity: 17534"
+    ],
+    "mana": 39004,
+    "nanites": 17534,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=29&baseType=20&prefix=3&sufix=9&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Toporek do rzucania Precyzji (+1)",
+      "category": "ranged",
+      "base": "toporek do rzucania",
+      "prefix": "",
+      "suffix": "precyzji",
+      "rarity": "normal"
+    },
+    "name": "Toporek do rzucania Precyzji (+1)",
+    "lines": [
+      "Broń dystansowa dwuręczna (lekka) (PŁEĆ : Dowolna)",
+      "Obrażenia: 20 - 25",
+      "Cechy: w trakcie walki otrzymuje bonusy jak broń jednoręczna, trafienie zwiększone o wartość WIEDZY, ilość ataków na rundę: 2, trafienie -4, ZWINNOŚĆ +12",
+      "Wymagania: POZIOM: 31, SIŁA: 31, ZWINNOŚĆ: 26, SPOSTRZEGAWCZOŚĆ: 16, INTELIGENCJA: 20, WIEDZA: 14",
+      "Cena: 20 100 PLN ; Cena sprzedaży: 10 050 PLN ; Mana: 242 ; Nanity: 101"
+    ],
+    "mana": 242,
+    "nanites": 101,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=76&prefix=0&sufix=3&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Doskonały Toporek do rzucania Zemsty",
+      "category": "ranged",
+      "base": "toporek do rzucania",
+      "prefix": "",
+      "suffix": "zemsty",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Doskonały Toporek do rzucania Zemsty",
+    "lines": [
+      "Broń dystansowa dwuręczna (lekka) (PŁEĆ : Dowolna)",
+      "Obrażenia: 98 - 104",
+      "Cechy: w trakcie walki otrzymuje bonusy jak broń jednoręczna, trafienie zwiększone o wartość WIEDZY, ilość ataków na rundę: 9, trafienie +107, SPOSTRZEGAWCZOŚĆ -38, obrażenia broni +48, szansa trafienia bronią zwiększona o 30 %, łączne obrażenia broni +15 %, szansa trafienia krytycznego -30 %",
+      "Wymagania: POZIOM: 75, SIŁA: 69, ZWINNOŚĆ: 64, SPOSTRZEGAWCZOŚĆ: 36, INTELIGENCJA: 35, WIEDZA: 32, Postać musi być w akcie: 2",
+      "Cena: 306 900 PLN ; Cena sprzedaży: 153 450 PLN ; Mana: 5302 ; Nanity: 2171"
+    ],
+    "mana": 5302,
+    "nanites": 2171,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=12&baseType=76&prefix=0&sufix=8&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytna Ciężka kusza Wilka",
+      "category": "ranged",
+      "base": "ciezka kusza",
+      "prefix": "",
+      "suffix": "wilka",
+      "rarity": "normal"
+    },
+    "name": "Starożytna Ciężka kusza Wilka",
+    "lines": [
+      "Broń dystansowa dwuręczna (ciężka) (PŁEĆ : Dowolna)",
+      "Obrażenia: 167 - 344",
+      "Cechy: ilość ataków na rundę: 7, szansa trafienia krytycznego +62 %, ignoruje 112 % obrony przeciwnika, trafienie +246, ODPORNOŚĆ +66, ZWINNOŚĆ +61, SPOSTRZEGAWCZOŚĆ +66, obrażenia broni +40, szansa trafienia bronią zwiększona o 30 %, łączne obrażenia broni +15 %",
+      "Wymagania: POZIOM: 207, SIŁA: 264, ZWINNOŚĆ: 283, SPOSTRZEGAWCZOŚĆ: 157, INTELIGENCJA: 182, WIEDZA: 212, Postać musi być w akcie: 4",
+      "Cena: 3 913 200 PLN ; Cena sprzedaży: 1 956 600 PLN ; Mana: 41486 ; Nanity: 18725"
+    ],
+    "mana": 41486,
+    "nanites": 18725,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=72&prefix=0&sufix=7&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Magnum (+1)",
+      "category": "gun1",
+      "base": "magnum",
+      "prefix": "",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Magnum (+1)",
+    "lines": [
+      "Broń palna jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 12 - 18",
+      "Cechy: ilość ataków na rundę: 2",
+      "Wymagania: POZIOM: 18, SIŁA: 15, ZWINNOŚĆ: 11, SPOSTRZEGAWCZOŚĆ: 16, INTELIGENCJA: 14, WIEDZA: 15",
+      "Cena: 21 600 PLN ; Cena sprzedaży: 10 800 PLN ; Mana: 18 ; Nanity: 88"
+    ],
+    "mana": 18,
+    "nanites": 88,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=25&prefix=0&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Doskonały Glock",
+      "category": "gun1",
+      "base": "glock",
+      "prefix": "",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Doskonały Glock",
+    "lines": [
+      "Broń palna jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 36 - 42",
+      "Cechy: ilość ataków na rundę: 2, szansa trafienia bronią zwiększona o 15 %, łączne obrażenia broni +30 %",
+      "Wymagania: POZIOM: 26, SIŁA: 26, ZWINNOŚĆ: 28, SPOSTRZEGAWCZOŚĆ: 32, INTELIGENCJA: 30, WIEDZA: 32, Postać musi być w akcie: 2",
+      "Cena: 28 800 PLN ; Cena sprzedaży: 14 400 PLN ; Mana: 236 ; Nanity: 718"
+    ],
+    "mana": 236,
+    "nanites": 718,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=12&baseType=24&prefix=0&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytne Mp5k",
+      "category": "gun1",
+      "base": "mp5k",
+      "prefix": "",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytne Mp5k",
+    "lines": [
+      "Broń palna jednoręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 66 - 106",
+      "Cechy: ZWINNOŚĆ +29, ilość ataków na rundę: 7, szansa trafienia bronią zwiększona o 15 %, łączne obrażenia broni +30 %",
+      "Wymagania: POZIOM: 106, SIŁA: 91, ZWINNOŚĆ: 122, SPOSTRZEGAWCZOŚĆ: 116, INTELIGENCJA: 124, WIEDZA: 136, Postać musi być w akcie: 4",
+      "Cena: 3 661 700 PLN ; Cena sprzedaży: 1 830 850 PLN ; Mana: 5715 ; Nanity: 17752"
+    ],
+    "mana": 5715,
+    "nanites": 17752,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=62&prefix=0&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Fn-Fal (+1)",
+      "category": "gun2",
+      "base": "fn-fal",
+      "prefix": "",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Fn-Fal (+1)",
+    "lines": [
+      "Broń palna dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 43 - 53",
+      "Cechy: ilość ataków na rundę: 3",
+      "Wymagania: POZIOM: 39, SIŁA: 34, ZWINNOŚĆ: 15, SPOSTRZEGAWCZOŚĆ: 33, INTELIGENCJA: 16, WIEDZA: 31",
+      "Cena: 62 400 PLN ; Cena sprzedaży: 31 200 PLN ; Mana: 41 ; Nanity: 204"
+    ],
+    "mana": 41,
+    "nanites": 204,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=1&baseType=63&prefix=0&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Legendarny Doskonały Półautomat snajperski",
+      "category": "gun2",
+      "base": "polautomat s.",
+      "prefix": "",
+      "suffix": "",
+      "rarity": "legendary"
+    },
+    "name": "Legendarny Doskonały Półautomat snajperski",
+    "lines": [
+      "Broń palna dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 50 - 60",
+      "Cechy: ZWINNOŚĆ -6, SPOSTRZEGAWCZOŚĆ +18, ilość ataków na rundę: 3, szansa trafienia krytycznego +54 %, ignoruje 45 % obrony przeciwnika, łączne obrażenia broni +20 %",
+      "Wymagania: POZIOM: 46, SIŁA: 36, ZWINNOŚĆ: 47, SPOSTRZEGAWCZOŚĆ: 49, INTELIGENCJA: 46, WIEDZA: 46, Postać musi być w akcie: 2",
+      "Cena: 102 600 PLN ; Cena sprzedaży: 51 300 PLN ; Mana: 484 ; Nanity: 2651"
+    ],
+    "mana": 484,
+    "nanites": 2651,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=12&baseType=66&prefix=0&sufix=0&legendary=1&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  },
+  {
+    "node": {
+      "id": 0,
+      "original": "Starożytny Miotacz płomieni",
+      "category": "gun2",
+      "base": "miotacz p.",
+      "prefix": "",
+      "suffix": "",
+      "rarity": "normal"
+    },
+    "name": "Starożytny Miotacz płomieni",
+    "lines": [
+      "Broń palna dwuręczna (PŁEĆ : Dowolna)",
+      "Obrażenia: 113 - 332",
+      "Cechy: ZWINNOŚĆ +28, SPOSTRZEGAWCZOŚĆ +30, ilość ataków na rundę: 7, szansa trafienia krytycznego +160 %, ignoruje 128 % obrony przeciwnika, trafienie -54, łączne obrażenia broni +20 %",
+      "Wymagania: POZIOM: 191, SIŁA: 194, ZWINNOŚĆ: 107, SPOSTRZEGAWCZOŚĆ: 132, INTELIGENCJA: 220, WIEDZA: 181, Postać musi być w akcie: 4",
+      "Cena: 3 839 000 PLN ; Cena sprzedaży: 1 919 500 PLN ; Mana: 10017 ; Nanity: 37077"
+    ],
+    "mana": 10017,
+    "nanites": 37077,
+    "url": "https://r21.bloodwars.pl/test_items.php?class=24&baseType=29&prefix=0&sufix=0&legendary=0&playerLvl=80",
+    "checkedAt": "2026-10-04"
+  }
+]

@@ -1,3 +1,4 @@
+import {resolveRequirements} from './item-requirements.js';
 const number=s=>Number(String(s).replace(/\s/g,''));
 export function featureMap(line){
  const out={};
@@ -34,13 +35,16 @@ export function composeRecord(n,quality,group,url,name){
  // Legendary requirements are rounded after combining all normal components.
  const normalTerms=legendary?[[get('base',n.base,0),1],...(prefix?[[get('prefix',n.prefix,0),1],[get('base',group.reference,0),-1]]:[]),...(suffix?[[get('suffix',n.suffix,0),1],[get('base',group.reference,0),-1]]:[])]:terms;
  if(normalTerms.some(([row])=>!row))return null;
- const requirements=addMaps(normalTerms,'requirements');
+ let requirements=addMaps(normalTerms,'requirements');
  const normalRef=parsedRecord(get('base',group.reference,0)).requirements;
  for(const axis of ['prefix','suffix'])if(n[axis]){
   const corrections=group.requirementDeltas?.[`${quality}|${axis}|${n[axis]}`],part=parsedRecord(get(axis,n[axis],0)).requirements;
   for(const [field,value]of Object.entries(corrections||{}))requirements[field]=(requirements[field]||0)+value-((part[field]||0)-(normalRef[field]||0));
  }
  if(legendary){for(const k of Object.keys(requirements))requirements[k]=Math.ceil(requirements[k]*.8);requirements['Postać musi być w akcie']=2;}
+ const calibrated=quality>=18?resolveRequirements(n,quality,group.requirementModels?.[quality]):null;
+ const partialRequirements=quality>=18&&!calibrated;
+ if(calibrated)requirements=calibrated;
  const bp=parsedRecord(base),delta=addMaps(terms.slice(1),'features');
  const levelBonus=pattern=>Object.entries(delta).reduce((sum,[key,value])=>{const m=key.match(pattern);return sum+(m?Math.floor(80/Number(m[1]))*value:0);},0);
  const armorLevel=levelBonus(/^obrona przedmiotu zwiększona o \{n\} na każde (\d+) poziomy postaci$/),damageLevel=levelBonus(/^obrażenia zwiększone o \{n\} na każde (\d+) poziomy postaci$/);
@@ -49,5 +53,5 @@ export function composeRecord(n,quality,group,url,name){
  const featureText=Object.entries(features).filter(([k,v])=>v!==0).map(([k,v])=>k.startsWith('@')?k.slice(1):k.replace('{+}',v>=0?'+'+v:String(v)).replace('{n}',String(v))).join(', ')||'-';
  const requirementText=Object.entries(requirements).filter(([,v])=>v>0).map(([k,v])=>`${k}: ${v}`).join(', ')||'-';
  const mana=terms.reduce((sum,[r,w])=>sum+r.mana*w,0),nanites=terms.reduce((sum,[r,w])=>sum+r.nanites*w,0),price=terms.reduce((sum,[r,w])=>sum+parsedRecord(r).price*w,0),sale=terms.reduce((sum,[r,w])=>sum+parsedRecord(r).sale*w,0);
- return {name,url,mana,nanites,composed:true,partialRequirements:quality>=18,lines:[base.lines[0],...(armor===null?[]:[`Obrona: ${armor}`]),...(damage?[`Obrażenia: ${damage[0]} - ${damage[1]}`]:[]),`Cechy: ${featureText}`,quality>=18?'Wymagania: sprawdź dokładne wartości w katalogu R21 — zaokrąglanie epickich i starożytnych wariantów nie jest jeszcze odwzorowane.':`Wymagania: ${requirementText}`,`Cena: ${price} PLN ; Cena sprzedaży: ${sale} PLN ; Mana: ${mana} ; Nanity: ${nanites}`]};
+ return {name,url,mana,nanites,composed:true,partialRequirements,lines:[base.lines[0],...(armor===null?[]:[`Obrona: ${armor}`]),...(damage?[`Obrażenia: ${damage[0]} - ${damage[1]}`]:[]),`Cechy: ${featureText}`,partialRequirements?'Wymagania: brak jednoznacznych danych dla tego wariantu w lokalnym katalogu.':`Wymagania: ${requirementText}`,`Cena: ${price} PLN ; Cena sprzedaży: ${sale} PLN ; Mana: ${mana} ; Nanity: ${nanites}`]};
 }

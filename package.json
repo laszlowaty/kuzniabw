@@ -1,0 +1,13 @@
+{
+  "name": "kuzniabw",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "qa:catalog": "node scripts/catalog-audit.mjs",
+    "qa:sources": "node scripts/compare-r21.mjs",
+    "build:requirements": "node scripts/build-requirements.mjs"
+  },
+  "engines": { "node": ">=22" }
+}

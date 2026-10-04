@@ -1,0 +1,25 @@
+name: Catalog QA
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm test
+      - run: npm run qa:catalog
+      - name: Sprawdź odtwarzalność lokalnego katalogu
+        run: |
+          npm run build:requirements
+          git diff --exit-code -- item-requirements.json

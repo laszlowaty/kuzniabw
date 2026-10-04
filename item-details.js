@@ -1,15 +1,7 @@
 import {composeRecord} from './item-compose.js';
-import {normalize,resultKey,itemName,itemGender} from './engine.js';
+import {itemClass,resultKey,itemName,itemGender} from './engine.js';
+export {itemClass} from './engine.js';
 export const SOURCE='https://r21.bloodwars.pl/test_items.php';
-export function itemClass(n){
- if(n.left){const a=itemClass(n.left),b=itemClass(n.right);if(a===null||b===null||a<1||b<1||a>=18||b>=18||a===17&&b===17)return null;const c=Math.min(a,b)+(n.left.base===n.right.base?1:0);return c<18?c:null;}
- const s=normalize(n.original||'');
- if(!s)return null;
- const plus=Number(s.match(/\(\+(\d+)\)/)?.[1]||0);
- if(plus>5)return null;
- const q=/\bstarozytn/.test(s)?24:/\bepick/.test(s)?18:/\bdoskonal/.test(s)?12:/\bdobr/.test(s)?6:0;
- return q+plus;
-}
 export function qualityLabel(c){return c===null?'Nieustalona jakość':`${['Zwykły','Dobry','Doskonały','Epicki','Starożytny'][Math.floor(c/6)]} (+${c%6})`;}
 export const detailKey=(n,c=itemClass(n))=>`${resultKey(n)}|${c}`;
 export function officialUrl(n,catalog,c=itemClass(n)){

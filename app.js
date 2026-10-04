@@ -151,13 +151,13 @@ function registerTools(){
 async function loadCatalog(){
  itemDetails??={items:{}};itemDetails.catalog=itemCatalog;itemDetails.components??={};
  let count=0;const failed=[];
- await Promise.all(data.categories.map(async c=>{try{const response=await fetch(`./item-components/${c.id}.json`);if(!response.ok)throw new Error('catalog');itemDetails.components[c.id]=await response.json();}catch{failed.push(c.label);}finally{count++;$('catalogStatus').textContent=`Wczytuję dane przedmiotów: ${count}/${data.categories.length} kategorii…`;}}));
- $('catalogStatus').textContent=failed.length?`Nie wczytano danych: ${failed.join(', ')}. Odśwież stronę; brakujące koszty można wpisać ręcznie.`:'Dane R21 gotowe · 10 kategorii · poziom postaci 80 · odczyt 03–04.10.2026';
+ await Promise.all(data.categories.map(async c=>{try{const response=await fetch(`./item-components/${c.id}.json`);if(!response.ok)throw new Error('catalog');const group=await response.json();group.requirementModels=itemDetails.requirementModels?.[c.id];itemDetails.components[c.id]=group;}catch{failed.push(c.label);}finally{count++;$('catalogStatus').textContent=`Wczytuję dane przedmiotów: ${count}/${data.categories.length} kategorii…`;}}));
+ $('catalogStatus').textContent=failed.length?`Nie wczytano danych: ${failed.join(', ')}. Odśwież stronę; brakujące koszty można wpisać ręcznie.`:!itemDetails.requirementModels?'Nie wczytano dokładnych wymagań epickich i starożytnych przedmiotów. Odśwież stronę.':'Dane R21 gotowe · 10 kategorii · poziom postaci 80 · odczyt 03–04.10.2026';
  if(!running)renderResults();
 }
 async function init(){
  const response=await fetch('./data.json');if(!response.ok)throw new Error('Nie udało się wczytać tabel R21.');data=await response.json();
- try{const [details,catalog]=await Promise.all([fetch('./item-details.json'),fetch('./item-catalog.json')]);if(details.ok)itemDetails=await details.json();if(catalog.ok)itemCatalog=await catalog.json();}catch{}
+ try{const [details,catalog,requirements]=await Promise.all(['./item-details.json','./item-catalog.json','./item-requirements.json'].map(url=>fetch(url).catch(()=>null)));if(details?.ok)itemDetails=await details.json();if(catalog?.ok)itemCatalog=await catalog.json();if(requirements?.ok){itemDetails??={items:{}};itemDetails.requirementModels=(await requirements.json()).models;}}catch{}
  const options=data.categories.map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');$('category').insertAdjacentHTML('beforeend',options);$('tableCategory').innerHTML=options;
  inventory=[];filterOptions();renderInventory();
  $('sourceLink').href=data.source.url;
