@@ -9,26 +9,35 @@ export function createItemPopover(getDetails,getCatalog){
  const nodes=new Map();let target=null,closeTimer,skipFocusOnce=null;
  const panel=document.getElementById('itemInfo');
  const attrs=n=>{const key=detailKey(n);nodes.set(key,n);return `data-item-detail="${esc(key)}" aria-haspopup="dialog"`;};
+ const inline=(n,text)=>{const key=detailKey(n);nodes.set(key,n);return `<span class="itemInfoTrigger" data-item-detail="${esc(key)}">${esc(text)}</span>`;};
  const markup=(n,text)=>`<button type="button" class="itemInfoTrigger" ${attrs(n)}>${esc(text)}</button>`;
  function close(){clearTimeout(closeTimer);panel.hidden=true;target?.removeAttribute('aria-describedby');target=null;}
- function show(element){
+ function show(element,point){
   clearTimeout(closeTimer);const n=nodes.get(element.dataset.itemDetail);if(!n)return;
   if(target!==element)target?.removeAttribute('aria-describedby');target=element;
   panel.innerHTML=detailContent(n,getDetails(),getCatalog());panel.hidden=false;
   target.setAttribute('aria-describedby','itemInfo');
   document.getElementById('closeItemInfo').onclick=()=>{const prior=target;close();skipFocusOnce=prior;prior?.focus();skipFocusOnce=null;};
-  const rect=element.getBoundingClientRect(),width=panel.offsetWidth,height=panel.offsetHeight;
-  const left=rect.right+12+width<=window.innerWidth?rect.right+12:rect.left-12-width>=8?rect.left-12-width:Math.max(8,Math.min(rect.left,window.innerWidth-width-8));
-  panel.style.left=left+'px';panel.style.top=Math.max(8,Math.min(rect.top,window.innerHeight-height-8))+'px';
+  const rect=element.getBoundingClientRect(),width=panel.offsetWidth,height=panel.offsetHeight,gap=14,margin=8;
+  let left,top;
+  if(point){
+   left=Math.max(margin,Math.min(point.clientX+gap,window.innerWidth-width-margin));
+   top=point.clientY+gap;
+   if(top+height>window.innerHeight-margin)top=point.clientY-height-gap;
+  }else{
+   left=rect.right+12+width<=window.innerWidth?rect.right+12:rect.left-12-width>=margin?rect.left-12-width:Math.max(margin,Math.min(rect.left,window.innerWidth-width-margin));
+   top=rect.top;
+  }
+  panel.style.left=left+'px';panel.style.top=Math.max(margin,Math.min(top,window.innerHeight-height-margin))+'px';
  }
  function leave(e){if(panel.contains(e.relatedTarget)||target?.contains(e.relatedTarget))return;clearTimeout(closeTimer);closeTimer=setTimeout(close,220);}
- document.addEventListener('pointerover',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger&&trigger!==target)show(trigger);else if(panel.contains(e.target))clearTimeout(closeTimer);});
+ document.addEventListener('pointerover',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger&&trigger!==target&&(e.pointerType==='mouse'||e.pointerType==='pen'))show(trigger,e);else if(panel.contains(e.target))clearTimeout(closeTimer);});
  document.addEventListener('pointerout',leave);
  document.addEventListener('focusin',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger===skipFocusOnce&&trigger)return;if(trigger)show(trigger);else if(!panel.contains(e.target))close();});
- document.addEventListener('click',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger&&trigger.isConnected!==false)show(trigger);else if(!panel.contains(e.target))close();});
+ document.addEventListener('click',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger&&trigger.isConnected!==false)show(trigger,e.detail?e:null);else if(!panel.contains(e.target))close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='ArrowDown'&&target===e.target&&!panel.hidden){e.preventDefault();document.getElementById('closeItemInfo').focus();}});
  window.addEventListener('resize',close);
  // The popover is fixed to the viewport; close it if its anchor scrolls away.
  document.addEventListener('scroll',e=>{if(!panel.contains(e.target))close();},true);
- return {attrs,markup,close};
+ return {attrs,inline,markup,close};
 }
