@@ -5,26 +5,6 @@ import {createItemPopover} from './item-popover.js';
 import {importInventory} from './inventory-import.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const ORIGINAL=`Dobry Wzmocniony Smoking Siłacza (+1)
-Rubinowy Amulet Twardej Skóry (+4)
-Dobry Kościany Nóż Władzy (+2)
-Dobra Władcza Kurtka Narkomana (+1)
-Dobre Krótkie Szorty Narkomana (+3)
-Dobre Krótkie Szorty Rzezimieszka (+2)
-Złoty Amulet Władzy (+5)
-Dobre Wzmocnione Szorty Handlarza Bronią (+1)
-Kąsający Miecz dwuręczny Mocy (+1)
-Krwawa Kamizelka Zabójcy (+1)
-Kolcza Spódnica Łowcy Cieni (+4)
-Dobry Kosztowny Topór dwuręczny Inkwizytora (+2)
-Napromieniowany Topór dwuręczny (+2)
-Dobra Władcza Marynarka Strażnika (+3)
-Wzmocniony Smoking Mistrza (+5)
-Rogaty Kask Narkomana (+4)
-Miedziany Łańcuch Urody (+1)
-Lekka Koszulka Narkomana (+2)
-Magnetyczna Maska Narkomana (+1)
-Kosztowna Maczuga Mocy (+2)`;
 const GUNS=`Magnum (+1)
 Desert Eagle (+1)
 Desert Eagle (+1)
@@ -32,7 +12,7 @@ Karabin snajperski (+1)
 AK-47 (+1)
 AK-47 (+1)`;
 const axisLabels={base:'Baza',prefix:'Prefiks',suffix:'Sufiks'};
-let data,inventory=[],inventoryText=ORIGINAL,results=[],lastRun=null,worker,selected,visibleLimit=50,running=false,runCounter=0,activeReject=null;
+let data,inventory=[],inventoryText='',results=[],lastRun=null,worker,selected,visibleLimit=50,running=false,runCounter=0,activeReject=null;
 let loadingTimer,deadlineTimer;
 let depthTimer,completedRun=null,newKeys=new Set();
 const simulationHistory=[];
@@ -64,7 +44,7 @@ function renderResults(){
  if(!list.some(n=>resultKey(n)===selected))selected=list[0]?resultKey(list[0]):null;
  $('resultOrder').textContent=newKeys.size?'Nowe wyniki najpierw':'Najmniej spawów najpierw';
  $('resultsList').innerHTML=list.slice(0,visibleLimit).map(n=>`<button class="result ${resultKey(n)===selected?'selected':''}" data-key="${esc(resultKey(n))}" ${itemPopover.attrs(n)} aria-pressed="${resultKey(n)===selected}"><div class="resultName">${newKeys.has(resultKey(n))?'<span class="newBadge">NOWY</span> ':''}${esc(itemName(n))}</div><div class="resultMeta"><span class="pill cost">${n.steps} ${n.steps===1?'spaw':n.steps<5?'spawy':'spawów'}</span><span>${esc(categoryName(n.category))}</span><span>·</span><span>głębokość ${n.depth}</span></div></button>`).join('');
- if(!list.length&&!running){const gun=$('category').value.startsWith('gun')&&!inventory.some(i=>i.category===$('category').value);$('resultsList').innerHTML=`<div class="empty"><strong>${gun?'Brak składników palnej':'Brak pasujących wyników'}</strong>${gun?'Do palnej potrzebujesz broni palnej tego samego rodzaju. Wklej swoje bronie lub wczytaj przykład palnej.':'Zmień filtr, listę składników lub głębokość. Niektóre wyniki wymagają kolejnego spawu.'}</div>`;}
+ if(!list.length&&!running){const gun=$('category').value.startsWith('gun')&&!inventory.some(i=>i.category===$('category').value);const emptyInventory=inventory.length===0;const message=emptyInventory?'Kliknij „Edytuj listę”, aby wkleić swój ekwipunek.':gun?'Do palnej potrzebujesz broni palnej tego samego rodzaju. Wklej swoje bronie lub wczytaj przykład palnej.':'Zmień filtr, listę składników lub głębokość. Niektóre wyniki wymagają kolejnego spawu.';$('resultsList').innerHTML=`<div class="empty"><strong>${emptyInventory?'Dodaj składniki':gun?'Brak składników palnej':'Brak pasujących wyników'}</strong>${message}</div>`;}
  $('loadMore').hidden=list.length<=visibleLimit;
  $('resultsList').querySelectorAll('button[data-key]').forEach(b=>b.onclick=()=>{selected=b.dataset.key;const keepFocus=document.activeElement===b;renderResults();if(keepFocus)[...$('resultsList').querySelectorAll('button[data-key]')].find(next=>next.dataset.key===selected)?.focus({preventScroll:true});});
  renderRecipe(list.find(n=>resultKey(n)===selected));
@@ -92,7 +72,7 @@ function renderCostSummary(steps){
  const totals=totalCosts(steps,new Map(steps.map(s=>[costKey(s),effectiveCosts(s)])));
  $('costSummary').innerHTML=`<div class="resourceTotals">${[['mana','Mana'],['nanites','Nanity']].map(([key,name])=>{const t=totals[key];return `<div><span>${name}</span><strong>${t.invalid?'Popraw kwoty':t.known?t.total.toLocaleString('pl'):'—'}</strong><small>${t.invalid?'Wpisz całe liczby od 0':t.complete?'Łącznie za cały przepis':`Znane koszty · ${t.known}/${steps.length} spawów`}</small></div>`;}).join('')}<div><span>Kamienie przemiany</span><strong>${steps.length}</strong><small>1 kamień na każdy spaw</small></div></div><p class="costCompletion">${totals.mana.complete&&totals.nanites.complete?'Suma obejmuje wyłącznie spawy tego przepisu. Sprawdź kwoty w Studni przed wykonaniem.':'Koszt niepełny. Puste pola oznaczają brak danych, a nie darmowy spaw.'}</p>`;
 }
-function setBusy(b){running=b;$('loadingState').hidden=!b;if(!b){clearInterval(loadingTimer);clearTimeout(deadlineTimer);}$('calculate').disabled=b;$('stop').hidden=!b;$('editInventory').disabled=b;$('gunExample').disabled=b;$('restoreInventory').disabled=b;$('undoPlan').disabled=b;}
+function setBusy(b){running=b;$('loadingState').hidden=!b;if(!b){clearInterval(loadingTimer);clearTimeout(deadlineTimer);}$('calculate').disabled=b;$('stop').hidden=!b;$('editInventory').disabled=b;$('gunExample').disabled=b;$('undoPlan').disabled=b;}
 async function calculate(){
  if(!data)return;
  clearTimeout(depthTimer);
@@ -179,7 +159,7 @@ async function init(){
  const response=await fetch('./data.json');if(!response.ok)throw new Error('Nie udało się wczytać tabel R21.');data=await response.json();
  try{const [details,catalog]=await Promise.all([fetch('./item-details.json'),fetch('./item-catalog.json')]);if(details.ok)itemDetails=await details.json();if(catalog.ok)itemCatalog=await catalog.json();}catch{}
  const options=data.categories.map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');$('category').insertAdjacentHTML('beforeend',options);$('tableCategory').innerHTML=options;
- inventory=parseInventory(ORIGINAL,data).items;filterOptions();renderInventory();
+ inventory=[];filterOptions();renderInventory();
  $('sourceLink').href=data.source.url;
  $('conflicts').innerHTML=data.issues.map(i=>`<div class="conflictCard"><b>${esc(i.category)} · ${axisLabels[i.axis]}</b><br>${esc(label(i.a))} + ${esc(label(i.b))}<br>${esc(i.cells[0])}: <b>${esc(label(i.ab))}</b> / ${esc(i.cells[1])}: <b>${esc(label(i.ba))}</b></div>`).join('');
  $('correctionSummary').textContent=`${data.corrections.length} korekty literówek i odmiany nazw`;
@@ -197,7 +177,7 @@ async function init(){
  $('editInventory').onclick=()=>{$('inventoryText').value=inventoryText;$('parseFeedback').textContent='';$('inventoryDialog').showModal();};
  $('closeDialog').onclick=()=>$('inventoryDialog').close();$('validateText').onclick=parseFeedback;
  $('inventoryForm').onsubmit=e=>{e.preventDefault();const p=parseFeedback();if(p.error)return;$('inventoryDialog').close();loadInventory($('inventoryText').value).catch(()=>{});};
- $('gunExample').onclick=()=>loadInventory(GUNS).catch(()=>{});$('restoreInventory').onclick=()=>loadInventory(ORIGINAL).catch(()=>{});
+ $('gunExample').onclick=()=>loadInventory(GUNS).catch(()=>{});
  $('undoPlan').onclick=()=>{if(running||!simulationHistory.length)return;const previous=simulationHistory.pop();$('inventoryChange').textContent='Cofnięto ostatni plan. Składniki wróciły do ekwipunku.';return loadInventory(previous,{preserveHistory:true}).catch(()=>{});};
  registerTools();loadCatalog().catch(()=>{});await calculate();
 }
