@@ -8,6 +8,7 @@ import {parsedRecord} from '../item-compose.js';
 import {resolveRequirements} from '../item-requirements.js';
 import {costKey,totalCosts} from '../costs.js';
 import {detailContent} from '../item-popover.js';
+import {isStrongCombo,strongCombos} from '../strong-combos.js';
 
 const read=path=>JSON.parse(fs.readFileSync(new URL(path,import.meta.url)));
 const data=read('../data.json'),catalog=read('../item-catalog.json');
@@ -18,6 +19,23 @@ for(const id of Object.keys(catalog)){
 }
 const item=name=>{const parsed=parseInventory(name,data);assert.deepEqual(parsed.errors,[]);assert.equal(parsed.items.length,1);return parsed.items[0];};
 const canonical=map=>Object.fromEntries(Object.entries(map).filter(([,v])=>v!==0).sort(([a],[b])=>a.localeCompare(b)));
+
+test('curated strong pairs exist in their own categories and require both affixes',()=>{
+ for(const [category,prefixes] of Object.entries(strongCombos)){
+  const axes=data.categories.find(c=>c.id===category)?.axes;
+  assert.ok(axes,category);
+  for(const [prefix,suffixes] of Object.entries(prefixes)){
+   assert.ok(axes.prefix.values.includes(prefix),`${category}: ${prefix}`);
+   for(const suffix of suffixes){
+    assert.ok(axes.suffix.values.includes(suffix),`${category}: ${suffix}`);
+    assert.equal(isStrongCombo({category,prefix,suffix}),true);
+    assert.equal(isStrongCombo({category,prefix,suffix:''}),false);
+   }
+  }
+ }
+ assert.equal(isStrongCombo({category:'head',prefix:'tygrysi',suffix:'szybkosci'}),false);
+ assert.equal(isStrongCombo({category:'gun1',prefix:'szybki',suffix:'samobojcy'}),false);
+});
 
 test('Doskonałości is a suffix, not item quality (including legendary names)',()=>{
  for(const [name,q]of [['Kusza Doskonałości',0],['Kusza Doskonałości (+1)',1],['Dobra Kusza Doskonałości',6],['Legendarny Dobry Łuk Doskonałości (+3)',9],['Doskonała Kusza Doskonałości (+4)',16],['Epicka Kusza Doskonałości',18],['Starożytna Kusza Doskonałości (+5)',29]]){
