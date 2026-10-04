@@ -1,0 +1,15 @@
+# System and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Local development artifacts
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+dist/
+node_modules/
