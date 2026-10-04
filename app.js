@@ -4,6 +4,7 @@ import {fusionCost,fullItemName} from './item-details.js';
 import {createItemPopover} from './item-popover.js';
 import {importInventory} from './inventory-import.js';
 import {isStrongCombo} from './strong-combos.js';
+import {sortResults} from './result-sort.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GUNS=`Magnum (+1)
@@ -39,12 +40,15 @@ function filterOptions(){
   $(id).value=previous==='none'&&axis!=='base'||values.includes(previous)?previous:'all';
  }
 }
-function filtered(){const category=$('category').value;return results.filter(n=>(category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>$(id).value==='all'||($(id).value==='none'?!n[key]:n[key]===$(id).value))).sort((a,b)=>Number(newKeys.has(resultKey(b)))-Number(newKeys.has(resultKey(a))));}
+function filtered(){
+ const category=$('category').value;
+ const matching=results.filter(n=>(category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>$(id).value==='all'||($(id).value==='none'?!n[key]:n[key]===$(id).value)));
+ return sortResults(matching,$('resultOrder').value);
+}
 function renderResults(){
  itemPopover.close();
  const list=filtered();$('resultCount').textContent=list.length.toLocaleString('pl');
  if(!list.some(n=>resultKey(n)===selected))selected=list[0]?resultKey(list[0]):null;
- $('resultOrder').textContent=newKeys.size?'Nowe wyniki najpierw':'Najmniej spawów najpierw';
  $('resultsList').innerHTML=list.slice(0,visibleLimit).map(n=>`<button class="result ${resultKey(n)===selected?'selected':''} ${isStrongCombo(n)?'strongResult':''}" data-key="${esc(resultKey(n))}" aria-pressed="${resultKey(n)===selected}"><div class="resultName">${newKeys.has(resultKey(n))?'<span class="newBadge">NOWY</span> ':''}${itemPopover.inline(n,itemName(n))} ${strongBadge(n)}</div><div class="resultMeta"><span class="pill cost">${n.steps} ${n.steps===1?'spaw':n.steps<5?'spawy':'spawów'}</span><span>${esc(categoryName(n.category))}</span><span>·</span><span>głębokość ${n.depth}</span></div></button>`).join('');
  if(!list.length&&!running){const gun=$('category').value.startsWith('gun')&&!inventory.some(i=>i.category===$('category').value);const emptyInventory=inventory.length===0;const message=emptyInventory?'Kliknij „Edytuj listę”, aby wkleić swój ekwipunek.':gun?'Do palnej potrzebujesz broni palnej tego samego rodzaju. Wklej swoje bronie lub wczytaj przykład palnej.':'Zmień filtr, listę składników lub głębokość. Niektóre wyniki wymagają kolejnego spawu.';$('resultsList').innerHTML=`<div class="empty"><strong>${emptyInventory?'Dodaj składniki':gun?'Brak składników palnej':'Brak pasujących wyników'}</strong>${message}</div>`;}
  $('loadMore').hidden=list.length<=visibleLimit;
@@ -100,7 +104,7 @@ async function calculate(){
    if(r.type==='done'){
     results=r.results;lastRun=r;activeReject=null;setBusy(false);worker.terminate();worker=null;
     if(baseline&&depth>baseline.depth)newKeys=new Set(results.map(resultKey).filter(k=>!baseline.keys.has(k)));
-    const comparison=baseline&&depth>baseline.depth&&!r.truncated?newKeys.size?`Dodano ${newKeys.size} nowych wyników względem głębokości ${baseline.depth}. Nowe wyniki są na górze. `:`Brak nowych nazw względem głębokości ${baseline.depth} — ta pula składników daje te same wyniki w wybranym zakresie. `:'';
+    const comparison=baseline&&depth>baseline.depth&&!r.truncated?newKeys.size?`Dodano ${newKeys.size} nowych wyników względem głębokości ${baseline.depth}. Oznaczono je etykietą NOWY. `:`Brak nowych nazw względem głębokości ${baseline.depth} — ta pula składników daje te same wyniki w wybranym zakresie. `:'';
     completedRun={inventorySignature,depth,keys:new Set(results.map(resultKey)),truncated:r.truncated};
     $('status').className=r.truncated?'status warning':'status';
     $('status').textContent=`${r.truncated?'Wyniki częściowe — osiągnięto limit czasu. Zwiększ czas albo zawęź ekwipunek. ':''}${r.results.length.toLocaleString('pl')} różnych nazw · głębokość do ${depth} · ${((performance.now()-start)/1000).toFixed(2)} s. ${comparison}Dla każdej nazwy pokazujemy najkrótszą znalezioną ścieżkę. Wyniki to alternatywy korzystające ze wspólnej puli.`;
@@ -172,6 +176,7 @@ async function init(){
  $('depth').oninput=()=>{$('depthValue').value=$('depth').value;clearTimeout(depthTimer);$('status').textContent=`Głębokość ${$('depth').value} — za chwilę automatycznie przeliczę wyniki…`;depthTimer=setTimeout(()=>calculate().catch(()=>{}),250);};
  $('calculate').onclick=()=>calculate().catch(()=>{});
  $('stop').onclick=()=>{clearTimeout(depthTimer);runCounter++;worker?.terminate();worker=null;activeReject?.(new Error('Obliczenia zatrzymane.'));activeReject=null;setBusy(false);results=[];newKeys=new Set();$('status').textContent='Obliczenia zatrzymane. Zmniejsz głębokość lub listę i przelicz ponownie.';renderResults();};
+ $('resultOrder').onchange=()=>{visibleLimit=50;selected=null;renderResults();};
  for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).onchange=()=>{visibleLimit=50;renderResults();};$('category').onchange=()=>{filterOptions();visibleLimit=50;renderResults();};
  $('clearFilters').onclick=()=>{$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';renderResults();};
  $('timeBudget').onchange=()=>calculate().catch(()=>{});
