@@ -109,6 +109,17 @@ test('a deeper intermediate of a different quality can enable a valid final fusi
  assert.ok(target);assert.equal(target.steps,4);assert.equal(target.depth,4);assert.equal(itemClass(target),17);
 });
 
+test('time budget is shared across active categories instead of divided per category',()=>{
+ const axis={values:['b'],table:{'b|b':'b'},blocked:[],refs:{}};
+ const toy={categories:['busy','other'].map(id=>({id,label:id,axes:{base:axis}}))};
+ const inventory=[...Array.from({length:18},(_,id)=>({id,category:'busy',base:'b',prefix:'',suffix:'',rarity:'normal',original:'B (+1)'})),{id:18,category:'other',base:'b',prefix:'',suffix:'',rarity:'normal',original:'B (+1)'}];
+ const timeMs=120;
+ const run=explore(inventory,toy,25,()=>{},{timeMs,states:Infinity,attempts:Infinity});
+ assert.equal(run.truncated,true);
+ assert.equal(run.stopReason,'time');
+ assert.ok(run.elapsedMs>=timeMs*0.75,`Search stopped after ${run.elapsedMs.toFixed(1)} ms of a ${timeMs} ms budget`);
+});
+
 test('official R21 samples agree on features, requirements, damage, armour, mana and nanites',()=>{
  for(const source of read('./fixtures/official-r21.json')){
   const actual=lookupItem(source.node,details);assert.ok(actual,source.name);
