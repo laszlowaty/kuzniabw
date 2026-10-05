@@ -1,66 +1,106 @@
-// Curated Moria examples, reviewed 2026-10-04. Scope and sources: AFFIXES.md.
-// Build hints, not a price/DPS ranking or a Cartesian product of good affixes.
-export const recommendationSources={
- melee:{label:'Moria: wyposażenie mnicha i białej',url:'https://forum.bloodwars.pl/thread.php?threadid=1341473'},
- hunter:{label:'Moria: łowca skarbów, dystans i runiczny zestaw',url:'https://forum.bloodwars.pl/thread.php?threadid=1321636'},
- twoHanded:{label:'Moria: porównanie Berserkera i Czarnego rycerza',url:'https://forum.bloodwars.pl/print.php?threadid=1293917&page=2'},
- weapons:{label:'Moria: przykłady wykonanych broni 1H',url:'https://forum.bloodwars.pl/thread.php?postid=8477132'},
- gunner:{label:'Moria: wyposażenie gangstera',url:'https://forum.bloodwars.pl/thread.php?postid=8561556'},
- expedition:{label:'Moria: przykłady zestawów bojowych i wyprawowych',url:'https://forum.bloodwars.pl/thread.php?threadid=326006'}
-};
+import {itemClass} from './engine.js';
+import {parsedRecord} from './item-compose.js';
 
-const pairRules=[
- ['head','tygrysi',['adrenaliny'],'Biała: zwinność i ofensywa; uwzględnij bonus całego tygrysiego zestawu.','melee'],
- ['head','smiercionosny',['prekognicji','kary'],'Dystans: warianty ofensywnego nakrycia głowy.','hunter'],
- ['head','runiczny',['prekognicji'],'Runiczny zestaw: szczęście i zastosowania obronne; szczególnie build łowcy skarbów.','hunter'],
- ['chest','tygrysi',['szybkosci'],'Biała: dodatkowe ataki; dobierz bazę i zestaw do tatuażu.','melee'],
- ['chest','elfi',['szybkosci'],'Biała: zwinność i dodatkowe ataki.','melee'],
- ['chest','elfi',['siewcy smierci'],'Zasięg i obrażenia: przykład dla dystansu i białej 2H.','hunter'],
- ['chest','runiczny',['siewcy smierci'],'Runiczny zestaw dla łowcy skarbów; liczy się komplet i reszta buildu.','hunter'],
- ['legs','tygrysie',['nocy'],'Biała: element tygrysiego zestawu bojowego.','melee'],
- ['legs','elfie',['unikow'],'Zwinność i obrona w zasadzce; przykład wyposażenia dystansowego.','hunter'],
- ['legs','elfie',['pasterza'],'Dystans: zwinność i spostrzegawczość pomagają budować zasięg.','hunter'],
- ['legs','runiczne',['nocy','unikow'],'Runiczny zestaw: warianty do walki, zależne od przeciwnika.','hunter'],
- ['melee1','szybki',['samobojcy'],'Biała 1H: ataki i obrażenia kosztem obrony z przedmiotów.','weapons'],
- ['melee1','demoniczny',['samobojcy'],'Biała 1H: ofensywny wariant kosztem obrony z przedmiotów.','weapons'],
- ['melee2','demoniczny',['krwiopijcy'],'Biała 2H: wariant obrażeń; w przykładzie łączony z mściwym zestawem.','twoHanded'],
- ['melee2','zwinny',['krwiopijcy'],'Biała 2H: wariant zasięgu; w przykładzie łączony z tytanowym zestawem.','twoHanded'],
- ...['rings','neck'].flatMap(category=>[
-  [category,'tytanowy',['celnosci'],'Tytanowy zestaw z dodatkową zwinnością pod zasięg.','hunter'],
-  [category,'tytanowy',['wladzy'],'Tytanowy zestaw z charyzmą; wariant użytkowy zależny od rodzaju walki.','hunter'],
-  [category,'sloneczny',['koncentracji'],'Palna: wariant do zestawu słonecznego. Bonus zestawu wymaga kompletu.','gunner'],
-  [category,'tanczacy',['szczescia'],'Wyprawy: zestaw do szczęścia, nie uniwersalny sprzęt bojowy.','expedition']
- ])
-];
-
-export const strongCombos={};
-const pairs=new Map(),prefixes=new Map(),suffixes=new Map();
-const key=(category,affix)=>`${category}|${affix}`;
-function add(map,k,rule){const entries=map.get(k)||[];entries.push(rule);map.set(k,entries);}
-for(const [category,prefix,values,reason,source] of pairRules){
- const rule={reason,source};
- (strongCombos[category]??={})[prefix]=[...(strongCombos[category][prefix]||[]),...values];
- add(prefixes,key(category,prefix),rule);
- for(const suffix of values){
-  pairs.set(`${category}|${prefix}|${suffix}`,rule);
-  add(suffixes,key(category,suffix),rule);
+// Relative combat utility, not market value or a damage formula. Affixes are
+// compared with alternatives in the same category, quality and rarity.
+const paths={zabojca:'melee',mnich:'melee',berserker:'melee',czarny_rycerz:'melee',rewolwerowiec:'gun',gangster:'gun',snajper:'gun',wladca_demonow:'ranged',lowca_skarbow:'ranged',lowca:'ranged'};
+const weapons={melee1:'melee',melee2:'melee',gun1:'gun',gun2:'gun',ranged:'ranged'};
+const statLabels={'ZWINNOŚĆ':'zwinność','SPOSTRZEGAWCZOŚĆ':'spostrzegawczość','SIŁA':'siła','WIEDZA':'wiedza','INTELIGENCJA':'inteligencja','ODPORNOŚĆ':'odporność','SZCZĘŚCIE':'szczęście'};
+const thresholdCache=new WeakMap();
+const empty=()=>({pair:null,prefix:[],suffix:[],rank:0,score:0,totalScore:0});
+const kindFor=(category,profile)=>weapons[category]||paths[profile?.tattoo]||'general';
+const setFamily=prefix=>({tygrysi:'tygrys',tygrysie:'tygrys',elfi:'elf',elfie:'elf',runiczny:'runicz',runiczne:'runicz'})[prefix]||prefix;
+function completesPotentialSet(item,inventory){
+ if(!item.prefix||!inventory?.length)return false;
+ const family=setFamily(item.prefix),others=inventory.filter(part=>part!==item&&(item.id===undefined||part.id!==item.id)&&setFamily(part.prefix)===family);
+ if(['head','chest','legs'].includes(item.category))return ['head','chest','legs'].every(slot=>slot===item.category||others.some(part=>part.category===slot));
+ if(item.category==='neck')return others.filter(part=>part.category==='rings').length>=2;
+ if(item.category==='rings')return others.some(part=>part.category==='neck')&&others.some(part=>part.category==='rings');
+ return false;
+}
+function weight(key,kind,race,category,profile){
+ const melee=kind==='melee',gun=kind==='gun',ranged=kind==='ranged';
+ if(key==='ZWINNOŚĆ {+}')return melee?.72:ranged?.53:gun?.12:.46;
+ if(key==='SPOSTRZEGAWCZOŚĆ {+}')return gun?.72:ranged?.53:melee?.09:.43;
+ if(key==='SIŁA {+}')return melee?.28:.09;
+ if(key==='WIEDZA {+}')return ranged?.33:gun?.13:.14;
+ if(key==='INTELIGENCJA {+}')return ranged?.16:.08;
+ if(key==='ODPORNOŚĆ {+}')return .13;
+ if(key==='SZCZĘŚCIE {+}')return profile?.tattoo==='lowca_skarbow'?.32:race==='lapacz'?.14:race==='kultysta'?.17:.2;
+ if(key==='PKT KRWI {+} %')return ['kultysta','ssak','potepiony'].includes(race)?.1:.15;
+ if(key==='trafienie {+}'||key==='trafienie wszystkich broni {+}'||key==='szansa trafienia bronią białą {+}')return race==='potepiony'||race==='wladca'&&melee?.13:.25;
+ if(key.startsWith('szansa trafienia krytycznego'))return key.includes('bronią palną')&&!gun?0:profile?.tattoo==='berserker'?.8:.65;
+ if(key.startsWith('szansa trafienia bronią zwiększona'))return .45;
+ if(key.startsWith('łączne obrażenia broni'))return 1.3;
+ if(key.startsWith('modyfikator obrażeń od trafienia krytycznego'))return .3;
+ if(weapons[category]&&/^(obrażenia broni|obrażenia minimalne|obrażenia maksymalne) \{[+n]\}/.test(key))return 0;
+ if(key.startsWith('obrażenia')&&!key.includes('przedmiotu'))return key.includes('na każde')?2.5:1.2;
+ if(key==='ilość ataków na rundę: {n}'||key==='ilość dodatkowych ataków każdą bronią: {n}')return category.startsWith('gun')?38:profile?.tattoo==='mnich'?54:48;
+ if(key==='ignoruje {n} % obrony przeciwnika')return .9;
+ if(key==='PKT ŻYCIA (bazowe i z budynków) {+} %'||key==='bazowe PKT ŻYCIA {+} %')return race==='ssak'||race==='wladca'?.32:.4;
+ if(key==='obrona przedmiotu {+}')return profile?.tattoo==='czarny_rycerz'?.35:.08;
+ if(key==='twardość {+} %'||key==='unik {+} %')return .35;
+ if(key==='łatwość {+} %')return race==='ssak'?.08:.13;
+ return 0;
+}
+function statScore(part,reference,kind,race,category,profile){
+ const a=parsedRecord(part),b=parsedRecord(reference),changes=[];
+ let score=0;
+ for(const key of new Set([...Object.keys(a.features),...Object.keys(b.features)])){
+  if(key.includes('(niekompletny)'))continue;
+  const delta=(a.features[key]||0)-(b.features[key]||0);if(!delta)continue;
+  if(key.startsWith('@maksymalna obrona')){score+=profile?.tattoo==='mnich'||profile?.tattoo==='berserker'?8:profile?.tattoo==='czarny_rycerz'?-35:-5;continue;}
+  if(key.startsWith('@przeciwnik nie atakuje')){score+=12;changes.push({impact:12,label:'brak ataku przeciwnika w pierwszej rundzie zasadzki',delta:1});continue;}
+  const w=weight(key,kind,race,category,profile);
+  if(w){score+=delta*w;if(Math.abs(delta*w)>2)changes.push({impact:delta*w,label:statLabels[key.replace(' {+}','')]||key.replace(/ \{[+n]\}.*/,''),delta});}
  }
+ if(a.damage&&b.damage){const delta=((a.damage[0]+a.damage[1])-(b.damage[0]+b.damage[1]))/2;score+=delta*.9;if(Math.abs(delta)>3)changes.push({impact:delta*.9,label:'obrażenia broni',delta});}
+ return {score,changes:changes.sort((x,y)=>Math.abs(y.impact)-Math.abs(x.impact))};
 }
-// Standalone affixes, including ranged weapons which have no prefix axis.
-for(const category of ['rings','neck']){
- add(prefixes,key(category,'jastrzebi'),{reason:'Dystans: element jastrzębiego zestawu; sufiks dobierz do zasięgu lub obrażeń.',source:'hunter'});
- add(prefixes,key(category,'msciwy'),{reason:'Biała 2H: element mściwego zestawu; oceniaj po skompletowaniu biżuterii.',source:'twoHanded'});
- add(suffixes,key(category,'mlodosci'),{reason:'Zasięg: sufiks rozważany na etapie budowy ekwipunku dystansowego.',source:'hunter'});
+function parts(item,details){
+ if(!item)return null;
+ const group=details?.components?.[item?.category],quality=itemClass(item);
+ if(!group||quality===null||quality<1)return null;
+ const q=quality,legendary=item.rarity==='legendary'&&q<18?1:0;
+ const reference=group.rows[`${q}|${legendary}|base|${group.reference}`];
+ return reference?{group,q,legendary,reference}:null;
 }
-for(const suffix of ['reakcji','driady','wilka'])add(suffixes,key('ranged',suffix),{
- reason:'Dystans: sufiks do rozważenia zależnie od bazy broni, zasięgu i przeciwnika.',source:'hunter'
-});
-
-export function assessAffixes(item){
- const category=item?.category;
- const pair=pairs.get(`${category}|${item?.prefix}|${item?.suffix}`)||null;
- const prefix=prefixes.get(key(category,item?.prefix))||[];
- const suffix=suffixes.get(key(category,item?.suffix))||[];
- return {pair,prefix,suffix,rank:pair?3:Number(prefix.length>0)+Number(suffix.length>0)};
+function rankPart(axis,value,context,kind,profile,item){
+ if(!value)return null;
+ const {group,q,legendary,reference}=context;
+ const row=group.rows[`${q}|${legendary}|${axis}|${value}`];if(!row)return null;
+ const race=profile?.race,assessed=statScore(row,reference,kind,race,item.category,profile);
+ let cache=thresholdCache.get(group);if(!cache){cache=new Map();thresholdCache.set(group,cache);}
+ const cacheKey=`${q}|${legendary}|${axis}|${kind}|${race||''}|${profile?.tattoo||''}`;
+ let scores=cache.get(cacheKey);
+ if(!scores){
+  scores=Object.entries(group.rows).filter(([key])=>key.startsWith(`${q}|${legendary}|${axis}|`)).map(([,part])=>statScore(part,reference,kind,race,item.category,profile).score).filter(n=>n>0).sort((a,b)=>b-a);
+  cache.set(cacheKey,scores);
+ }
+ const cutoff=scores[Math.min(scores.length-1,Math.max(0,Math.ceil(scores.length*.3)-1))]??Infinity;
+ const good=assessed.score>0&&assessed.score>=cutoff;
+ const top=assessed.changes.slice(0,2).map(c=>`${c.label} ${c.delta>0?'+':''}${c.delta}`);
+ return {good,score:assessed.score,cutoff,reason:`Przyrost względem przedmiotu bez ${axis==='prefix'?'prefiksu':'sufiksu'}: ${top.join(', ')||'cechy bojowe'}. Ocena względna dla tej kategorii i jakości.`};
 }
-export function isStrongCombo(item){return !!assessAffixes(item).pair;}
+export function assessAffixes(item,details,profile={},inventory=[]){
+ const context=parts(item,details);if(!context)return empty();
+ const kind=kindFor(item.category,profile);
+ const p=rankPart('prefix',item.prefix,context,kind,profile,item),s=rankPart('suffix',item.suffix,context,kind,profile,item);
+ if(p&&completesPotentialSet(item,inventory)){
+  const part=context.group.rows[`${context.q}|${context.legendary}|prefix|${item.prefix}`];
+  if(Object.keys(parsedRecord(part).features).some(key=>key.includes('(niekompletny)'))){
+   if(p.score>0){
+    p.score+=10;
+    p.good=p.good||p.score>=p.cutoff;
+    if(p.good)p.reason+=' Inne części na liście mogą utworzyć zestaw; jego bonus nie jest liczony jako aktywny.';
+   }
+  }
+ }
+ const prefix=p?.good?[p]:[],suffix=s?.good?[s]:[];
+ const pair=prefix.length&&suffix.length?{reason:`Oba afiksy należą do najlepszych 30% w tej kategorii i jakości. ${p.reason} ${s.reason}`}:null;
+ const base=context.group.rows[`${context.q}|${context.legendary}|base|${item.base}`];
+ const baseScore=base?statScore(base,context.reference,kind,profile.race,item.category,profile).score:0;
+ const score=Math.max(0,p?.score||0)+Math.max(0,s?.score||0);
+ return {pair,prefix,suffix,rank:pair?3:Number(prefix.length>0)+Number(suffix.length>0),score,totalScore:score+baseScore};
+}
+export function isStrongCombo(item,details,profile,inventory){return !!assessAffixes(item,details,profile,inventory).pair;}

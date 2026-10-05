@@ -1,55 +1,48 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {assessAffixes,isStrongCombo,recommendationSources} from '../strong-combos.js';
+import {assessAffixes,isStrongCombo} from '../strong-combos.js';
 import {sortResults} from '../result-sort.js';
 import {affixContent} from '../item-popover.js';
 import {parseInventory} from '../engine.js';
+
 const data=JSON.parse(fs.readFileSync(new URL('../data.json',import.meta.url)));
+const details={components:{}};
+for(const category of data.categories)details.components[category.id]=JSON.parse(fs.readFileSync(new URL(`../item-components/${category.id}.json`,import.meta.url)));
+const item=name=>{const result=parseInventory(name,data);assert.deepEqual(result.errors,[]);return result.items[0];};
 
-test('standalone and paired recommendations match actual imported Polish names',()=>{
- const {items,errors}=parseInventory('Śmiercionośna Bandana Prekognicji (+1)\nElfia Peleryna Siewcy Śmierci (+1)\nSłoneczny Sygnet Koncentracji (+1)\nTańczący Łańcuch Szczęścia (+1)\nJastrzębi Pierścień (+1)\nNóż do rzucania Driady (+1)\nMagnum (+1)',data);
- assert.deepEqual(errors,[]);
- assert.deepEqual(items.map(i=>assessAffixes(i).rank),[3,3,3,3,1,1,0]);
- assert.equal(assessAffixes(items[4]).suffix.length,0);
- assert.equal(assessAffixes(items[5]).prefix.length,0);
- assert.match(affixContent(items[3]),/Wyprawy/);
- assert.match(affixContent(items[5]),/Dobry sufiks: driady/);
- assert.equal(affixContent(items[6]),'');
+test('affixes are ranked by active R21 stat deltas, not by historical lists',()=>{
+ const pair=item('Dobra Tygrysia Czapka Adrenaliny (+5)');
+ const plain=item('Dobra Czapka (+5)');
+ const single=item('Dobra Szybka Pięść Niebios (+5)');
+ assert.equal(assessAffixes(pair,details).rank,3);
+ assert.equal(assessAffixes(plain,details).rank,0);
+ assert.equal(assessAffixes(single,details).rank,1);
+ assert.match(affixContent(pair,{},details),/zwinność/);
+ assert.doesNotMatch(affixContent(pair,{},details),/forum|Źródło/i);
 });
 
-test('two good affixes do not automatically create a recommended pair',()=>{
- const item={category:'head',prefix:'smiercionosny',suffix:'adrenaliny'};
- assert.equal(assessAffixes(item).rank,2);
- assert.equal(isStrongCombo(item),false);
- assert.match(affixContent(item),/Dobry prefiks/);
- assert.match(affixContent(item),/Dobry sufiks/);
- assert.doesNotMatch(affixContent(item),/<strong>Dobra para/);
- for(const item of [null,{}, {category:'gun1',prefix:'demoniczny',suffix:'samobojcy'}, {category:'chest',prefix:'elfie',suffix:'nocy'}])assert.equal(assessAffixes(item).rank,0);
+test('incomplete set bonuses are not counted on one item; other parts give only potential',()=>{
+ const complete=parseInventory('Dobry Słoneczny Pierścień Mądrości (+5)\nDobry Słoneczny Krawat Koncentracji (+5)\nDobry Słoneczny Sygnet Koncentracji (+5)',data);
+ assert.deepEqual(complete.errors,[]);
+ const [ring]=complete.items;
+ const alone=assessAffixes(ring,details);
+ const together=assessAffixes(ring,details,{},complete.items);
+ assert.ok(together.score>=alone.score);
+ assert.match(together.prefix[0]?.reason||'',/mogą utworzyć zestaw/);
 });
 
-test('every recommended affix has a reason and a known source, with no bare pairs',()=>{
- for(const c of data.categories){
-  for(const axis of ['prefix','suffix'])for(const value of c.axes[axis]?.values||[]){
-   const assessment=assessAffixes({category:c.id,[axis]:value});
-   assert.equal(assessment.pair,null);
-   for(const rule of assessment[axis]){
-    assert.ok(rule.reason);
-    assert.ok(recommendationSources[rule.source]?.url.startsWith('https://forum.bloodwars.pl/'));
-   }
-  }
- }
+test('recommendations need component data, a known quality and the correct category',()=>{
+ const cap=item('Dobra Tygrysia Czapka Adrenaliny (+5)');
+ assert.equal(assessAffixes(cap).rank,0);
+ assert.equal(assessAffixes({...cap,category:'gun1'},details).rank,0);
+ assert.equal(isStrongCombo({...cap,suffix:''},details),false);
+ assert.equal(assessAffixes(null,details).rank,0);
 });
 
-test('best order uses pairs, two affixes, one affix, then other items; steps break ties',()=>{
- const pair={category:'head',prefix:'tygrysi',suffix:'adrenaliny',steps:5};
- const both={category:'head',prefix:'smiercionosny',suffix:'adrenaliny',steps:4};
- const prefix={category:'neck',prefix:'jastrzebi',steps:3};
- const suffix={category:'ranged',suffix:'reakcji',steps:2};
- const plain={category:'gun1',steps:1};
- const items=[plain,prefix,both,suffix,pair];
- assert.deepEqual(sortResults(items,'best'),[pair,both,suffix,prefix,plain]);
- assert.deepEqual(sortResults(items,'fewest'),[plain,suffix,prefix,both,pair]);
- assert.deepEqual(sortResults(items,'most'),[pair,both,prefix,suffix,plain]);
- assert.deepEqual(items,[plain,prefix,both,suffix,pair]);
+test('best sort uses measured pair rank before fusion count',()=>{
+ const pair={...item('Dobra Tygrysia Czapka Adrenaliny (+5)'),steps:5};
+ const plain={...item('Dobra Czapka (+5)'),steps:1};
+ assert.deepEqual(sortResults([plain,pair],'best',undefined,details),[pair,plain]);
+ assert.deepEqual(sortResults([plain,pair],'fewest',undefined,details),[plain,pair]);
 });
