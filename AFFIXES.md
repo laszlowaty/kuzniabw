@@ -24,3 +24,9 @@ To historyczne przykłady Morii, głównie z lat 2008–2018, a nie potwierdzona
 | [Zestawy bojowe i wyprawowe](https://forum.bloodwars.pl/thread.php?threadid=326006) | Tańczący + Szczęścia jako przykład wyprawowego kompletu; starsza lista celów graczy, nie pomiar skuteczności. |
 
 Popup przedmiotu podaje zastosowanie i odsyła do źródła konkretnej reguły. Lista wyników, ekwipunek i przepis używają tej samej oceny. Sortowanie „Najlepsze spawy” ustawia pary przed dwoma wyróżnionymi afiksami, następnie jednym i pozostałymi przedmiotami; w każdej grupie preferuje krótszy przepis.
+
+## Profil postaci
+
+Wybór rasy i ścieżki tatuażu jest zapisywany lokalnie w przeglądarce. Po wyborze tatuażu pokazujemy tylko przykłady afiksów pasujące do typu broni danej ścieżki. Nie ma przypisania ras do ścieżek: [wiki tatuaży](https://wiki.bloodwars.pl/index.php?title=Tatua%C5%BCe) stwierdza, że każda ścieżka jest dostępna dla każdej rasy. Rasa służy wyłącznie do dodatkowego oznaczenia, gdy jej bonus wspiera zastosowanie z danej reguły. Bonusy Morii i dostępne rasy pochodzą z [wiki ras](https://wiki.bloodwars.pl/index.php?title=Rasa).
+
+Reguły trafienia na [wiki](https://wiki.bloodwars.pl/index.php?title=Trafienie) wiążą broń białą ze zwinnością, palną ze spostrzegawczością, a dystansową z oboma parametrami. [Obrażenia](https://wiki.bloodwars.pl/index.php?title=Obra%C5%BCenia) i [tatuaże](https://wiki.bloodwars.pl/index.php?title=Tatua%C5%BCe) rozróżniają typy broni oraz premie krytyczne. Dlatego oznaczenia są wskazówką do budowy zestawu, nie obliczeniem DPS. Podana obok selektora obrona głowy, zbroi i spodni to zakres limitów tatuażu od poziomu 1 do 5. Strona nie zna poziomu aktywnych tatuaży ani kompletnego wyposażenia bojowego, więc nie potwierdza spełnienia tych limitów. Przykładowe połączenia afiksów ze starszych poradników nie oznaczają, że konkretna baza lub jakość przedmiotu będzie właściwa.

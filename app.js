@@ -1,9 +1,10 @@
-import {parseInventory,itemName,label,normalize,recipeSteps,ingredients,resultKey} from './engine.js';
+import {parseInventory,itemName,label,normalize,variants,recipeSteps,ingredients,resultKey} from './engine.js';
 import {costKey,parseCost,totalCosts} from './costs.js';
 import {fusionCost,fullItemName} from './item-details.js';
 import {createItemPopover} from './item-popover.js';
 import {importInventory} from './inventory-import.js';
 import {isStrongCombo,assessAffixes} from './strong-combos.js';
+import {assessProfileAffixes,tattoos,races} from './profile-affixes.js';
 import {sortResults} from './result-sort.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -22,14 +23,29 @@ const simulationHistory=[];
 const enteredCosts=new Map();
 let renderedRecipeKey=null;
 let itemDetails=null,itemCatalog=null;
-const itemPopover=createItemPopover(()=>itemDetails,()=>itemCatalog);
+const profile=()=>({race:$('profileRace').value,tattoo:$('profileTattoo').value});
+const profileActive=()=>!!(profile().race||profile().tattoo);
+const itemPopover=createItemPopover(()=>itemDetails,()=>itemCatalog,profile);
 const strongBadge=n=>{
- const {pair,prefix,suffix}=assessAffixes(n);
+ const {pair,prefix,suffix,raceAffinity}=profileActive()?assessProfileAffixes(n,profile()):assessAffixes(n);
  const badge=(kind,text,reason)=>`<span class="strongBadge ${kind}" title="${esc(reason)}">${text}</span>`;
- if(pair)return badge('pairBadge','DOBRA PARA',pair.reason);
- return (prefix.length?badge('prefixBadge','DOBRY PREFIKS',`${label(n.prefix)}: ${prefix[0].reason}`):'')+(suffix.length?badge('suffixBadge','DOBRY SUFIKS',`${label(n.suffix)}: ${suffix[0].reason}`):'');
+ const raceBadge=raceAffinity?badge('raceBadge','BONUS RASY',races[profile().race].bonus):'';
+ if(pair)return badge('pairBadge','DOBRA PARA',pair.reason)+raceBadge;
+ return (prefix.length?badge('prefixBadge','DOBRY PREFIKS',`${label(n.prefix)}: ${prefix[0].reason}`):'')+(suffix.length?badge('suffixBadge','DOBRY SUFIKS',`${label(n.suffix)}: ${suffix[0].reason}`):'')+raceBadge;
 };
-const itemMarkup=(n,text)=>itemPopover.markup(n,text)+strongBadge(n);
+function highlightedName(n,text){
+ const assessment=profileActive()?assessProfileAffixes(n,profile()):assessAffixes(n);
+ const source=text.toLocaleLowerCase('pl'),ranges=[];
+ if(assessment.prefix.length&&n.prefix){
+  for(const form of variants(n.prefix)){
+   const candidate=label(form).toLocaleLowerCase('pl'),at=source.indexOf(candidate);
+   if(at>=0){ranges.push({start:at,end:at+candidate.length,kind:'prefix',pair:!!assessment.pair});break;}
+  }
+ }
+ if(assessment.suffix.length&&n.suffix){const candidate=label(n.suffix).toLocaleLowerCase('pl'),at=source.lastIndexOf(candidate);if(at>=0)ranges.push({start:at,end:at+candidate.length,kind:'suffix',pair:!!assessment.pair});}
+ ranges.sort((a,b)=>a.start-b.start);let last=0,html='';for(const range of ranges){if(range.start<last)continue;html+=esc(text.slice(last,range.start))+`<span class="affixHighlight ${range.kind}${range.pair?' pair':''}">${esc(text.slice(range.start,range.end))}</span>`;last=range.end;}return html+esc(text.slice(last));
+}
+const itemMarkup=(n,text)=>itemPopover.markup(n,text,highlightedName(n,text))+strongBadge(n);
 function effectiveCosts(step){return {...(fusionCost(step,itemDetails)||{}),...enteredCosts.get(costKey(step))};}
 const categoryName=id=>data.categories.find(c=>c.id===id)?.label||id;
 function renderInventory(){
@@ -49,14 +65,14 @@ function filterOptions(){
 function filtered(){
  const category=$('category').value;
  const matching=results.filter(n=>(category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>$(id).value==='all'||($(id).value==='none'?!n[key]:n[key]===$(id).value)));
- return sortResults(matching,resultOrder);
+ return sortResults(matching,resultOrder,profileActive()?profile():undefined);
 }
 function renderResults(){
  itemPopover.close();
  document.querySelectorAll('#resultOrder [data-order]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.order===resultOrder)));
  const list=filtered();$('resultCount').textContent=list.length.toLocaleString('pl');
  if(!list.some(n=>resultKey(n)===selected))selected=list[0]?resultKey(list[0]):null;
- $('resultsList').innerHTML=list.slice(0,visibleLimit).map(n=>`<button class="result ${resultKey(n)===selected?'selected':''} ${isStrongCombo(n)?'strongResult':''}" data-key="${esc(resultKey(n))}" aria-pressed="${resultKey(n)===selected}"><div class="resultName">${newKeys.has(resultKey(n))?'<span class="newBadge">NOWY</span> ':''}${itemPopover.inline(n,itemName(n))} ${strongBadge(n)}</div><div class="resultMeta"><span class="pill cost">${n.steps} ${n.steps===1?'spaw':n.steps<5?'spawy':'spawów'}</span><span>${esc(categoryName(n.category))}</span><span>·</span><span>głębokość ${n.depth}</span></div></button>`).join('');
+ $('resultsList').innerHTML=list.slice(0,visibleLimit).map(n=>`<button class="result ${resultKey(n)===selected?'selected':''} ${(profileActive()?assessProfileAffixes(n,profile()).pair:isStrongCombo(n))?'strongResult':''}" data-key="${esc(resultKey(n))}" aria-pressed="${resultKey(n)===selected}"><div class="resultName">${newKeys.has(resultKey(n))?'<span class="newBadge">NOWY</span> ':''}${itemPopover.inline(n,itemName(n),highlightedName(n,itemName(n)))} ${strongBadge(n)}</div><div class="resultMeta"><span class="pill cost">${n.steps} ${n.steps===1?'spaw':n.steps<5?'spawy':'spawów'}</span><span>${esc(categoryName(n.category))}</span><span>·</span><span>głębokość ${n.depth}</span></div></button>`).join('');
  if(!list.length&&!running){const gun=$('category').value.startsWith('gun')&&!inventory.some(i=>i.category===$('category').value);const emptyInventory=inventory.length===0;const message=emptyInventory?'Kliknij „Edytuj listę”, aby wkleić swój ekwipunek.':gun?'Do palnej potrzebujesz broni palnej tego samego rodzaju. Wklej swoje bronie lub wczytaj przykład palnej.':'Zmień filtr, listę składników lub głębokość. Niektóre wyniki wymagają kolejnego spawu.';$('resultsList').innerHTML=`<div class="empty"><strong>${emptyInventory?'Dodaj składniki':gun?'Brak składników palnej':'Brak pasujących wyników'}</strong>${message}</div>`;}
  $('loadMore').hidden=list.length<=visibleLimit;
  $('resultsList').querySelectorAll('button[data-key]').forEach(b=>b.onclick=()=>{selected=b.dataset.key;const keepFocus=document.activeElement===b;renderResults();if(keepFocus)[...$('resultsList').querySelectorAll('button[data-key]')].find(next=>next.dataset.key===selected)?.focus({preventScroll:true});});
@@ -173,6 +189,11 @@ async function init(){
  const response=await fetch('./data.json');if(!response.ok)throw new Error('Nie udało się wczytać tabel R21.');data=await response.json();
  try{const [details,catalog,requirements]=await Promise.all(['./item-details.json','./item-catalog.json','./item-requirements.json'].map(url=>fetch(url).catch(()=>null)));if(details?.ok)itemDetails=await details.json();if(catalog?.ok)itemCatalog=await catalog.json();if(requirements?.ok){itemDetails??={items:{}};itemDetails.requirementModels=(await requirements.json()).models;}}catch{}
  const options=data.categories.map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');$('category').insertAdjacentHTML('beforeend',options);$('tableCategory').innerHTML=options;
+ $('profileRace').insertAdjacentHTML('beforeend',Object.entries(races).map(([id,r])=>`<option value="${id}">${esc(r.label)}</option>`).join(''));
+ $('profileTattoo').insertAdjacentHTML('beforeend',Object.entries(tattoos).map(([id,t])=>`<option value="${id}">${esc(t.label)}</option>`).join(''));
+ try{const saved=JSON.parse(localStorage.getItem('kuzniaProfile')||'{}');if(races[saved.race])$('profileRace').value=saved.race;if(tattoos[saved.tattoo])$('profileTattoo').value=saved.tattoo;}catch{}
+ const updateProfile=()=>{const p=profile(),t=tattoos[p.tattoo],r=races[p.race];try{localStorage.setItem('kuzniaProfile',JSON.stringify(p));}catch{}$('profileHint').innerHTML=`${r?`<strong>${esc(r.label)}</strong> · ${esc(r.bonus)}. <a href="https://wiki.bloodwars.pl/index.php?title=Rasa" target="_blank" rel="noreferrer">Rasy na wiki</a>. `:''}${t?`<strong>${esc(t.label)}</strong> · broń: ${esc(t.weapons.map(w=>data.categories.find(c=>c.id===w)?.label||w).join(', '))} · obrona głowa/klatka/nogi: ${esc(t.armour)}. <a href="https://wiki.bloodwars.pl/index.php?title=Tatua%C5%BCe" target="_blank" rel="noreferrer">Wymagania na wiki</a>. Oznaczenia są wskazówką; sprawdź obronę konkretnego przedmiotu i poziom tatuażu.`:'Wybierz tatuaż, aby wyróżnić afiksy pasujące do stylu walki.'}`;renderInventory();renderResults();};
+ $('profileRace').onchange=updateProfile;$('profileTattoo').onchange=updateProfile;updateProfile();
  inventory=[];filterOptions();renderInventory();
  $('sourceLink').href=data.source.url;
  $('conflicts').innerHTML=data.issues.map(i=>`<div class="conflictCard"><b>${esc(i.category)} · ${axisLabels[i.axis]}</b><br>${esc(label(i.a))} + ${esc(label(i.b))}<br>${esc(i.cells[0])}: <b>${esc(label(i.ab))}</b> / ${esc(i.cells[1])}: <b>${esc(label(i.ba))}</b></div>`).join('');
