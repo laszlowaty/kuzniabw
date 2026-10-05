@@ -120,6 +120,16 @@ test('time budget is shared across active categories instead of divided per cate
  assert.ok(run.elapsedMs>=timeMs*0.75,`Search stopped after ${run.elapsedMs.toFixed(1)} ms of a ${timeMs} ms budget`);
 });
 
+test('busy categories both contribute results before the shared time limit',()=>{
+ const axis={values:['b'],table:{'b|b':'b'},blocked:[],refs:{}};
+ const toy={categories:['first','second'].map(id=>({id,label:id,axes:{base:axis}}))};
+ const inventory=toy.categories.flatMap((category,index)=>Array.from({length:18},(_,offset)=>({id:index*18+offset,category:category.id,base:'b',prefix:'',suffix:'',rarity:'normal',original:'B (+1)'})));
+ const run=explore(inventory,toy,25,()=>{},{timeMs:250,states:Infinity,attempts:Infinity});
+ assert.equal(run.truncated,true);
+ assert.equal(run.stopReason,'time');
+ assert.deepEqual(new Set(run.results.map(result=>result.category)),new Set(['first','second']));
+});
+
 test('official R21 samples agree on features, requirements, damage, armour, mana and nanites',()=>{
  for(const source of read('./fixtures/official-r21.json')){
   const actual=lookupItem(source.node,details);assert.ok(actual,source.name);

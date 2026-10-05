@@ -79,31 +79,40 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
  const activeCategories=data.categories.filter(c=>items.some(i=>i.category===c.id));
  if(items.length>100)throw new Error('Maksymalnie 100 przedmiotów na analizę.');
  const results=new Map();let states=items.length,attempts=0,truncated=false;
- for(const [categoryIndex,c] of activeCategories.entries()){
-  let categoryTruncated=false;
+ function* searchCategory(c){
   const pool=items.filter(i=>i.category===c.id);const maxLeaves=Math.min(pool.length,2**maxDepth,limits.maxSteps+1);
   const layers=Array.from({length:maxLeaves+1},()=>new Map());
   layers[1]=new Map(pool.map(i=>[String(i.id),{...i,mask:1n<<BigInt(i.id),depth:0,steps:0}]));
   for(let leaves=2;leaves<=maxLeaves;leaves++){
-   outer:for(let left=1;left<=leaves/2;left++){
+   for(let left=1;left<=leaves/2;left++){
     const right=leaves-left;
     for(const a of layers[left].values())for(const b of layers[right].values()){
-     if(++attempts>limits.attempts){truncated=true;stopReason='attempts';break outer;}
-     if(attempts%512===0){const now=performance.now();if(now-started>=limits.timeMs){truncated=true;categoryTruncated=true;stopReason='time';break outer;}if(now-lastProgress>180){lastProgress=now;onProgress({category:c.label,leaves,states,results:results.size,attempts,elapsedMs:now-started});}}
+     if(++attempts>limits.attempts){truncated=true;stopReason='attempts';return;}
+     if(attempts%512===0){const now=performance.now();if(now-started>=limits.timeMs){truncated=true;stopReason='time';return;}if(now-lastProgress>180){lastProgress=now;onProgress({category:c.label,leaves,states,results:results.size,attempts,elapsedMs:now-started});}yield;}
      if(a.mask&b.mask||left===right&&a.mask>=b.mask)continue;
      const depth=Math.max(a.depth,b.depth)+1;if(depth>maxDepth)continue;
      const m=merge(a,b,data);if(!m)continue;
      const mask=a.mask|b.mask;const key=mask+'|'+resultKey(m)+'|'+itemClass({left:a,right:b});const old=layers[leaves].get(key);
      if(old&&old.depth<=depth)continue;
      const n={...m,mask,depth,steps:leaves-1,left:a,right:b};layers[leaves].set(key,n);
-     if(!old&&++states>limits.states){truncated=true;stopReason='memory';break outer;}
+     const result=resultKey(n),previous=results.get(result);
+     if(!previous||n.steps<previous.steps||n.steps===previous.steps&&n.depth<previous.depth)results.set(result,n);
+     if(!old&&++states>limits.states){truncated=true;stopReason='memory';return;}
     }
    }
-   for(const n of layers[leaves].values()){const key=resultKey(n),old=results.get(key);if(!old||n.steps<old.steps||n.steps===old.steps&&n.depth<old.depth)results.set(key,n);}
-   onProgress({category:c.label,leaves,states,results:results.size,attempts,elapsedMs:performance.now()-started});if(categoryTruncated||stopReason==='memory'||stopReason==='attempts')break;
+   onProgress({category:c.label,leaves,states,results:results.size,attempts,elapsedMs:performance.now()-started});
   }
-  if(stopReason==='memory'||stopReason==='attempts'||categoryTruncated)break;
-  if(performance.now()-started>=limits.timeMs&&categoryIndex<activeCategories.length-1){truncated=true;stopReason='time';break;}
+ }
+ const pending=activeCategories.map(c=>searchCategory(c));let current=0;
+ while(pending.length){
+  const now=performance.now();if(now-started>=limits.timeMs){truncated=true;stopReason='time';break;}
+  const sliceEnd=Math.min(started+limits.timeMs,now+50);
+  let finished=false;
+  do{
+   if(pending[current].next().done){pending.splice(current,1);if(current>=pending.length)current=0;finished=true;break;}
+  }while(!stopReason&&performance.now()<sliceEnd);
+  if(stopReason)break;
+  if(pending.length&&!finished)current=(current+1)%pending.length;
  }
  return {results:[...results.values()].sort((a,b)=>a.steps-b.steps||a.depth-b.depth||itemName(a).localeCompare(itemName(b),'pl')),states,attempts,truncated,maxDepth,stopReason,maxSteps:limits.maxSteps,elapsedMs:performance.now()-started};
 }

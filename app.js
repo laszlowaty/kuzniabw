@@ -118,7 +118,8 @@ async function calculate(){
     renderResults();resolve({count:results.length,partial:r.truncated,depth});
    }
   };
-  deadlineTimer=setTimeout(()=>fail('Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek i spróbuj ponownie.'),timeMs+2000);
+  const finishGraceMs=Math.min(30000,Math.max(2000,timeMs*0.05));
+  deadlineTimer=setTimeout(()=>fail('Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek i spróbuj ponownie.'),timeMs+finishGraceMs);
   try{worker.postMessage({items:inventory,tables:data,depth,timeMs});}catch{fail('Nie udało się przekazać składników do obliczeń. Spróbuj ponownie.');}
  });
 }
