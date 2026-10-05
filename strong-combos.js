@@ -3,7 +3,7 @@
 export const recommendationSources={
  melee:{label:'Moria: wyposażenie mnicha i białej',url:'https://forum.bloodwars.pl/thread.php?threadid=1341473'},
  hunter:{label:'Moria: łowca skarbów, dystans i runiczny zestaw',url:'https://forum.bloodwars.pl/thread.php?threadid=1321636'},
- twoHanded:{label:'Moria: zasięg i wyposażenie białej 2H',url:'https://forum.bloodwars.pl/thread.php?threadid=1331204'},
+ twoHanded:{label:'Moria: porównanie Berserkera i Czarnego rycerza',url:'https://forum.bloodwars.pl/print.php?threadid=1293917&page=2'},
  weapons:{label:'Moria: przykłady wykonanych broni 1H',url:'https://forum.bloodwars.pl/thread.php?postid=8477132'},
  gunner:{label:'Moria: wyposażenie gangstera',url:'https://forum.bloodwars.pl/thread.php?postid=8561556'},
  expedition:{label:'Moria: przykłady zestawów bojowych i wyprawowych',url:'https://forum.bloodwars.pl/thread.php?threadid=326006'}

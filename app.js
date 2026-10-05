@@ -4,7 +4,7 @@ import {fusionCost,fullItemName} from './item-details.js';
 import {createItemPopover} from './item-popover.js';
 import {importInventory} from './inventory-import.js';
 import {isStrongCombo,assessAffixes} from './strong-combos.js';
-import {assessProfileAffixes,tattoos,races} from './profile-affixes.js';
+import {assessProfileAffixes,itemDefense,tattoos,races} from './profile-affixes.js';
 import {sortResults} from './result-sort.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -24,27 +24,27 @@ const enteredCosts=new Map();
 let renderedRecipeKey=null;
 let itemDetails=null,itemCatalog=null;
 const profile=()=>({race:$('profileRace').value,tattoo:$('profileTattoo').value});
-const profileActive=()=>!!(profile().race||profile().tattoo);
+const profileActive=()=>!!profile().tattoo;
+const profileMatch=n=>assessProfileAffixes(n,profile(),itemDefense(n,itemDetails,itemCatalog));
 const itemPopover=createItemPopover(()=>itemDetails,()=>itemCatalog,profile);
 const strongBadge=n=>{
  const {pair,prefix,suffix}=assessAffixes(n);
- const match=profileActive()?assessProfileAffixes(n,profile()):null;
+ const match=profileActive()?profileMatch(n):null;
  const badge=(kind,text,reason)=>`<span class="strongBadge ${kind}" title="${esc(reason)}">${text}</span>`;
- const tattooBadge=profile().tattoo&&match?.rank?badge('tattooBadge',match.pair?'TATUAŻ: PARA':match.prefix.length&&match.suffix.length?'TATUAŻ: OBA AFIKSY':match.prefix.length?'TATUAŻ: PREFIKS':'TATUAŻ: SUFIKS',`Przykład zastosowania dla ścieżki ${tattoos[profile().tattoo].label}; sprawdź ograniczenia obrony.`):'';
- const raceBadge=match?.raceAffinity?badge('raceBadge','BONUS RASY',races[profile().race].bonus):'';
+ const tattooBadge=match?.rank?badge('tattooBadge',match.pair?'TATUAŻ: PARA':match.prefix.length&&match.suffix.length?'TATUAŻ: OBA AFIKSY':match.prefix.length?'TATUAŻ: PREFIKS':'TATUAŻ: SUFIKS',`Historyczny przykład dla ścieżki ${tattoos[profile().tattoo].label}; sprawdź poziom tatuażu i resztę zestawu.`):'';
  const general=pair?badge('pairBadge','DOBRA PARA',pair.reason):(prefix.length?badge('prefixBadge','DOBRY PREFIKS',`${label(n.prefix)}: ${prefix[0].reason}`):'')+(suffix.length?badge('suffixBadge','DOBRY SUFIKS',`${label(n.suffix)}: ${suffix[0].reason}`):'');
- return general+tattooBadge+raceBadge;
+ return general+tattooBadge;
 };
 function highlightedName(n,text){
- const assessment=assessAffixes(n),match=profileActive()?assessProfileAffixes(n,profile()):null;
+ const assessment=assessAffixes(n),match=profileActive()?profileMatch(n):null;
  const source=text.toLocaleLowerCase('pl'),ranges=[];
- if(assessment.prefix.length&&n.prefix){
+ if((assessment.prefix.length||match?.prefix.length)&&n.prefix){
   for(const form of variants(n.prefix)){
    const candidate=label(form).toLocaleLowerCase('pl'),at=source.indexOf(candidate);
-   if(at>=0){ranges.push({start:at,end:at+candidate.length,kind:'prefix',pair:!!assessment.pair,profile:!!match?.prefix.length});break;}
+   if(at>=0){ranges.push({start:at,end:at+candidate.length,kind:'prefix',pair:!!(assessment.pair||match?.pair),profile:!!match?.prefix.length});break;}
   }
  }
- if(assessment.suffix.length&&n.suffix){const candidate=label(n.suffix).toLocaleLowerCase('pl'),at=source.lastIndexOf(candidate);if(at>=0)ranges.push({start:at,end:at+candidate.length,kind:'suffix',pair:!!assessment.pair,profile:!!match?.suffix.length});}
+ if((assessment.suffix.length||match?.suffix.length)&&n.suffix){const candidate=label(n.suffix).toLocaleLowerCase('pl'),at=source.lastIndexOf(candidate);if(at>=0)ranges.push({start:at,end:at+candidate.length,kind:'suffix',pair:!!(assessment.pair||match?.pair),profile:!!match?.suffix.length});}
  ranges.sort((a,b)=>a.start-b.start);let last=0,html='';for(const range of ranges){if(range.start<last)continue;html+=esc(text.slice(last,range.start))+`<span class="affixHighlight ${range.kind}${range.pair?' pair':''}${profile().tattoo&&range.profile?' profileMatch':''}">${esc(text.slice(range.start,range.end))}</span>`;last=range.end;}return html+esc(text.slice(last));
 }
 const itemMarkup=(n,text)=>itemPopover.markup(n,text,highlightedName(n,text))+strongBadge(n);
@@ -67,7 +67,7 @@ function filterOptions(){
 function filtered(){
  const category=$('category').value;
  const matching=results.filter(n=>(category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>$(id).value==='all'||($(id).value==='none'?!n[key]:n[key]===$(id).value)));
- return sortResults(matching,resultOrder,profileActive()?profile():undefined);
+ return sortResults(matching,resultOrder,profileActive()?profile():undefined,itemDetails,itemCatalog);
 }
 function renderResults(){
  itemPopover.close();
@@ -185,7 +185,7 @@ async function loadCatalog(){
  let count=0;const failed=[];
  await Promise.all(data.categories.map(async c=>{try{const response=await fetch(`./item-components/${c.id}.json`);if(!response.ok)throw new Error('catalog');const group=await response.json();group.requirementModels=itemDetails.requirementModels?.[c.id];itemDetails.components[c.id]=group;}catch{failed.push(c.label);}finally{count++;$('catalogStatus').textContent=`Wczytuję dane przedmiotów: ${count}/${data.categories.length} kategorii…`;}}));
  $('catalogStatus').textContent=failed.length?`Nie wczytano danych: ${failed.join(', ')}. Odśwież stronę; brakujące koszty można wpisać ręcznie.`:!itemDetails.requirementModels?'Nie wczytano dokładnych wymagań epickich i starożytnych przedmiotów. Odśwież stronę.':'Dane R21 gotowe · 10 kategorii · poziom postaci 80 · odczyt 03–04.10.2026';
- if(!running)renderResults();
+ if(!running){renderInventory();renderResults();}
 }
 async function init(){
  const response=await fetch('./data.json');if(!response.ok)throw new Error('Nie udało się wczytać tabel R21.');data=await response.json();
@@ -194,7 +194,7 @@ async function init(){
  $('profileRace').insertAdjacentHTML('beforeend',Object.entries(races).map(([id,r])=>`<option value="${id}">${esc(r.label)}</option>`).join(''));
  $('profileTattoo').insertAdjacentHTML('beforeend',Object.entries(tattoos).map(([id,t])=>`<option value="${id}">${esc(t.label)}</option>`).join(''));
  try{const saved=JSON.parse(localStorage.getItem('kuzniaProfile')||'{}');if(races[saved.race])$('profileRace').value=saved.race;if(tattoos[saved.tattoo])$('profileTattoo').value=saved.tattoo;}catch{}
- const updateProfile=()=>{const p=profile(),t=tattoos[p.tattoo],r=races[p.race];try{localStorage.setItem('kuzniaProfile',JSON.stringify(p));}catch{}$('profileHint').innerHTML=`${r?`<strong>${esc(r.label)}</strong> · ${esc(r.bonus)}. <a href="https://wiki.bloodwars.pl/index.php?title=Rasa" target="_blank" rel="noreferrer">Rasy na wiki</a>. `:''}${t?`<strong>${esc(t.label)}</strong> · broń: ${esc(t.weapons.map(w=>data.categories.find(c=>c.id===w)?.label||w).join(', '))} · obrona głowa/klatka/nogi: ${esc(t.armour)}. <a href="https://wiki.bloodwars.pl/index.php?title=Tatua%C5%BCe" target="_blank" rel="noreferrer">Wymagania na wiki</a>. Oznaczenia są wskazówką; sprawdź obronę konkretnego przedmiotu i poziom tatuażu.`:'Wybierz tatuaż, aby wyróżnić afiksy pasujące do stylu walki.'}`;renderInventory();renderResults();};
+ const updateProfile=()=>{const p=profile(),t=tattoos[p.tattoo],r=races[p.race];try{localStorage.setItem('kuzniaProfile',JSON.stringify(p));}catch{}$('profileHint').innerHTML=`${r?`<strong>${esc(r.label)}</strong> · ${esc(r.bonus)}. <a href="https://wiki.bloodwars.pl/index.php?title=Rasa" target="_blank" rel="noreferrer">Rasy na wiki</a>. Rasa nie przypisuje automatycznie afiksów. `:''}${t?`<strong>${esc(t.label)}</strong> · broń: ${esc(t.weapons.map(w=>data.categories.find(c=>c.id===w)?.label||w).join(', '))} · obrona głowa/klatka/nogi: ${esc(t.armour)}. <a href="https://wiki.bloodwars.pl/index.php?title=Tatua%C5%BCe" target="_blank" rel="noreferrer">Wymagania na wiki</a>. Etykieta tatuażu oznacza historyczny przykład z forum zgodny z bazą i możliwą obroną. Sprawdź poziom tatuażu i cały zestaw.`:'Wybierz tatuaż, aby wyróżnić źródłowe przykłady wyposażenia.'}`;renderInventory();renderResults();};
  $('profileRace').onchange=updateProfile;$('profileTattoo').onchange=updateProfile;updateProfile();
  inventory=[];filterOptions();renderInventory();
  $('sourceLink').href=data.source.url;
