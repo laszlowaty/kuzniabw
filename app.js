@@ -27,23 +27,25 @@ const profile=()=>({race:$('profileRace').value,tattoo:$('profileTattoo').value}
 const profileActive=()=>!!(profile().race||profile().tattoo);
 const itemPopover=createItemPopover(()=>itemDetails,()=>itemCatalog,profile);
 const strongBadge=n=>{
- const {pair,prefix,suffix,raceAffinity}=profileActive()?assessProfileAffixes(n,profile()):assessAffixes(n);
+ const {pair,prefix,suffix}=assessAffixes(n);
+ const match=profileActive()?assessProfileAffixes(n,profile()):null;
  const badge=(kind,text,reason)=>`<span class="strongBadge ${kind}" title="${esc(reason)}">${text}</span>`;
- const raceBadge=raceAffinity?badge('raceBadge','BONUS RASY',races[profile().race].bonus):'';
- if(pair)return badge('pairBadge','DOBRA PARA',pair.reason)+raceBadge;
- return (prefix.length?badge('prefixBadge','DOBRY PREFIKS',`${label(n.prefix)}: ${prefix[0].reason}`):'')+(suffix.length?badge('suffixBadge','DOBRY SUFIKS',`${label(n.suffix)}: ${suffix[0].reason}`):'')+raceBadge;
+ const tattooBadge=profile().tattoo&&match?.rank?badge('tattooBadge',match.pair?'TATUAŻ: PARA':match.prefix.length&&match.suffix.length?'TATUAŻ: OBA AFIKSY':match.prefix.length?'TATUAŻ: PREFIKS':'TATUAŻ: SUFIKS',`Przykład zastosowania dla ścieżki ${tattoos[profile().tattoo].label}; sprawdź ograniczenia obrony.`):'';
+ const raceBadge=match?.raceAffinity?badge('raceBadge','BONUS RASY',races[profile().race].bonus):'';
+ const general=pair?badge('pairBadge','DOBRA PARA',pair.reason):(prefix.length?badge('prefixBadge','DOBRY PREFIKS',`${label(n.prefix)}: ${prefix[0].reason}`):'')+(suffix.length?badge('suffixBadge','DOBRY SUFIKS',`${label(n.suffix)}: ${suffix[0].reason}`):'');
+ return general+tattooBadge+raceBadge;
 };
 function highlightedName(n,text){
- const assessment=profileActive()?assessProfileAffixes(n,profile()):assessAffixes(n);
+ const assessment=assessAffixes(n),match=profileActive()?assessProfileAffixes(n,profile()):null;
  const source=text.toLocaleLowerCase('pl'),ranges=[];
  if(assessment.prefix.length&&n.prefix){
   for(const form of variants(n.prefix)){
    const candidate=label(form).toLocaleLowerCase('pl'),at=source.indexOf(candidate);
-   if(at>=0){ranges.push({start:at,end:at+candidate.length,kind:'prefix',pair:!!assessment.pair});break;}
+   if(at>=0){ranges.push({start:at,end:at+candidate.length,kind:'prefix',pair:!!assessment.pair,profile:!!match?.prefix.length});break;}
   }
  }
- if(assessment.suffix.length&&n.suffix){const candidate=label(n.suffix).toLocaleLowerCase('pl'),at=source.lastIndexOf(candidate);if(at>=0)ranges.push({start:at,end:at+candidate.length,kind:'suffix',pair:!!assessment.pair});}
- ranges.sort((a,b)=>a.start-b.start);let last=0,html='';for(const range of ranges){if(range.start<last)continue;html+=esc(text.slice(last,range.start))+`<span class="affixHighlight ${range.kind}${range.pair?' pair':''}">${esc(text.slice(range.start,range.end))}</span>`;last=range.end;}return html+esc(text.slice(last));
+ if(assessment.suffix.length&&n.suffix){const candidate=label(n.suffix).toLocaleLowerCase('pl'),at=source.lastIndexOf(candidate);if(at>=0)ranges.push({start:at,end:at+candidate.length,kind:'suffix',pair:!!assessment.pair,profile:!!match?.suffix.length});}
+ ranges.sort((a,b)=>a.start-b.start);let last=0,html='';for(const range of ranges){if(range.start<last)continue;html+=esc(text.slice(last,range.start))+`<span class="affixHighlight ${range.kind}${range.pair?' pair':''}${profile().tattoo&&range.profile?' profileMatch':''}">${esc(text.slice(range.start,range.end))}</span>`;last=range.end;}return html+esc(text.slice(last));
 }
 const itemMarkup=(n,text)=>itemPopover.markup(n,text,highlightedName(n,text))+strongBadge(n);
 function effectiveCosts(step){return {...(fusionCost(step,itemDetails)||{}),...enteredCosts.get(costKey(step))};}
@@ -72,7 +74,7 @@ function renderResults(){
  document.querySelectorAll('#resultOrder [data-order]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.order===resultOrder)));
  const list=filtered();$('resultCount').textContent=list.length.toLocaleString('pl');
  if(!list.some(n=>resultKey(n)===selected))selected=list[0]?resultKey(list[0]):null;
- $('resultsList').innerHTML=list.slice(0,visibleLimit).map(n=>`<button class="result ${resultKey(n)===selected?'selected':''} ${(profileActive()?assessProfileAffixes(n,profile()).pair:isStrongCombo(n))?'strongResult':''}" data-key="${esc(resultKey(n))}" aria-pressed="${resultKey(n)===selected}"><div class="resultName">${newKeys.has(resultKey(n))?'<span class="newBadge">NOWY</span> ':''}${itemPopover.inline(n,itemName(n),highlightedName(n,itemName(n)))} ${strongBadge(n)}</div><div class="resultMeta"><span class="pill cost">${n.steps} ${n.steps===1?'spaw':n.steps<5?'spawy':'spawów'}</span><span>${esc(categoryName(n.category))}</span><span>·</span><span>głębokość ${n.depth}</span></div></button>`).join('');
+ $('resultsList').innerHTML=list.slice(0,visibleLimit).map(n=>`<button class="result ${resultKey(n)===selected?'selected':''} ${isStrongCombo(n)?'strongResult':''}" data-key="${esc(resultKey(n))}" aria-pressed="${resultKey(n)===selected}"><div class="resultName">${newKeys.has(resultKey(n))?'<span class="newBadge">NOWY</span> ':''}${itemPopover.inline(n,itemName(n),highlightedName(n,itemName(n)))} ${strongBadge(n)}</div><div class="resultMeta"><span class="pill cost">${n.steps} ${n.steps===1?'spaw':n.steps<5?'spawy':'spawów'}</span><span>${esc(categoryName(n.category))}</span><span>·</span><span>głębokość ${n.depth}</span></div></button>`).join('');
  if(!list.length&&!running){const gun=$('category').value.startsWith('gun')&&!inventory.some(i=>i.category===$('category').value);const emptyInventory=inventory.length===0;const message=emptyInventory?'Kliknij „Edytuj listę”, aby wkleić swój ekwipunek.':gun?'Do palnej potrzebujesz broni palnej tego samego rodzaju. Wklej swoje bronie lub wczytaj przykład palnej.':'Zmień filtr, listę składników lub głębokość. Niektóre wyniki wymagają kolejnego spawu.';$('resultsList').innerHTML=`<div class="empty"><strong>${emptyInventory?'Dodaj składniki':gun?'Brak składników palnej':'Brak pasujących wyników'}</strong>${message}</div>`;}
  $('loadMore').hidden=list.length<=visibleLimit;
  $('resultsList').querySelectorAll('button[data-key]').forEach(b=>b.onclick=()=>{selected=b.dataset.key;const keepFocus=document.activeElement===b;renderResults();if(keepFocus)[...$('resultsList').querySelectorAll('button[data-key]')].find(next=>next.dataset.key===selected)?.focus({preventScroll:true});});

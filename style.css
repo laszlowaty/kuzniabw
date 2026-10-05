@@ -16,6 +16,7 @@
 .profileHint{flex:1 1 320px;color:var(--muted);font-size:12px;line-height:1.6;margin:0 0 3px}.profileHint a{text-decoration:underline;text-underline-offset:2px}
 .affixHighlight{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}.affixHighlight.prefix{color:#b0e3bc;text-decoration-color:#73b488}.affixHighlight.suffix{color:#badbff;text-decoration-color:#73a6d4}.affixHighlight.pair{text-decoration-color:var(--gold)}
 .raceBadge{background:#32293c;border-color:#8064a1;color:#dac1f5}.raceAdvice{color:#dac1f5}
+.tattooBadge{background:#293b3a;border-color:#66a99f;color:#c7f4e9}.tattooAdvice{color:#c7f4e9}.affixHighlight.profileMatch{text-decoration-thickness:3px;text-decoration-style:double;text-underline-offset:4px}
 @media(max-width:760px){.profileSettings .field{flex:1 1 42%}.profileHint{flex-basis:100%}}
 
 .prefixBadge{background:#203329;border-color:#49745b;color:#b0e3bc}.suffixBadge{background:#20303e;border-color:#496e91;color:#badbff}.affixAdvice{padding:10px 0;border-bottom:1px solid var(--line)}.affixAdvice h4{margin:0 0 8px}.affixAdvice p{font-size:12px;line-height:1.5;margin:6px 0}.affixAdvice a{text-decoration:underline}

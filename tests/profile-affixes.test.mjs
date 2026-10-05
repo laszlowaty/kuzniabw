@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {assessProfileAffixes,tattoos,races} from '../profile-affixes.js';
 import {sortResults} from '../result-sort.js';
+import {affixContent} from '../item-popover.js';
 
 test('all wiki Moria paths and races are available',()=>{
  assert.equal(Object.keys(tattoos).length,10);
@@ -28,4 +29,17 @@ test('race adds affinity but does not lock a tattoo path',()=>{
  assert.equal(assessProfileAffixes(melee,{race:'wladca',tattoo:'mnich'}).raceAffinity,true);
  assert.equal(assessProfileAffixes(melee,{race:'lapacz',tattoo:'mnich'}).raceAffinity,false);
  assert.equal(assessProfileAffixes(melee,{race:'wladca',tattoo:'lowca'}).rank,0);
+});
+
+test('choosing a tattoo preserves general affix advice and explains the profile match',()=>{
+ const item={category:'head',prefix:'smiercionosny',suffix:'adrenaliny'};
+ const hunter=affixContent(item,{race:'lapacz',tattoo:'lowca'});
+ assert.match(hunter,/Dobry prefiks: śmiercionośny/);
+ assert.match(hunter,/Dobry sufiks: adrenaliny/);
+ assert.match(hunter,/Dopasowanie do ścieżki Łowca: prefiks/);
+ const monk=affixContent(item,{race:'wladca',tattoo:'mnich'});
+ assert.match(monk,/Dobry prefiks/);
+ assert.match(monk,/Dobry sufiks/);
+ assert.match(monk,/nie mamy potwierdzonego zastosowania/);
+ assert.match(affixContent({category:'head',prefix:'tygrysi',suffix:'adrenaliny'},{tattoo:'lowca'}),/Dobra para/);
 });
