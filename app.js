@@ -23,7 +23,7 @@ let resultOrder='fewest';
 const simulationHistory=[];
 const enteredCosts=new Map();
 let renderedRecipeKey=null;
-let goalWorker=null,goalRun=0;
+let goalWorker=null,goalRun=0,goalDeadlineTimer=null,goalLoadingTimer=null;
 let itemDetails=null,itemCatalog=null;
 const profile=()=>({race:$('profileRace').value,tattoo:$('profileTattoo').value,sex:$('profileSex').value});
 const profileActive=()=>!!(profile().tattoo||profile().race);
@@ -117,7 +117,7 @@ function renderCostSummary(steps){
  const totals=totalCosts(steps,new Map(steps.map(s=>[costKey(s),effectiveCosts(s)])));
  $('costSummary').innerHTML=`<div class="resourceTotals">${[['mana','Mana'],['nanites','Nanity']].map(([key,name])=>{const t=totals[key];return `<div><span>${name}</span><strong>${t.invalid?'Popraw kwoty':t.known?t.total.toLocaleString('pl'):'—'}</strong><small>${t.invalid?'Wpisz całe liczby od 0':t.complete?'Łącznie za cały przepis':`Znane koszty · ${t.known}/${steps.length} spawów`}</small></div>`;}).join('')}<div><span>Kamienie przemiany</span><strong>${steps.length}</strong><small>1 kamień na każdy spaw</small></div></div><p class="costCompletion">${totals.mana.complete&&totals.nanites.complete?'Suma obejmuje wyłącznie spawy tego przepisu. Sprawdź kwoty w Studni przed wykonaniem.':'Koszt niepełny. Puste pola oznaczają brak danych, a nie darmowy spaw.'}</p>`;
 }
-function clearGoalResults(){goalRun++;goalWorker?.terminate();goalWorker=null;$('goalSearch').disabled=!data||!$('goalBase').value;$('goalResults').innerHTML='';}
+function clearGoalResults(){goalRun++;clearTimeout(goalDeadlineTimer);clearInterval(goalLoadingTimer);goalWorker?.terminate();goalWorker=null;$('goalStop').hidden=true;$('goalSearch').disabled=!data||!$('goalBase').value;$('goalResults').innerHTML='';}
 function updateGoalPreview(){
  try{$('goalPreview').textContent=`Szukany wynik: ${itemName(createGoalTarget(data,$('goalCategory').value,$('goalBase').value,$('goalPrefix').value,$('goalSuffix').value))}`;}
  catch{$('goalPreview').textContent='Wybierz rodzaj i przedmiot, aby ustawić cel.';}
@@ -138,7 +138,7 @@ function renderGoalPlans(target,response){
  const {plans,partial}=response;
  if(!plans.length){$('goalResults').innerHTML=`<p class="goalStatus">${partial?'Osiągnięto limit czasu, zanim znaleziono przepis. Spróbuj ponownie z krótszą listą.':'Nie znaleziono przepisu w wybranym limicie spawów i najwyżej dwóch brakujących składnikach.'}</p>`;return;}
  const lead=plans[0].missingCount===0?'Ten przedmiot da się zbudować z Twojego ekwipunku.':`Z Twoich przedmiotów brakuje co najmniej ${plans[0].missingCount} ${plans[0].missingCount===1?'składnika':'składników'}.`;
- $('goalResults').innerHTML=`<p class="goalStatus"><strong>${esc(itemName(target))}</strong> · ${lead} ${partial?'Wyniki są częściowe.':''} Poniżej konkretne warianty; nowe składniki zakładamy na poziomie +1.</p><div class="goalPlans">${plans.map((plan,index)=>{const missing=ingredients(plan).filter(i=>i.missing),owned=ingredients(plan).filter(i=>!i.missing),steps=recipeSteps(plan);return `<details ${index===0?'open':''}><summary>${plan.steps} ${plan.steps===1?'spaw':'spawy'} · ${missing.length?`brakuje ${missing.length}: ${missing.map(i=>esc(itemName(i))).join(', ')}`:'wszystkie składniki masz'}</summary><div class="goalPlanBody"><p><strong>Masz:</strong> ${owned.length?owned.map(i=>`#${i.id+1} ${esc(i.original)}${requiresUpgrade(i)?' (podnieś do +1)':''}`).join(', '):'brak pasujących składników w ekwipunku'}</p><p><strong>Potrzebujesz:</strong> ${missing.length?missing.map(i=>esc(i.original)).join(', '):'niczego'}</p><ol>${steps.map(step=>`<li>${esc(step.left.left?fullItemName(step.left):step.left.original)} + ${esc(step.right.left?fullItemName(step.right):step.right.original)} → ${esc(fullItemName(step))}</li>`).join('')}</ol>${owned.some(requiresUpgrade)?'<p>Zwykłe składniki +0 trzeba podnieść do +1 przed spawem.</p>':''}</div></details>`;}).join('')}</div>`;
+ $('goalResults').innerHTML=`<p class="goalStatus"><strong>${esc(itemName(target))}</strong> · ${lead} ${partial?'Wyniki są częściowe.':''} Poniżej konkretne warianty; nowe składniki zakładamy na poziomie +1.</p><div class="goalPlans">${plans.map((plan,index)=>{const missing=ingredients(plan).filter(i=>i.missing),owned=ingredients(plan).filter(i=>!i.missing),steps=recipeSteps(plan);return `<details ${index===0?'open':''}><summary>${plan.steps} ${plan.steps===1?'spaw':plan.steps<5?'spawy':'spawów'} · ${missing.length?`brakuje ${missing.length}: ${missing.map(i=>esc(itemName(i))).join(', ')}`:'wszystkie składniki masz'}</summary><div class="goalPlanBody"><p><strong>Masz:</strong> ${owned.length?owned.map(i=>`#${i.id+1} ${esc(i.original)}${requiresUpgrade(i)?' (podnieś do +1)':''}`).join(', '):'brak pasujących składników w ekwipunku'}</p><p><strong>Potrzebujesz:</strong> ${missing.length?missing.map(i=>esc(i.original)).join(', '):'niczego'}</p><ol>${steps.map(step=>`<li>${esc(step.left.left?fullItemName(step.left):step.left.original)} + ${esc(step.right.left?fullItemName(step.right):step.right.original)} → ${esc(fullItemName(step))}</li>`).join('')}</ol>${owned.some(requiresUpgrade)?'<p>Zwykłe składniki +0 trzeba podnieść do +1 przed spawem.</p>':''}</div></details>`;}).join('')}</div>`;
 }
 function searchMissing(event){
  event.preventDefault();clearGoalResults();
@@ -146,11 +146,17 @@ function searchMissing(event){
  try{target=createGoalTarget(data,$('goalCategory').value,$('goalBase').value,$('goalPrefix').value,$('goalSuffix').value);}
  catch(error){$('goalResults').textContent=error.message;return;}
  if(!possibleForSex(target,profile().sex,itemDetails,itemCatalog)){$('goalResults').textContent=`Wybrany przedmiot jest przeznaczony tylko dla ${requiredSex(target,itemDetails,itemCatalog)==='female'?'kobiet':'mężczyzn'}. Zmień płeć postaci, aby szukać przepisu.`;return;}
- const run=++goalRun;goalWorker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});
- $('goalSearch').disabled=true;$('goalResults').textContent='Szukam brakujących składników…';
- goalWorker.onmessage=({data:response})=>{if(run!==goalRun)return;goalWorker.terminate();goalWorker=null;$('goalSearch').disabled=false;if(response.type==='missingDone')renderGoalPlans(target,response);else $('goalResults').textContent=response.message||'Nie udało się sprawdzić przepisów.';};
- goalWorker.onerror=()=>{if(run!==goalRun)return;goalWorker.terminate();goalWorker=null;$('goalSearch').disabled=false;$('goalResults').textContent='Nie udało się sprawdzić przepisów.';};
- goalWorker.postMessage({mode:'missing',items:inventory,target,tables:data,maxSteps:Number($('goalSteps').value),timeMs:10000});
+ const run=++goalRun,timeMs=Number($('goalTimeBudget').value||5)*1000;
+ try{goalWorker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});}catch{$('goalResults').textContent='Nie udało się uruchomić obliczeń.';return;}
+ $('goalSearch').disabled=true;$('goalStop').hidden=false;
+ $('goalResults').innerHTML='Szukam brakujących składników… <span id="goalCountdown" aria-live="off"></span>';
+ const start=performance.now(),tick=()=>{$('goalCountdown').textContent=`${Math.max(0,(timeMs-performance.now()+start)/1000).toFixed(0)} s do limitu obliczeń.`;};tick();goalLoadingTimer=setInterval(tick,1000);
+ const finish=()=>{goalRun++;clearTimeout(goalDeadlineTimer);clearInterval(goalLoadingTimer);goalWorker?.terminate();goalWorker=null;$('goalStop').hidden=true;$('goalSearch').disabled=false;};
+ goalWorker.onmessage=({data:response})=>{if(run!==goalRun)return;finish();if(response.type==='missingDone')renderGoalPlans(target,response);else $('goalResults').textContent=response.message||'Nie udało się sprawdzić przepisów.';};
+ goalWorker.onerror=()=>{if(run!==goalRun)return;finish();$('goalResults').textContent='Nie udało się sprawdzić przepisów.';};
+ const finishGraceMs=Math.min(30000,Math.max(2000,timeMs*0.05));
+ goalDeadlineTimer=setTimeout(()=>{if(run!==goalRun)return;finish();$('goalResults').textContent='Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek lub liczbę spawów i spróbuj ponownie.';},timeMs+finishGraceMs);
+ try{goalWorker.postMessage({mode:'missing',items:inventory,target,tables:data,maxSteps:Number($('goalSteps').value),timeMs});}catch{finish();$('goalResults').textContent='Nie udało się przekazać składników do obliczeń.';}
 }
 function setBusy(b){running=b;$('loadingState').hidden=!b;if(!b){clearInterval(loadingTimer);clearTimeout(deadlineTimer);}$('calculate').disabled=b;$('stop').hidden=!b;$('editInventory').disabled=b;$('gunExample').disabled=b;$('undoPlan').disabled=b;}
 async function calculate(){
@@ -246,7 +252,7 @@ async function init(){
  $('goalCategory').insertAdjacentHTML('beforeend',options);
  $('goalForm').onsubmit=searchMissing;$('goalCategory').onchange=updateGoalCategory;
  for(const id of ['goalBase','goalPrefix','goalSuffix'])$(id).onchange=updateGoalPreview;
- $('goalSteps').onchange=clearGoalResults;updateGoalCategory();
+ $('goalSteps').onchange=clearGoalResults;$('goalTimeBudget').onchange=clearGoalResults;$('goalStop').onclick=()=>{clearGoalResults();$('goalResults').textContent='Wyszukiwanie zatrzymane.';};updateGoalCategory();
  $('profileRace').insertAdjacentHTML('beforeend',Object.entries(races).map(([id,r])=>`<option value="${id}">${esc(r.label)}</option>`).join(''));
  $('profileTattoo').insertAdjacentHTML('beforeend',Object.entries(tattoos).map(([id,t])=>`<option value="${id}">${esc(t.label)}</option>`).join(''));
  try{const saved=JSON.parse(localStorage.getItem('kuzniaProfile')||'{}');if(races[saved.race])$('profileRace').value=saved.race;if(tattoos[saved.tattoo])$('profileTattoo').value=saved.tattoo;if(['female','male'].includes(saved.sex))$('profileSex').value=saved.sex;}catch{}

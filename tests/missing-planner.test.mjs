@@ -61,3 +61,30 @@ test('two fusions can use one owned item and two missing items',()=>{
  assert.equal(resultKey(result.plans[0]),resultKey(goal));
  assert.equal(itemClass(result.plans[0]),1);
 });
+
+test('the selected fusion limit permits a three-step recipe from owned ingredients',()=>{
+ const values=['a','b','x','c','y','d','goal'];
+ const table={'a|b':'x','b|a':'x','x|c':'y','c|x':'y','y|d':'goal','d|y':'goal'};
+ const toy={categories:[{id:'toy',label:'Toy',axes:{base:{values,table,blocked:[],refs:{}}}}]};
+ const owned=['a','b','c','d'].map((base,id)=>({id,category:'toy',rarity:'normal',base,prefix:'',suffix:'',original:`${base} (+1)`}));
+ const goal={category:'toy',rarity:'normal',base:'goal',prefix:'',suffix:'',original:'Goal'};
+ assert.ok(findMissingPlans(owned,goal,toy,{maxSteps:2}).plans.every(plan=>plan.steps<=2));
+ const result=findMissingPlans(owned,goal,toy,{maxSteps:3});
+ assert.equal(result.partial,false);
+ assert.equal(result.plans[0].steps,3);
+ assert.equal(result.plans[0].missingCount,0);
+ assert.deepEqual(ingredients(result.plans[0]).map(item=>item.base).sort(),['a','b','c','d']);
+ assert.throws(()=>findMissingPlans(owned,goal,toy,{maxSteps:26}),/1 do 25/);
+});
+
+test('a longer recipe can identify two missing ingredients after owned fusions',()=>{
+ const values=['a','b','x','c','y','d','z','e','goal'];
+ const table={'a|b':'x','b|a':'x','x|c':'y','c|x':'y','y|d':'z','d|y':'z','z|e':'goal','e|z':'goal'};
+ const toy={categories:[{id:'toy',label:'Toy',axes:{base:{values,table,blocked:[],refs:{}}}}]};
+ const owned=['a','b','c'].map((base,id)=>({id,category:'toy',rarity:'normal',base,prefix:'',suffix:'',original:`${base} (+1)`}));
+ const goal={category:'toy',rarity:'normal',base:'goal',prefix:'',suffix:'',original:'Goal'};
+ const result=findMissingPlans(owned,goal,toy,{maxSteps:4});
+ assert.equal(result.partial,false);
+ assert.equal(result.plans[0].steps,4);
+ assert.deepEqual(ingredients(result.plans[0]).filter(item=>item.missing).map(item=>item.base),['d','e']);
+});

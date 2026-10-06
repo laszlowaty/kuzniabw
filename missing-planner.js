@@ -1,4 +1,4 @@
-import {itemClass,itemName,merge,resultKey,ingredients} from './engine.js';
+import {itemClass,itemName,merge,resultKey,ingredients,explore} from './engine.js';
 
 const signature=n=>`${resultKey(n)}|${itemClass(n)}`;
 const sameName=(a,b)=>resultKey(a)===resultKey(b);
@@ -36,23 +36,32 @@ function firstCandidates(known,target,category){
 }
 
 export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit=5}={}){
+ if(!Number.isInteger(maxSteps)||maxSteps<1||maxSteps>25)throw new Error('Liczba spawów musi wynosić od 1 do 25.');
  const category=data.categories.find(c=>c.id===target.category);
  if(!category)throw new Error('Nie rozpoznano rodzaju przedmiotu.');
  const owned=items.filter(i=>i.category===target.category&&i.rarity===target.rarity&&itemClass(i)!==null&&itemClass(i)<18);
- const deadline=performance.now()+timeMs,found=new Map();let partial=false,attempts=0;
+ const deadline=performance.now()+timeMs,found=new Map();let partial=false,attempts=0,bestMissing=Infinity;
+ const timedOut=()=>{if(performance.now()>=deadline){partial=true;return true;}return false;};
  const consider=(left,right)=>{
-  if(++attempts%256===0&&performance.now()>deadline){partial=true;return null;}
+  if(++attempts%256===0&&timedOut())return null;
   const merged=merge(left,right,data);return merged?{...merged,left,right}:null;
  };
  const accept=node=>{
   if(!node||!sameName(node,target)||node.steps>maxSteps)return;
   const leaves=ingredients(node),missing=leaves.filter(i=>i.missing);
   if(missing.length>2)return;
+  bestMissing=Math.min(bestMissing,missing.length);
   const key=`${missing.map(signature).sort().join(';')}|${leaves.filter(i=>!i.missing).map(i=>i.id).sort().join(';')}|${node.steps}`;
   const previous=found.get(key);
   if(!previous||node.steps<previous.steps)found.set(key,{...node,missingCount:missing.length});
  };
  const build=(left,right)=>{const node=consider(left,right);if(node)node.steps=(left.steps||0)+(right.steps||0)+1;return node;};
+ // Try a direct purchase before the larger inventory search, so a short time
+ // budget can still return a useful partial result.
+ for(const a of owned){
+  if(partial)break;
+  for(const shape of complements(target,a,category))accept(build(a,newIngredient(shape,items.length)));
+ }
  // Existing inventory takes priority over recommendations to acquire anything.
  const ownedPairs=[];
  for(let x=0;x<owned.length&&!partial;x++)for(let y=x+1;y<owned.length&&!partial;y++){
@@ -67,12 +76,8 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
   }
  }
  const ready=[...found.values()].filter(n=>n.missingCount===0).sort((a,b)=>a.steps-b.steps);
- if(ready.length)return {plans:ready.slice(0,limit),partial,attempts};
- // One purchased ingredient: direct fusion or either position in a two-fusion tree.
- for(const a of owned){
-  if(partial)break;
-  for(const shape of complements(target,a,category))accept(build(a,newIngredient(shape,items.length)));
- }
+ if(ready.length&&maxSteps<=2)return {plans:ready.slice(0,limit),partial,attempts};
+ // One purchased ingredient can also complete a two-fusion tree.
  if(maxSteps>=2){
   for(const mid of ownedPairs){
    if(partial)break;
@@ -112,7 +117,34 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
    const mid=build(ownedItem,newIngredient(shape,items.length));
    if(!mid)continue;
    for(const finalShape of complements(target,mid,category))accept(build(mid,newIngredient(finalShape,items.length+1)));
-   if(partial)break;
+  }
+ }
+ // The short-plan inversion above finds missing ingredients quickly. For a larger
+ // limit, also enumerate valid recipes made entirely from the owned inventory.
+ if(maxSteps>2&&!timedOut()&&owned.length>=2){
+  const remaining=Math.max(1,deadline-performance.now());
+  const extended=explore(owned,{categories:[category]},Math.min(25,maxSteps),()=>{},{timeMs:remaining,maxSteps,states:Infinity,attempts:Infinity});
+  attempts+=extended.attempts;
+  partial ||= extended.truncated;
+  for(const node of extended.results){
+   if(node.steps>maxSteps)continue;
+   accept(node);
+   if(partial)continue;
+   if(node.steps>=maxSteps)continue;
+   for(const shape of complements(target,node,category)){
+    if(timedOut())break;
+    accept(build(node,newIngredient(shape,items.length)));
+   }
+   if(node.steps+2>maxSteps||bestMissing<2)continue;
+   for(const shape of firstCandidates(node,target,category)){
+    if(timedOut())break;
+    const mid=build(node,newIngredient(shape,items.length));
+    if(!mid)continue;
+    for(const finalShape of complements(target,mid,category)){
+     if(timedOut())break;
+     accept(build(mid,newIngredient(finalShape,items.length+1)));
+    }
+   }
   }
  }
  const plans=[...found.values()].sort((a,b)=>a.missingCount-b.missingCount||(ingredients(b).length-b.missingCount)-(ingredients(a).length-a.missingCount)||a.steps-b.steps||ingredients(a).filter(i=>i.missing).map(itemName).join('|').localeCompare(ingredients(b).filter(i=>i.missing).map(itemName).join('|'),'pl'));
