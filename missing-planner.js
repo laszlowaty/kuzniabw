@@ -39,6 +39,27 @@ function newIngredient(shape,id){
  return {...n,original:`${itemName(n)} (+1)`};
 }
 
+function diversePlans(plans,limit){
+ const remaining=[...plans],selected=[],seen={base:new Set(),prefix:new Set(),suffix:new Set(),pair:new Set()};
+ while(remaining.length&&selected.length<limit){
+  let bestIndex=0,bestScore=-1;
+  for(let index=0;index<remaining.length;index++){
+   const missing=ingredients(remaining[index]).filter(item=>item.missing);
+   const values={base:new Set(missing.map(item=>item.base)),prefix:new Set(missing.map(item=>item.prefix).filter(Boolean)),suffix:new Set(missing.map(item=>item.suffix).filter(Boolean)),pair:new Set(missing.map(item=>`${item.prefix}|${item.suffix}`))};
+   const score=[...values.prefix].filter(value=>!seen.prefix.has(value)).length*8+
+    [...values.suffix].filter(value=>!seen.suffix.has(value)).length*8+
+    [...values.pair].filter(value=>!seen.pair.has(value)).length*4+
+    [...values.base].filter(value=>!seen.base.has(value)).length*2-
+    remaining[index].missingCount*100-remaining[index].steps/100;
+   if(score>bestScore){bestScore=score;bestIndex=index;}
+  }
+  const [plan]=remaining.splice(bestIndex,1);selected.push(plan);
+  const missing=ingredients(plan).filter(item=>item.missing);
+  for(const item of missing){seen.base.add(item.base);if(item.prefix)seen.prefix.add(item.prefix);if(item.suffix)seen.suffix.add(item.suffix);seen.pair.add(`${item.prefix}|${item.suffix}`);}
+ }
+ return selected;
+}
+
 function* firstCandidates(known,target,category,pulse){
  const prefixes=known.prefix&&target.prefix?(category.axes.prefix?.values||[]):[''];
  const suffixes=known.suffix&&target.suffix?(category.axes.suffix?.values||[]):[''];
@@ -170,5 +191,5 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
  }
  const plans=[...found.values()].sort((a,b)=>a.missingCount-b.missingCount||(ingredients(b).length-b.missingCount)-(ingredients(a).length-a.missingCount)||a.steps-b.steps||ingredients(a).filter(i=>i.missing).map(itemName).join('|').localeCompare(ingredients(b).filter(i=>i.missing).map(itemName).join('|'),'pl'));
  onProgress({attempts:work,states:found.size,elapsedMs:performance.now()-started,done:true});
- return {plans:plans.slice(0,limit),partial,attempts};
+ return {plans:diversePlans(plans,limit),partial,attempts};
 }

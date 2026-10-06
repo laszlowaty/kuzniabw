@@ -228,6 +228,7 @@ function renderTables(){
  $('matrix').innerHTML=`<thead><tr><th>${axisLabels[axis]}</th>${a.values.map(v=>`<th>${esc(label(v))}</th>`).join('')}</tr></thead><tbody>${a.values.map(x=>`<tr><th>${esc(label(x))}</th>${a.values.map(y=>`<td class="${isBlocked(x,y)?'conflict':x===y?'diagonal':''}" title="${esc(a.refs[x+'|'+y]||'Brak komórki')}${isBlocked(x,y)?' · para zablokowana':''}">${esc(label(a.table[x+'|'+y]||'brak'))}${isBlocked(x,y)?' ⚠':''}</td>`).join('')}</tr>`).join('')}</tbody>`;
 }
 function tableCategoryChanged(){const c=data.categories.find(c=>c.id===$('tableCategory').value);$('tableAxis').innerHTML=Object.keys(c.axes).map(k=>`<option value="${k}">${axisLabels[k]}</option>`).join('');renderTables();}
+function showToolPanel(which,focus=false){const tabs=[['missingTab','missingPanel','missing'],['craftingTab','craftingPanel','crafting']];for(const [tab,panel,name]of tabs){$(panel).hidden=name!==which;$(tab).setAttribute('aria-selected',String(name===which));$(tab).tabIndex=name===which?0:-1;}if(focus)$(`${which}Tab`).focus();}
 function showView(which){$('forgeView').hidden=which!=='forge';$('tablesView').hidden=which!=='tables';for(const [id,view]of [['forgeTab','forge'],['tablesTab','tables']]){if(view===which)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}}
 function registerTools(){
  const context=document.modelContext;if(!context?.registerTool)return;
@@ -267,6 +268,9 @@ async function init(){
  tableCategoryChanged();
  $('tableCategory').onchange=tableCategoryChanged;$('tableAxis').onchange=renderTables;
  $('forgeTab').onclick=()=>showView('forge');$('tablesTab').onclick=()=>showView('tables');
+ $('missingTab').onclick=()=>showToolPanel('missing');$('craftingTab').onclick=()=>showToolPanel('crafting');
+ $('missingTab').onkeydown=e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();showToolPanel('crafting',true);}};
+ $('craftingTab').onkeydown=e=>{if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();showToolPanel('missing',true);}};
  $('depth').oninput=()=>{$('depthValue').value=$('depth').value;clearTimeout(depthTimer);$('status').textContent=`Głębokość ${$('depth').value} — za chwilę automatycznie przeliczę wyniki…`;depthTimer=setTimeout(()=>calculate().catch(()=>{}),250);};
  $('calculate').onclick=()=>calculate().catch(()=>{});
  $('stop').onclick=()=>{clearTimeout(depthTimer);runCounter++;worker?.terminate();worker=null;activeReject?.(new Error('Obliczenia zatrzymane.'));activeReject=null;setBusy(false);results=[];newKeys=new Set();$('status').textContent='Obliczenia zatrzymane. Zmniejsz głębokość lub listę i przelicz ponownie.';renderResults();};
@@ -276,6 +280,7 @@ async function init(){
  $('timeBudget').onchange=()=>calculate().catch(()=>{});
  $('loadMore').onclick=()=>{visibleLimit+=50;renderResults();};
  $('editInventory').onclick=()=>{$('inventoryText').value=inventoryText;$('parseFeedback').textContent='';$('inventoryDialog').showModal();};
+ $('editInventoryFromGoal').onclick=()=>$('editInventory').click();
  $('closeDialog').onclick=()=>$('inventoryDialog').close();$('validateText').onclick=parseFeedback;
  $('inventoryForm').onsubmit=e=>{e.preventDefault();const p=parseFeedback();if(p.error)return;$('inventoryDialog').close();loadInventory($('inventoryText').value).catch(()=>{});};
  $('gunExample').onclick=()=>loadInventory(GUNS).catch(()=>{});
