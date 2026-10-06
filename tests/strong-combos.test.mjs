@@ -5,6 +5,7 @@ import {assessAffixes,isStrongCombo} from '../strong-combos.js';
 import {sortResults} from '../result-sort.js';
 import {affixContent} from '../item-popover.js';
 import {parseInventory} from '../engine.js';
+import {assessProfileAffixes} from '../profile-affixes.js';
 
 const data=JSON.parse(fs.readFileSync(new URL('../data.json',import.meta.url)));
 const details={components:{}};
@@ -34,6 +35,15 @@ test('the same prefix and suffix keep their labels across quality and upgrade le
  assert.deepEqual(assessments.map(value=>value.rank),[3,3,3,3]);
  assert.deepEqual(assessments.map(value=>[value.prefix[0].good,value.suffix[0].good]),
   [[true,true],[true,true],[true,true],[true,true]]);
+});
+
+test('inventory items without (+N) still receive profile-specific affix labels',()=>{
+ const bare=item('Śmiercionośna Czapka Prekognicji');
+ assert.equal(assessAffixes(bare,details,{tattoo:'rewolwerowiec'}).rank,3);
+ const profile=assessProfileAffixes(bare,{tattoo:'rewolwerowiec'},details,data);
+ assert.equal(profile.compatible,true);
+ assert.equal(profile.rank,3);
+ assert.match(affixContent(bare,{tattoo:'rewolwerowiec'},details,data),/dobra para/i);
 });
 
 test('incomplete set bonuses are not counted on one item; other parts give only potential',()=>{

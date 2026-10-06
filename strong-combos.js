@@ -64,7 +64,10 @@ function statScore(part,reference,kind,race,category,profile){
 function parts(item,details){
  if(!item)return null;
  const group=details?.components?.[item?.category],quality=itemClass(item);
- if(!group||quality===null||quality<1)return null;
+ // Imported inventory names often omit (+N), which means ordinary +0.
+ // Affix ranking uses the fixed reference quality, so +0 needs no special
+ // catalog row; only its base-stat contribution may be unavailable.
+ if(!group||quality===null)return null;
  const actualLegendary=item.rarity==='legendary'&&quality<18?1:0;
  const actualReference=group.rows[`${quality}|${actualLegendary}|base|${group.reference}`];
  const reference=group.rows[`${rankingQuality}|0|base|${group.reference}`];
