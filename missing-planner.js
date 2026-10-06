@@ -40,26 +40,26 @@ function newIngredient(shape,id){
 }
 
 function diversePlans(plans,limit){
- const remaining=[...plans],selected=[],diverseLimit=Math.min(limit,20),bestMissing=plans[0]?.missingCount,minTierSlots=Math.ceil(diverseLimit*.6),seen={base:new Set(),prefix:new Set(),suffix:new Set(),pair:new Set(),item:new Set()};
+ if(!plans.length||limit<=1)return plans.slice(0,limit);
+ const priority=plan=>{const leaves=ingredients(plan),missing=leaves.filter(item=>item.missing);return `${missing.length}|${leaves.length-missing.length}|${plan.steps}`;};
+ const bestPriority=priority(plans[0]),remaining=plans.filter(plan=>priority(plan)===bestPriority),otherPlans=plans.filter(plan=>priority(plan)!==bestPriority),selected=[],diverseLimit=Math.min(limit,20),seen={base:new Set(),prefix:new Set(),suffix:new Set(),pair:new Set(),item:new Set()};
  while(remaining.length&&selected.length<diverseLimit){
   let bestIndex=0,bestScore=-1;
   for(let index=0;index<remaining.length;index++){
-   if(selected.length<minTierSlots&&remaining[index].missingCount!==bestMissing)continue;
    const missing=ingredients(remaining[index]).filter(item=>item.missing);
    const values={base:new Set(missing.map(item=>item.base)),prefix:new Set(missing.map(item=>item.prefix).filter(Boolean)),suffix:new Set(missing.map(item=>item.suffix).filter(Boolean)),pair:new Set(missing.map(item=>`${item.prefix}|${item.suffix}`))};
    const score=[...values.prefix].filter(value=>!seen.prefix.has(value)).length*12+
     [...values.suffix].filter(value=>!seen.suffix.has(value)).length*12+
     [...values.pair].filter(value=>!seen.pair.has(value)).length*5+
     [...values.base].filter(value=>!seen.base.has(value)).length*2+
-    missing.filter(item=>!seen.item.has(signature(item))).length*8-
-    remaining[index].missingCount*7-remaining[index].steps/100;
+    missing.filter(item=>!seen.item.has(signature(item))).length*8;
    if(score>bestScore){bestScore=score;bestIndex=index;}
   }
   const [plan]=remaining.splice(bestIndex,1);selected.push(plan);
   const missing=ingredients(plan).filter(item=>item.missing);
   for(const item of missing){seen.base.add(item.base);if(item.prefix)seen.prefix.add(item.prefix);if(item.suffix)seen.suffix.add(item.suffix);seen.pair.add(`${item.prefix}|${item.suffix}`);seen.item.add(signature(item));}
  }
- return [...selected,...remaining].slice(0,limit);
+ return [...selected,...remaining,...otherPlans].slice(0,limit);
 }
 
 function* firstCandidates(known,target,category,pulse){
