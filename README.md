@@ -4,6 +4,8 @@ Statyczna aplikacja do przeglądania tabel łączeń R21 i planowania spawów z 
 
 W sekcji „Czego brakuje do przedmiotu?” wybiera się rodzaj, bazę, prefiks i sufiks z tabel. Dla maksymalnie dwóch spawów aplikacja pokazuje przepisy z ekwipunku oraz do dwóch brakujących składników. Brakujące przedmioty są proponowane na poziomie +1; zwykłe składniki +0 z ekwipunku wymagają podniesienia do +1. Podane przepisy dotyczą nazwy, więc poziom jakości wyniku może się różnić.
 
+Obok rasy i tatuażu można wybrać płeć postaci. Wyniki spawów są wtedy filtrowane według ograniczeń „PŁEĆ” w katalogu R21, a niepasujące przedmioty w ekwipunku są oznaczone. Wyszukiwarka brakujących składników ostrzega, gdy wybrany cel jest niedostępny dla tej płci. Brak wyboru płci pokazuje wszystkie wyniki.
+
 ## Uruchomienie lokalne
 
 Otwórz projekt przez lokalny serwer HTTP, ponieważ aplikacja korzysta z modułów JavaScript i Web Workera. Przykładowo:

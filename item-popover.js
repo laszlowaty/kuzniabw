@@ -1,7 +1,7 @@
 import {detailKey,itemClass,qualityLabel,officialUrl,lookupItem} from './item-details.js';
 import {itemName,label} from './engine.js';
 import {assessAffixes} from './strong-combos.js';
-import {assessProfileAffixes,tattoos,races} from './profile-affixes.js';
+import {assessProfileAffixes,tattoos,races,possibleForSex,requiredSex} from './profile-affixes.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function affixContent(n,profile,details,catalog,inventory=[]){
  const {pair,prefix,suffix}=assessAffixes(n,details,{},inventory);
@@ -15,7 +15,8 @@ export function affixContent(n,profile,details,catalog,inventory=[]){
 }
 export function detailContent(n,details,catalog,profile,inventory=[]){
  const row=lookupItem(n,details,catalog),c=itemClass(n),url=row?.url||officialUrl(n,catalog,c??1);
- return `<header><div><p class="eyebrow">KATALOG R21 · ${esc(qualityLabel(c))}</p><h3>${esc(row?.name||itemName(n))}</h3></div><button type="button" id="closeItemInfo" class="textButton" aria-label="Zamknij dane przedmiotu">×</button></header>${affixContent(n,profile,details,catalog,inventory)}${row?`<div class="itemStats">${row.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div><p class="itemSourceNote">${row.composed?'Statystyki złożone z danych bazy, prefiksu i sufiksu.':'Dokładny wariant z oficjalnego katalogu.'} Dane: 03–04.10.2026. Poziom postaci: 80. Bonusy opisane jako „niekompletny” wymagają zestawu — nie traktuj ich jako aktywnych bonusów samego itemu.</p>`:`<p class="missingStats">Brak tego wariantu w zapisanej bazie. Nie podstawiamy statystyk innej jakości. ${c===null?'Link otworzy wariant zwykły (+1); wybierz właściwą jakość w katalogu.':''}</p>`}${n.left?'<p class="itemSourceNote">Jakość wyniku wyznaczona z jakości składników według reguł Morii. Lista planów nadal wybiera najkrótszą ścieżkę dla każdej nazwy, nie najtańszy wariant.</p>':''}${url?`<a href="${esc(url)}" target="_blank" rel="noreferrer">Sprawdź ten wariant w oficjalnym katalogu R21</a>`:''}`;
+ const restricted=profile?.sex&&!possibleForSex(n,profile.sex,details,catalog),sex=requiredSex(n,details,catalog);
+ return `<header><div><p class="eyebrow">KATALOG R21 · ${esc(qualityLabel(c))}</p><h3>${esc(row?.name||itemName(n))}</h3></div><button type="button" id="closeItemInfo" class="textButton" aria-label="Zamknij dane przedmiotu">×</button></header>${restricted?`<p class="sexNotice">Ten przedmiot jest tylko dla ${sex==='female'?'kobiet':'mężczyzn'} i nie pasuje do wybranej płci postaci.</p>`:''}${affixContent(n,profile,details,catalog,inventory)}${row?`<div class="itemStats">${row.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div><p class="itemSourceNote">${row.composed?'Statystyki złożone z danych bazy, prefiksu i sufiksu.':'Dokładny wariant z oficjalnego katalogu.'} Dane: 03–04.10.2026. Poziom postaci: 80. Bonusy opisane jako „niekompletny” wymagają zestawu — nie traktuj ich jako aktywnych bonusów samego itemu.</p>`:`<p class="missingStats">Brak tego wariantu w zapisanej bazie. Nie podstawiamy statystyk innej jakości. ${c===null?'Link otworzy wariant zwykły (+1); wybierz właściwą jakość w katalogu.':''}</p>`}${n.left?'<p class="itemSourceNote">Jakość wyniku wyznaczona z jakości składników według reguł Morii. Lista planów nadal wybiera najkrótszą ścieżkę dla każdej nazwy, nie najtańszy wariant.</p>':''}${url?`<a href="${esc(url)}" target="_blank" rel="noreferrer">Sprawdź ten wariant w oficjalnym katalogu R21</a>`:''}`;
 }
 export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getInventory=()=>[]){
  const nodes=new Map();let target=null,closeTimer,skipFocusOnce=null;

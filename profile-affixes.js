@@ -24,6 +24,21 @@ export const races={
 };
 const armourSlot={head:0,chest:1,legs:2};
 const weaponCategories=new Set(['melee1','melee2','gun1','gun2','ranged']);
+export function requiredSex(item,details,catalog){
+ if(!item)return null;
+ const base=details?.components?.[item.category]?.rows?.[`0|0|base|${item.base}`];
+ const line=(base||lookupItem(item,details,catalog))?.lines?.[0]||'';
+ const requirement=line.match(/PŁEĆ\s*:\s*([^)]*)/i)?.[1]?.trim();
+ if(!requirement)return null;
+ if(/tylko dla kobiet/i.test(requirement))return 'female';
+ if(/tylko dla mężczyzn/i.test(requirement))return 'male';
+ return /dowolna/i.test(requirement)?'any':null;
+}
+export function possibleForSex(item,sex,details,catalog){
+ if(!sex||!['male','female'].includes(sex))return true;
+ const required=requiredSex(item,details,catalog);
+ return required===null||required==='any'||required===sex;
+}
 export function itemDefense(item,details,catalog){
  if(armourSlot[item?.category]===undefined||!details?.components?.[item.category])return null;
  const line=lookupItem(item,details,catalog)?.lines?.find(value=>/^Obrona:\s*-?\d+/.test(value));
@@ -39,6 +54,7 @@ export function possibleForTattoo(item,tattoo,details,catalog){
 }
 export function assessProfileAffixes(item,profile={},details,catalog,inventory=[]){
  if(!profile.tattoo&&!profile.race)return {pair:null,prefix:[],suffix:[],rank:0,score:0,totalScore:0,compatible:false};
+ if(!possibleForSex(item,profile.sex,details,catalog))return {pair:null,prefix:[],suffix:[],rank:0,score:0,totalScore:0,compatible:false};
  if(profile.tattoo&&!possibleForTattoo(item,profile.tattoo,details,catalog))return {pair:null,prefix:[],suffix:[],rank:0,score:0,totalScore:0,compatible:false};
  return {...assessAffixes(item,details,profile,inventory),compatible:true};
 }
