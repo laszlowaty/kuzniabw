@@ -49,6 +49,7 @@ try{
  await page.keyboard.press('Escape');
  await page.setViewportSize({width:1440,height:1000});
  await inventory('Kusza Doskonałości (+1)\nKusza Doskonałości (+1)');
+ assert.match(await page.locator('#resultsList .resultName').first().textContent(),/\(\+2\)/);
  await page.locator('#resultsList .result').first().click();
  assert.equal(await page.locator('#step-mana-0').inputValue(),'216');
  assert.equal(await page.locator('#step-nanites-0').inputValue(),'72');
