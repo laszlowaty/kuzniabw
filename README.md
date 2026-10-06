@@ -2,7 +2,7 @@
 
 Statyczna aplikacja do przeglądania tabel łączeń R21 i planowania spawów z własnego ekwipunku. Całe obliczenia odbywają się w przeglądarce; aplikacja nie wysyła ekwipunku na serwer.
 
-W sekcji „Czego brakuje do przedmiotu?” wybiera się rodzaj, bazę, prefiks i sufiks z tabel. Dla wybranego limitu do 25 spawów aplikacja pokazuje przepisy z ekwipunku oraz do dwóch brakujących składników. Brakujące przedmioty są proponowane na poziomie +1; zwykłe składniki +0 z ekwipunku wymagają podniesienia do +1. Podane przepisy dotyczą nazwy, więc poziom jakości wyniku może się różnić.
+W sekcji „Czego brakuje do przedmiotu?” wybiera się rodzaj oraz opcjonalnie bazę, prefiks i sufiks z tabel; bez bazy wyszukiwanie obejmuje wszystkie bazy w tej kategorii. Dla wybranego limitu do 25 spawów aplikacja pokazuje przepisy z ekwipunku oraz do dwóch brakujących składników. Brakujące przedmioty są proponowane na poziomie +1; zwykłe składniki +0 z ekwipunku wymagają podniesienia do +1. Podane przepisy dotyczą nazwy, więc poziom jakości wyniku może się różnić.
 
 Obok rasy i tatuażu można wybrać płeć postaci. Wyniki spawów są wtedy filtrowane według ograniczeń „PŁEĆ” w katalogu R21, a niepasujące przedmioty w ekwipunku są oznaczone. Wyszukiwarka brakujących składników ostrzega, gdy wybrany cel jest niedostępny dla tej płci. Brak wyboru płci pokazuje wszystkie wyniki.
 

@@ -2,10 +2,11 @@ import {itemClass,itemName,merge,resultKey,ingredients,explore} from './engine.j
 
 const signature=n=>`${resultKey(n)}|${itemClass(n)}`;
 const sameName=(a,b)=>resultKey(a)===resultKey(b);
+const matchesTarget=(item,target)=>item.category===target.category&&item.rarity===target.rarity&&(!target.base||item.base===target.base)&&item.prefix===target.prefix&&item.suffix===target.suffix;
 
 export function createGoalTarget(data,categoryId,base,prefix='',suffix=''){
  const category=data.categories.find(c=>c.id===categoryId);
- if(!category||!category.axes.base.values.includes(base)||prefix&&!category.axes.prefix?.values.includes(prefix)||suffix&&!category.axes.suffix?.values.includes(suffix))throw new Error('Wybierz przedmiot oraz afiksy z tej samej kategorii.');
+ if(!category||base&&!category.axes.base.values.includes(base)||prefix&&!category.axes.prefix?.values.includes(prefix)||suffix&&!category.axes.suffix?.values.includes(suffix))throw new Error('Wybierz kategorię oraz przedmiot i afiksy z tej samej kategorii.');
  const target={category:categoryId,base,prefix,suffix,rarity:'normal'};
  return {...target,original:itemName(target)};
 }
@@ -20,7 +21,8 @@ function* axisComplements(target,known,category,axis,pulse){
  for(const value of table.values){
   if(pulse())return;
   const pair=[known[axis],value].sort((a,b)=>order.get(a)-order.get(b)).join('|');
-  if(!blocked.has(pair)&&table.table[`${known[axis]}|${value}`]===target[axis])yield value;
+  const result=table.table[`${known[axis]}|${value}`];
+  if(!blocked.has(pair)&&(axis==='base'&&!target[axis]?!!result:result===target[axis]))yield value;
  }
 }
 function* complements(target,known,category,pulse){
@@ -66,7 +68,7 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
   const merged=merge(left,right,data);return merged?{...merged,left,right}:null;
  };
  const accept=node=>{
-  if(!node||!sameName(node,target)||node.steps>maxSteps)return;
+  if(!node||!matchesTarget(node,target)||node.steps>maxSteps)return;
   const leaves=ingredients(node),missing=leaves.filter(i=>i.missing);
   if(missing.length>2)return;
   bestMissing=Math.min(bestMissing,missing.length);
