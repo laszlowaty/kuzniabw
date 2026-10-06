@@ -30,6 +30,8 @@ Statystyki i wartości many/nanitów pochodzą z [oficjalnego katalogu R21](http
 
 Koszt zwykłego spawu to suma many i nanitów **obu zużywanych składników**, nie wartość przedmiotu wynikowego. Każdy etap wymaga też kamienia przemiany. Regułę opisuje [BWpedia — Studnia Dusz](https://wiki.bloodwars.pl/index.php?title=Studnia_Dusz). Planner uwzględnia zwykłe przedmioty +0 jako składniki po założonym podniesieniu do +1 i wyraźnie oznacza ten krok. Koszt spawu liczy z wartości składnika po podniesieniu; nie dolicza kosztu samego ulepszania. Dobre i doskonałe +0 nie wymagają takiego podniesienia. Planner obsługuje zwykłe spawy od (+1) do Doskonały (+5), z wyłączeniem pary dwóch Doskonałych (+5). Nie dolicza obniżania jakości ani odrębnych operacji Kuźni Kaina/transferu epickości. Przedmioty pozostałych jakości nadal można importować i przeglądać.
 
+Wybór „Rodzaj przedmiotu” ogranicza same obliczenia do tej kategorii. „Wszystkie rodzaje” przelicza pełny ekwipunek. Zmiana rodzaju uruchamia nowe obliczenie; wybrany rodzaj pozostaje ustawiony po edycji ekwipunku.
+
 ## Kontrola danych
 
 Oznaczenia dobrych par oraz pojedynczych afiksów opisuje [Ocena afiksów na Morii](AFFIXES.md). Popup przedmiotu pokazuje przyrost cech względem innych afiksów. Ocena uwzględnia wybraną rasę i tatuaż, ale nie jest wyceną ani obliczeniem DPS.

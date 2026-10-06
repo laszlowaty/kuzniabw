@@ -1,4 +1,4 @@
-import {parseInventory,itemName,label,normalize,variants,recipeSteps,ingredients,resultKey,requiresUpgrade,fusionInput} from './engine.js';
+import {parseInventory,itemName,label,normalize,variants,recipeSteps,ingredients,resultKey,requiresUpgrade,fusionInput,analysisScope} from './engine.js';
 import {costKey,parseCost,totalCosts} from './costs.js';
 import {fusionCost,fullItemName} from './item-details.js';
 import {createItemPopover} from './item-popover.js';
@@ -158,11 +158,12 @@ async function calculate(){
  clearTimeout(depthTimer);
  clearInterval(loadingTimer);clearTimeout(deadlineTimer);
  const depth=Number($('depth').value);const run=++runCounter;
- const inventorySignature=JSON.stringify(inventory);
+ const category=$('category').value,scope=analysisScope(inventory,data,category);
+ const inventorySignature=JSON.stringify({category,items:scope.items});
  const baseline=completedRun?.inventorySignature===inventorySignature&&!completedRun.truncated?completedRun:null;
  worker?.terminate();worker=null;activeReject?.(new Error('Uruchomiono nowszą analizę.'));activeReject=null;
  results=[];newKeys=new Set();selected=null;lastRun=null;visibleLimit=50;setBusy(true);renderResults();
- $('status').className='status';$('status').textContent='Sprawdzam kolejne połączenia…';
+ $('status').className='status';$('status').textContent=category==='all'?'Sprawdzam kolejne połączenia…':`Sprawdzam połączenia: ${categoryName(category)}…`;
  const start=performance.now(),timeMs=Number($('timeBudget').value||5)*1000;
  $('loadingWork').textContent='Przygotowuję składniki…';
  const tick=()=>{const elapsed=performance.now()-start,remaining=Math.max(0,(timeMs-elapsed)/1000);$('loadingCountdown').textContent=remaining>0?`${remaining.toFixed(1)} s do limitu obliczeń`:'Kończę i przygotowuję wyniki…';$('loadingProgress').value=Math.min(100,elapsed/timeMs*100);};tick();loadingTimer=setInterval(tick,150);
@@ -187,7 +188,7 @@ async function calculate(){
   };
   const finishGraceMs=Math.min(30000,Math.max(2000,timeMs*0.05));
   deadlineTimer=setTimeout(()=>fail('Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek i spróbuj ponownie.'),timeMs+finishGraceMs);
-  try{worker.postMessage({items:inventory,tables:data,depth,timeMs});}catch{fail('Nie udało się przekazać składników do obliczeń. Spróbuj ponownie.');}
+  try{worker.postMessage({items:scope.items,tables:scope.tables,depth,timeMs});}catch{fail('Nie udało się przekazać składników do obliczeń. Spróbuj ponownie.');}
  });
 }
 function parseFeedback(){
@@ -199,7 +200,7 @@ function loadInventory(text,{preserveHistory=false}={}){
  const parsed=importInventory(text,data);if(parsed.error)throw new Error(parsed.error);
  clearGoalResults();
  if(!preserveHistory){enteredCosts.clear();simulationHistory.length=0;$('inventoryChange').textContent=parsed.ignored.length?`Zaimportowano ${parsed.items.length} szt. Pominięto ${parsed.ignored.length} fragmentów tekstu.`:'';}
- inventoryText=parsed.items.map(i=>i.original).join('\n');inventory=parsed.items;renderInventory();visibleLimit=50;$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';return calculate();
+ inventoryText=parsed.items.map(i=>i.original).join('\n');inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';return calculate();
 }
 async function applyPlan(node){
  if(running)throw new Error('Poczekaj na zakończenie obliczeń.');
@@ -263,8 +264,8 @@ async function init(){
  $('calculate').onclick=()=>calculate().catch(()=>{});
  $('stop').onclick=()=>{clearTimeout(depthTimer);runCounter++;worker?.terminate();worker=null;activeReject?.(new Error('Obliczenia zatrzymane.'));activeReject=null;setBusy(false);results=[];newKeys=new Set();$('status').textContent='Obliczenia zatrzymane. Zmniejsz głębokość lub listę i przelicz ponownie.';renderResults();};
  $('resultOrder').querySelectorAll('[data-order]').forEach(button=>button.onclick=()=>{resultOrder=button.dataset.order;visibleLimit=50;selected=null;renderResults();});
- for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).onchange=()=>{visibleLimit=50;renderResults();};$('category').onchange=()=>{filterOptions();visibleLimit=50;renderResults();};
- $('clearFilters').onclick=()=>{$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';renderResults();};
+ for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).onchange=()=>{visibleLimit=50;renderResults();};$('category').onchange=()=>{filterOptions();visibleLimit=50;calculate().catch(()=>{});};
+ $('clearFilters').onclick=()=>{const changed=$('category').value!=='all';$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';if(changed)calculate().catch(()=>{});else renderResults();};
  $('timeBudget').onchange=()=>calculate().catch(()=>{});
  $('loadMore').onclick=()=>{visibleLimit+=50;renderResults();};
  $('editInventory').onclick=()=>{$('inventoryText').value=inventoryText;$('parseFeedback').textContent='';$('inventoryDialog').showModal();};

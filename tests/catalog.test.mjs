@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {parseInventory,merge,explore,itemName,requiresUpgrade,fusionInput} from '../engine.js';
+import {parseInventory,merge,explore,itemName,requiresUpgrade,fusionInput,analysisScope} from '../engine.js';
 import {importInventory} from '../inventory-import.js';
 import {itemClass,officialUrl,lookupItem,fusionCost,fullItemName} from '../item-details.js';
 import {parsedRecord} from '../item-compose.js';
@@ -92,6 +92,20 @@ test('planner does not offer recipes whose quality or cost rules are unsupported
  const inventory=['Kusza (+1)','Kusza (+1)'].map((name,id)=>({...item(name),id}));
  const result=explore(inventory,data,2).results;
  assert.equal(result.length,1);assert.equal(itemClass(result[0]),2);
+});
+
+test('selected item type limits worker inputs and tables without changing inventory ids',()=>{
+ const inventory=parseInventory('Czapka (+1)\nCzapka (+1)\nPierścień (+1)\nPierścień (+1)',data).items;
+ assert.deepEqual(new Set(explore(inventory,data,1).results.map(n=>n.category)),new Set(['head','rings']));
+ const head=analysisScope(inventory,data,'head');
+ assert.deepEqual(head.items.map(i=>i.id),[0,1]);
+ assert.deepEqual(head.tables.categories.map(c=>c.id),['head']);
+ assert.deepEqual(new Set(explore(head.items,head.tables,1).results.map(n=>n.category)),new Set(['head']));
+ const rings=analysisScope(inventory,data,'rings');
+ assert.deepEqual(rings.items.map(i=>i.id),[2,3]);
+ assert.deepEqual(new Set(explore(rings.items,rings.tables,1).results.map(n=>n.category)),new Set(['rings']));
+ assert.strictEqual(analysisScope(inventory,data,'all').items,inventory);
+ assert.throws(()=>analysisScope(inventory,data,'missing'));
 });
 
 test('ordinary +0 items participate after an assumed +1 upgrade with correct fusion cost',()=>{

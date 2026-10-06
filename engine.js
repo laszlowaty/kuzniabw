@@ -75,6 +75,12 @@ export function merge(a,b,data){
  return {...result,evidence};
 }
 export const resultKey=n=>[n.category,n.rarity,n.prefix,n.base,n.suffix].join('|');
+export function analysisScope(items,data,category='all'){
+ if(category==='all')return {items,tables:data};
+ const selected=data.categories.find(c=>c.id===category);
+ if(!selected)throw new Error('Nie rozpoznano rodzaju przedmiotu.');
+ return {items:items.filter(item=>item.category===category),tables:{categories:[selected]}};
+}
 export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
  if(!Number.isInteger(maxDepth)||maxDepth<1||maxDepth>25)throw new Error('Głębokość musi wynosić od 1 do 25.');
  limits={states:30000,attempts:20000000,timeMs:5000,maxSteps:25,...limits};
