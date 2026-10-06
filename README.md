@@ -2,7 +2,7 @@
 
 Statyczna aplikacja do przeglądania tabel łączeń R21 i planowania spawów z własnego ekwipunku. Całe obliczenia odbywają się w przeglądarce; aplikacja nie wysyła ekwipunku na serwer.
 
-Pole „Czego brakuje do przedmiotu?” przyjmuje nazwę bez jakości i poziomu, np. `Czapka Prekognicji`. Dla maksymalnie dwóch spawów pokazuje przepisy z ekwipunku oraz do dwóch brakujących składników. Brakujące przedmioty są proponowane na poziomie +1; zwykłe składniki +0 z ekwipunku wymagają podniesienia do +1. Podane przepisy dotyczą nazwy, więc poziom jakości wyniku może się różnić.
+W sekcji „Czego brakuje do przedmiotu?” wybiera się rodzaj, bazę, prefiks i sufiks z tabel. Dla maksymalnie dwóch spawów aplikacja pokazuje przepisy z ekwipunku oraz do dwóch brakujących składników. Brakujące przedmioty są proponowane na poziomie +1; zwykłe składniki +0 z ekwipunku wymagają podniesienia do +1. Podane przepisy dotyczą nazwy, więc poziom jakości wyniku może się różnić.
 
 ## Uruchomienie lokalne
 

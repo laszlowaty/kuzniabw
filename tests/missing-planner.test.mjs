@@ -2,11 +2,27 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {parseInventory,ingredients,merge,resultKey,itemClass} from '../engine.js';
-import {findMissingPlans} from '../missing-planner.js';
+import {createGoalTarget,findMissingPlans} from '../missing-planner.js';
 
 const data=JSON.parse(fs.readFileSync(new URL('../data.json',import.meta.url)));
 const parse=text=>{const result=parseInventory(text,data);assert.deepEqual(result.errors,[]);return result.items;};
 const target=parse('Czapka Prekognicji')[0];
+
+test('target selection accepts independent base, prefix and suffix from one category',()=>{
+ const selected=createGoalTarget(data,'head','czapka','runiczny','prekognicji');
+ assert.equal(selected.category,'head');
+ assert.equal(selected.base,'czapka');
+ assert.equal(selected.prefix,'runiczny');
+ assert.equal(selected.suffix,'prekognicji');
+ assert.equal(selected.rarity,'normal');
+ assert.equal(resultKey(selected),resultKey(parse('Runiczna Czapka Prekognicji')[0]));
+ assert.throws(()=>createGoalTarget(data,'head','czapka','nieistniejacy','prekognicji'));
+ assert.throws(()=>createGoalTarget(data,'head','czapka','','nieistniejacy'));
+ assert.throws(()=>createGoalTarget(data,'gun1','czapka','',''));
+ const gunBase=data.categories.find(category=>category.id==='gun1').axes.base.values[0];
+ assert.equal(createGoalTarget(data,'gun1',gunBase).base,gunBase);
+ assert.throws(()=>createGoalTarget(data,'gun1',gunBase,'runiczny'));
+});
 
 test('a missing ingredient is derived from the actual fusion table',()=>{
  const owned=parse('Czapka Gladiatora (+1)');

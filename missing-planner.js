@@ -3,6 +3,13 @@ import {itemClass,itemName,merge,resultKey,ingredients} from './engine.js';
 const signature=n=>`${resultKey(n)}|${itemClass(n)}`;
 const sameName=(a,b)=>resultKey(a)===resultKey(b);
 
+export function createGoalTarget(data,categoryId,base,prefix='',suffix=''){
+ const category=data.categories.find(c=>c.id===categoryId);
+ if(!category||!category.axes.base.values.includes(base)||prefix&&!category.axes.prefix?.values.includes(prefix)||suffix&&!category.axes.suffix?.values.includes(suffix))throw new Error('Wybierz przedmiot oraz afiksy z tej samej kategorii.');
+ const target={category:categoryId,base,prefix,suffix,rarity:'normal'};
+ return {...target,original:itemName(target)};
+}
+
 // Invert each table axis, then let merge() verify the whole recipe and quality.
 function complements(target,known,category){
  const axes={};

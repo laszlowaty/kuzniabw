@@ -1,4 +1,4 @@
-import {parseInventory,itemName,itemClass,label,normalize,variants,recipeSteps,ingredients,resultKey,requiresUpgrade,fusionInput} from './engine.js';
+import {parseInventory,itemName,label,normalize,variants,recipeSteps,ingredients,resultKey,requiresUpgrade,fusionInput} from './engine.js';
 import {costKey,parseCost,totalCosts} from './costs.js';
 import {fusionCost,fullItemName} from './item-details.js';
 import {createItemPopover} from './item-popover.js';
@@ -6,6 +6,7 @@ import {importInventory} from './inventory-import.js';
 import {isStrongCombo,assessAffixes} from './strong-combos.js';
 import {assessProfileAffixes,tattoos,races} from './profile-affixes.js';
 import {sortResults} from './result-sort.js';
+import {createGoalTarget} from './missing-planner.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GUNS=`Magnum (+1)
@@ -112,7 +113,23 @@ function renderCostSummary(steps){
  const totals=totalCosts(steps,new Map(steps.map(s=>[costKey(s),effectiveCosts(s)])));
  $('costSummary').innerHTML=`<div class="resourceTotals">${[['mana','Mana'],['nanites','Nanity']].map(([key,name])=>{const t=totals[key];return `<div><span>${name}</span><strong>${t.invalid?'Popraw kwoty':t.known?t.total.toLocaleString('pl'):'—'}</strong><small>${t.invalid?'Wpisz całe liczby od 0':t.complete?'Łącznie za cały przepis':`Znane koszty · ${t.known}/${steps.length} spawów`}</small></div>`;}).join('')}<div><span>Kamienie przemiany</span><strong>${steps.length}</strong><small>1 kamień na każdy spaw</small></div></div><p class="costCompletion">${totals.mana.complete&&totals.nanites.complete?'Suma obejmuje wyłącznie spawy tego przepisu. Sprawdź kwoty w Studni przed wykonaniem.':'Koszt niepełny. Puste pola oznaczają brak danych, a nie darmowy spaw.'}</p>`;
 }
-function clearGoalResults(){goalRun++;goalWorker?.terminate();goalWorker=null;$('goalSearch').disabled=!data;$('goalResults').innerHTML='';}
+function clearGoalResults(){goalRun++;goalWorker?.terminate();goalWorker=null;$('goalSearch').disabled=!data||!$('goalBase').value;$('goalResults').innerHTML='';}
+function updateGoalPreview(){
+ try{$('goalPreview').textContent=`Szukany wynik: ${itemName(createGoalTarget(data,$('goalCategory').value,$('goalBase').value,$('goalPrefix').value,$('goalSuffix').value))}`;}
+ catch{$('goalPreview').textContent='Wybierz rodzaj i przedmiot, aby ustawić cel.';}
+ clearGoalResults();
+}
+function updateGoalCategory(){
+ const category=data.categories.find(c=>c.id===$('goalCategory').value);
+ $('goalBase').innerHTML='<option value="">Wybierz przedmiot</option>'+(category?.axes.base.values||[]).map(base=>`<option value="${esc(base)}">${esc(itemName({base}))}</option>`).join('');
+ $('goalBase').disabled=!category;
+ for(const [id,axis,empty] of [['goalPrefix','prefix','Bez prefiksu'],['goalSuffix','suffix','Bez sufiksu']]){
+  const values=category?.axes[axis]?.values||[];
+  $(id).innerHTML=`<option value="">${values.length?empty:'Brak w tej kategorii'}</option>`+values.map(value=>`<option value="${esc(value)}">${esc(label(value))}</option>`).join('');
+  $(id).disabled=!values.length;
+ }
+ updateGoalPreview();
+}
 function renderGoalPlans(target,response){
  const {plans,partial}=response;
  if(!plans.length){$('goalResults').innerHTML=`<p class="goalStatus">${partial?'Osiągnięto limit czasu, zanim znaleziono przepis. Spróbuj ponownie z krótszą listą.':'Nie znaleziono przepisu w wybranym limicie spawów i najwyżej dwóch brakujących składnikach.'}</p>`;return;}
@@ -121,10 +138,9 @@ function renderGoalPlans(target,response){
 }
 function searchMissing(event){
  event.preventDefault();clearGoalResults();
- const text=$('goalName').value.trim(),parsed=parseInventory(text,data);
- if(parsed.errors.length||parsed.items.length!==1||text.includes('\n')){$('goalResults').textContent='Wpisz jedną pełną nazwę przedmiotu z tabel.';return;}
- const target=parsed.items[0];
- if(itemClass(target)!==0||target.rarity==='legendary'||/\(\+\d+\)/.test(normalize(text))){$('goalResults').textContent='Wpisz nazwę bez jakości i poziomu (+N), np. „Czapka Prekognicji”.';return;}
+ let target;
+ try{target=createGoalTarget(data,$('goalCategory').value,$('goalBase').value,$('goalPrefix').value,$('goalSuffix').value);}
+ catch(error){$('goalResults').textContent=error.message;return;}
  const run=++goalRun;goalWorker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});
  $('goalSearch').disabled=true;$('goalResults').textContent='Szukam brakujących składników…';
  goalWorker.onmessage=({data:response})=>{if(run!==goalRun)return;goalWorker.terminate();goalWorker=null;$('goalSearch').disabled=false;if(response.type==='missingDone')renderGoalPlans(target,response);else $('goalResults').textContent=response.message||'Nie udało się sprawdzić przepisów.';};
@@ -220,7 +236,10 @@ async function init(){
  const response=await fetch('./data.json');if(!response.ok)throw new Error('Nie udało się wczytać tabel R21.');data=await response.json();
  try{const [details,catalog,requirements]=await Promise.all(['./item-details.json','./item-catalog.json','./item-requirements.json'].map(url=>fetch(url).catch(()=>null)));if(details?.ok)itemDetails=await details.json();if(catalog?.ok)itemCatalog=await catalog.json();if(requirements?.ok){itemDetails??={items:{}};itemDetails.requirementModels=(await requirements.json()).models;}}catch{}
  const options=data.categories.map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');$('category').insertAdjacentHTML('beforeend',options);$('tableCategory').innerHTML=options;
- $('goalForm').onsubmit=searchMissing;$('goalName').oninput=clearGoalResults;$('goalSteps').onchange=clearGoalResults;$('goalSearch').disabled=false;
+ $('goalCategory').insertAdjacentHTML('beforeend',options);
+ $('goalForm').onsubmit=searchMissing;$('goalCategory').onchange=updateGoalCategory;
+ for(const id of ['goalBase','goalPrefix','goalSuffix'])$(id).onchange=updateGoalPreview;
+ $('goalSteps').onchange=clearGoalResults;updateGoalCategory();
  $('profileRace').insertAdjacentHTML('beforeend',Object.entries(races).map(([id,r])=>`<option value="${id}">${esc(r.label)}</option>`).join(''));
  $('profileTattoo').insertAdjacentHTML('beforeend',Object.entries(tattoos).map(([id,t])=>`<option value="${id}">${esc(t.label)}</option>`).join(''));
  try{const saved=JSON.parse(localStorage.getItem('kuzniaProfile')||'{}');if(races[saved.race])$('profileRace').value=saved.race;if(tattoos[saved.tattoo])$('profileTattoo').value=saved.tattoo;}catch{}
