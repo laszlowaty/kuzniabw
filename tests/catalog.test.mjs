@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {parseInventory,merge,explore,itemName} from '../engine.js';
+import {parseInventory,merge,explore,itemName,requiresUpgrade,fusionInput} from '../engine.js';
 import {importInventory} from '../inventory-import.js';
 import {itemClass,officialUrl,lookupItem,fusionCost,fullItemName} from '../item-details.js';
 import {parsedRecord} from '../item-compose.js';
@@ -71,7 +71,11 @@ test('fusion charges both inputs, not the result; multi-step totals count each f
  const total=totalCosts([step,next],new Map([[costKey(step),fusionCost(step,details)],[costKey(next),cost]]));
  assert.equal(total.nanites.total,72+intermediate.nanites+276);assert.equal(total.nanites.complete,true);
  assert.equal(fusionCost({left:item('Epicka Kusza'),right:other},details),null);
- assert.equal(fusionCost({left:item('Kusza'),right:other},details),null);
+ const bare=item('Kusza');
+ assert.deepEqual(fusionCost({left:bare,right:other},details),{
+  mana:lookupItem(fusionInput(bare),details).mana+908,
+  nanites:lookupItem(fusionInput(bare),details).nanites+276
+ });
 });
 
 test('calibrated requirements retain uncertainty instead of choosing an arbitrary integer',()=>{
@@ -81,7 +85,7 @@ test('calibrated requirements retain uncertainty instead of choosing an arbitrar
 });
 
 test('planner does not offer recipes whose quality or cost rules are unsupported',()=>{
- for(const names of [['Kusza','Kusza (+1)'],['Epicka Czapka','Epicki Kask'],['Doskonała Czapka (+5)','Doskonały Kask (+5)']]){
+ for(const names of [['Epicka Czapka','Epicki Kask'],['Doskonała Czapka (+5)','Doskonały Kask (+5)']]){
   const inventory=names.map((name,id)=>({...item(name),id}));
   assert.equal(explore(inventory,data,2).results.length,0,names.join(' + '));
  }
@@ -90,20 +94,35 @@ test('planner does not offer recipes whose quality or cost rules are unsupported
  assert.equal(result.length,1);assert.equal(itemClass(result[0]),2);
 });
 
-test('ordinary +0 items are imported and described but cannot be fused before upgrading',()=>{
+test('ordinary +0 items participate after an assumed +1 upgrade with correct fusion cost',()=>{
  const parsed=importInventory('Kusza\nKusza (+1)',data);
  assert.equal(parsed.error,null);
  assert.deepEqual(parsed.ignored,[]);
  assert.deepEqual(parsed.items.map(itemClass),[0,1]);
+ assert.deepEqual(parsed.items.map(requiresUpgrade),[true,false]);
  assert.equal(parsed.items[0].prefix,'');
  assert.equal(parsed.items[0].suffix,'');
  assert.ok(lookupItem(parsed.items[0],details));
- assert.equal(merge(parsed.items[0],parsed.items[1],data),null);
- assert.deepEqual(explore(parsed.items,data,1).results,[]);
+ const result=explore(parsed.items,data,1).results;
+ assert.equal(result.length,1);
+ assert.equal(itemClass(result[0]),2);
+ assert.equal(fullItemName(result[0]),'Kusza (+2)');
+ assert.deepEqual(fusionCost(result[0],details),{
+  mana:2*lookupItem(item('Kusza (+1)'),details).mana,
+  nanites:2*lookupItem(item('Kusza (+1)'),details).nanites
+ });
+ assert.equal(itemClass(parsed.items[0]),0);
+ assert.equal(fullItemName(fusionInput(parsed.items[0])),'Kusza (+1)');
+ const explicitZero=importInventory('Kusza (+0)\nKusza (+1)',data).items;
+ assert.equal(fullItemName(fusionInput(explicitZero[0])),'Kusza (+1)');
+ assert.equal(itemClass(explore(explicitZero,data,1).results[0]),2);
+ const bothBare=importInventory('Kusza\nKusza',data).items;
+ assert.equal(itemClass(explore(bothBare,data,1).results[0]),2);
  const upgraded=importInventory('Kusza (+1)\nKusza (+1)',data).items;
  assert.equal(itemClass(explore(upgraded,data,1).results[0]),2);
  const good=importInventory('Dobra Kusza\nDobra Kusza',data).items;
  assert.deepEqual(good.map(itemClass),[6,6]);
+ assert.deepEqual(good.map(requiresUpgrade),[false,false]);
  assert.equal(itemClass(explore(good,data,1).results[0]),7);
 });
 

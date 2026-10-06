@@ -1,6 +1,6 @@
 export const normalize = s => String(s).toLowerCase().replaceAll('ł','l').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 export function itemClass(n){
- if(n.left){const a=itemClass(n.left),b=itemClass(n.right);if(a===null||b===null||a<1||b<1||a>=18||b>=18||a===17&&b===17)return null;const c=Math.min(a,b)+(n.left.base===n.right.base?1:0);return c<18?c:null;}
+ if(n.left){const left=itemClass(n.left),right=itemClass(n.right),a=left===0?1:left,b=right===0?1:right;if(a===null||b===null||a>=18||b>=18||a===17&&b===17)return null;const c=Math.min(a,b)+(n.left.base===n.right.base?1:0);return c<18?c:null;}
  const s=normalize(n.original||'');if(!s)return null;
  const plus=Number(s.match(/\(\+(\d+)\)/)?.[1]||0);if(plus>5)return null;
  // Quality is a leading word, never an affix (e.g. Kusza Doskonałości).
@@ -8,6 +8,8 @@ export function itemClass(n){
  const q=/^starozytn\S*\s/.test(name)?24:/^epick\S*\s/.test(name)?18:/^doskonal[yae]\s/.test(name)?12:/^dobr[yae]\s/.test(name)?6:0;
  return q+plus;
 }
+export const requiresUpgrade=n=>!n.left&&itemClass(n)===0;
+export const fusionInput=n=>requiresUpgrade(n)?{...n,original:`${n.original.replace(/\s*\(\+0\)\s*$/,'')} (+1)`}:n;
 const displayWords = {'utwardzony':'utwardzany','helm':'hełm','obrecz':'obręcz','zlosliwy':'złośliwy','smiercionosny':'śmiercionośny','szamanski':'szamański','podroznika':'podróżnika','przezornosci':'przezorności','wytrzymalosci':'wytrzymałości','zmyslow':'zmysłów','slonca':'słońca','luski':'łuski','zolwia':'żółwia','skory':'skóry','cwiekowany':'ćwiekowany','wladczy':'władczy','luskowy':'łuskowy','plytowy':'płytowy','gietki':'giętki','lowiecki':'łowiecki','straznika':'strażnika','zlodzieja':'złodzieja','silacza':'siłacza','zabojcy':'zabójcy','unikow':'uników','grabiezcy':'grabieżcy','odpornosci':'odporności','smierci':'śmierci','szybkosci':'szybkości','krotkie':'krótkie','cwiekowane':'ćwiekowane','gietkie':'giętkie','szamanskie':'szamańskie','smiercionosne':'śmiercionośne','ruchow':'ruchów','skrytosci':'skrytości','bronia':'bronią','lowcy':'łowcy','weza':'węża','inkow':'inków','pierscien':'pierścień','lancuch':'łańcuch','zloty':'złoty','przebiegly':'przebiegły','gwiezdny':'gwiezdny','niedzwiedzi':'niedźwiedzi','msciwy':'mściwy','tanczacy':'tańczący','zwierzecy':'zwierzęcy','sloneczny':'słoneczny','pajeczy':'pajęczy','jastrzebi':'jastrzębi','wystepku':'występku','wladzy':'władzy','sily':'siły','madrosci':'mądrości','celnosci':'celności','mlodosci':'młodości','szczescia':'szczęścia','zdolnosci':'zdolności','przebieglosci':'przebiegłości','szalenca':'szaleńca','latwosci':'łatwości','palka':'pałka','noz':'nóż','topor':'topór','piesc':'pięść','zebaty':'zębaty','kosciany':'kościany','wzmacniajacy':'wzmacniający','kasajacy':'kąsający','opiekunczy':'opiekuńczy','swiecacy':'świecący','zabojczy':'zabójczy','przeklety':'przeklęty','dowodcy':'dowódcy','bolu':'bólu','zwinnosci':'zwinności','przodkow':'przodków','mestwa':'męstwa','bieglosci':'biegłości','samobojcy':'samobójcy','lom':'łom','dwureczny':'dwuręczny','pila':'piła','lancuchowa':'łańcuchowa','ciezki':'ciężki','podstepu':'podstępu','olowiu':'ołowiu','bazyliszka':'bazyliszka','luk':'łuk','krotki':'krótki','dlugi':'długi','ciezka':'ciężka','zasiegu':'zasięgu','doskonalosci':'doskonałości','szybkostrzelnosci':'szybkostrzelności','polautomat':'półautomat'};
 export function label(s) { return String(s).split(' ').map(w=>displayWords[w]||w).join(' '); }
 Object.assign(displayWords,{pelna:'pełna',spodnica:'spódnica',wilkolaka:'wilkołaka',krysztalowy:'kryształowy'});
@@ -57,6 +59,7 @@ export function parseInventory(text,data){
 }
 export function merge(a,b,data){
  if(a.category!==b.category||a.rarity!==b.rarity)return null;
+ // Ordinary +0 ingredients are planned after an assumed upgrade to +1.
  // This planner handles ordinary Studnia fusions (+1 through Doskonały +5).
  // Epic/ancient transfer and Kuźnia Kaina use separate rules and costs.
  if(itemClass({left:a,right:b})===null)return null;

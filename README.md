@@ -24,7 +24,7 @@ Statystyki i wartości many/nanitów pochodzą z [oficjalnego katalogu R21](http
 
 `item-requirements.json` uzupełnia wymagania epickich i starożytnych kombinacji. Zaokrąglone wymagania składników nie zawsze można po prostu zsumować. Model zachowuje możliwe wartości przed zaokrągleniem i zawęża je na podstawie zapisanych odczytów R21. Pokazuje liczbę tylko wtedy, gdy wszystkie dopuszczalne możliwości dają ten sam wynik.
 
-Koszt zwykłego spawu to suma many i nanitów **obu zużywanych składników**, nie wartość przedmiotu wynikowego. Każdy etap wymaga też kamienia przemiany. Regułę opisuje [BWpedia — Studnia Dusz](https://wiki.bloodwars.pl/index.php?title=Studnia_Dusz). Planner obsługuje zwykłe spawy od (+1) do Doskonały (+5), z wyłączeniem pary dwóch Doskonałych (+5). Nie dolicza ulepszania, obniżania jakości ani odrębnych operacji Kuźni Kaina/transferu epickości. Przedmioty pozostałych jakości nadal można importować i przeglądać.
+Koszt zwykłego spawu to suma many i nanitów **obu zużywanych składników**, nie wartość przedmiotu wynikowego. Każdy etap wymaga też kamienia przemiany. Regułę opisuje [BWpedia — Studnia Dusz](https://wiki.bloodwars.pl/index.php?title=Studnia_Dusz). Planner uwzględnia zwykłe przedmioty +0 jako składniki po założonym podniesieniu do +1 i wyraźnie oznacza ten krok. Koszt spawu liczy z wartości składnika po podniesieniu; nie dolicza kosztu samego ulepszania. Dobre i doskonałe +0 nie wymagają takiego podniesienia. Planner obsługuje zwykłe spawy od (+1) do Doskonały (+5), z wyłączeniem pary dwóch Doskonałych (+5). Nie dolicza obniżania jakości ani odrębnych operacji Kuźni Kaina/transferu epickości. Przedmioty pozostałych jakości nadal można importować i przeglądać.
 
 ## Kontrola danych
 

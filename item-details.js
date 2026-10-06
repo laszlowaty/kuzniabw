@@ -1,5 +1,5 @@
 import {composeRecord} from './item-compose.js';
-import {itemClass,resultKey,itemName,itemGender} from './engine.js';
+import {itemClass,resultKey,itemName,itemGender,fusionInput} from './engine.js';
 export {itemClass} from './engine.js';
 export const SOURCE='https://r21.bloodwars.pl/test_items.php';
 export function qualityLabel(c){return c===null?'Nieustalona jakość':`${['Zwykły','Dobry','Doskonały','Epicki','Starożytny'][Math.floor(c/6)]} (+${c%6})`;}
@@ -28,9 +28,10 @@ export function lookupItem(n,details,catalog=details?.catalog){
  const row=composeRecord(n,quality,group,officialUrl(n,catalog),fullItemName(n));cache.set(key,row);return row;
 }
 export function fusionCost(step,details){
- const left=lookupItem(step.left,details),right=lookupItem(step.right,details);
- const a=itemClass(step.left),b=itemClass(step.right);
- // Do not price unvalidated epic fusion rules or unupgraded ingredients.
+ const leftInput=fusionInput(step.left),rightInput=fusionInput(step.right);
+ const left=lookupItem(leftInput,details),right=lookupItem(rightInput,details);
+ const a=itemClass(leftInput),b=itemClass(rightInput);
+ // Upgrade costs are excluded; fusion uses the catalog values after each +0 becomes +1.
  if(!left||!right||a===null||b===null||a<1||b<1||a>=18||b>=18||a===17&&b===17)return null;
  return {mana:left.mana+right.mana,nanites:left.nanites+right.nanites};
 }
