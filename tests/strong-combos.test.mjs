@@ -22,6 +22,20 @@ test('affixes are ranked by active R21 stat deltas, not by historical lists',()=
  assert.doesNotMatch(affixContent(pair,{},details),/forum|Źródło/i);
 });
 
+test('the same prefix and suffix keep their labels across quality and upgrade levels',()=>{
+ const variants=[
+  item('Śmiercionośna Czapka Prekognicji (+2)'),
+  item('Dobra Śmiercionośna Czapka Prekognicji (+2)'),
+  item('Dobra Śmiercionośna Czapka Prekognicji (+5)'),
+  item('Doskonała Śmiercionośna Czapka Prekognicji (+2)')
+ ];
+ const assessments=variants.map(value=>assessAffixes(value,details,{tattoo:'rewolwerowiec'}));
+ assert.ok(assessments.every(value=>value.pair));
+ assert.deepEqual(assessments.map(value=>value.rank),[3,3,3,3]);
+ assert.deepEqual(assessments.map(value=>[value.prefix[0].good,value.suffix[0].good]),
+  [[true,true],[true,true],[true,true],[true,true]]);
+});
+
 test('incomplete set bonuses are not counted on one item; other parts give only potential',()=>{
  const complete=parseInventory('Dobry Słoneczny Pierścień Mądrości (+5)\nDobry Słoneczny Krawat Koncentracji (+5)\nDobry Słoneczny Sygnet Koncentracji (+5)',data);
  assert.deepEqual(complete.errors,[]);

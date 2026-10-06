@@ -7,6 +7,10 @@ const paths={zabojca:'melee',mnich:'melee',berserker:'melee',czarny_rycerz:'mele
 const weapons={melee1:'melee',melee2:'melee',gun1:'gun',gun2:'gun',ranged:'ranged'};
 const statLabels={'ZWINNOŚĆ':'zwinność','SPOSTRZEGAWCZOŚĆ':'spostrzegawczość','SIŁA':'siła','WIEDZA':'wiedza','INTELIGENCJA':'inteligencja','ODPORNOŚĆ':'odporność','SZCZĘŚCIE':'szczęście'};
 const thresholdCache=new WeakMap();
+// Affix labels describe the affix, not the item's current upgrade/quality.
+// Use one catalog snapshot for ranking so the same prefix/suffix keeps its
+// label when the item is upgraded or has a different quality tier.
+const rankingQuality=11; // Dobry (+5), standard (non-legendary) catalog row.
 const empty=()=>({pair:null,prefix:[],suffix:[],rank:0,score:0,totalScore:0});
 const kindFor=(category,profile)=>weapons[category]||paths[profile?.tattoo]||'general';
 const setFamily=prefix=>({tygrysi:'tygrys',tygrysie:'tygrys',elfi:'elf',elfie:'elf',runiczny:'runicz',runiczne:'runicz'})[prefix]||prefix;
@@ -61,9 +65,10 @@ function parts(item,details){
  if(!item)return null;
  const group=details?.components?.[item?.category],quality=itemClass(item);
  if(!group||quality===null||quality<1)return null;
- const q=quality,legendary=item.rarity==='legendary'&&q<18?1:0;
- const reference=group.rows[`${q}|${legendary}|base|${group.reference}`];
- return reference?{group,q,legendary,reference}:null;
+ const actualLegendary=item.rarity==='legendary'&&quality<18?1:0;
+ const actualReference=group.rows[`${quality}|${actualLegendary}|base|${group.reference}`];
+ const reference=group.rows[`${rankingQuality}|0|base|${group.reference}`];
+ return reference?{group,q:rankingQuality,legendary:0,reference,actualReference,quality,actualLegendary}:null;
 }
 function rankPart(axis,value,context,kind,profile,item){
  if(!value)return null;
@@ -80,7 +85,7 @@ function rankPart(axis,value,context,kind,profile,item){
  const cutoff=scores[Math.min(scores.length-1,Math.max(0,Math.ceil(scores.length*.3)-1))]??Infinity;
  const good=assessed.score>0&&assessed.score>=cutoff;
  const top=assessed.changes.slice(0,2).map(c=>`${c.label} ${c.delta>0?'+':''}${c.delta}`);
- return {good,score:assessed.score,cutoff,reason:`Przyrost względem przedmiotu bez ${axis==='prefix'?'prefiksu':'sufiksu'}: ${top.join(', ')||'cechy bojowe'}. Ocena względna dla tej kategorii i jakości.`};
+ return {good,score:assessed.score,cutoff,reason:`Przyrost względem przedmiotu bez ${axis==='prefix'?'prefiksu':'sufiksu'}: ${top.join(', ')||'cechy bojowe'}. Ocena afiksu niezależna od jakości i ulepszenia przedmiotu.`};
 }
 export function assessAffixes(item,details,profile={},inventory=[]){
  const context=parts(item,details);if(!context)return empty();
@@ -97,9 +102,9 @@ export function assessAffixes(item,details,profile={},inventory=[]){
   }
  }
  const prefix=p?.good?[p]:[],suffix=s?.good?[s]:[];
- const pair=prefix.length&&suffix.length?{reason:`Oba afiksy należą do najlepszych 30% w tej kategorii i jakości. ${p.reason} ${s.reason}`}:null;
- const base=context.group.rows[`${context.q}|${context.legendary}|base|${item.base}`];
- const baseScore=base?statScore(base,context.reference,kind,profile.race,item.category,profile).score:0;
+ const pair=prefix.length&&suffix.length?{reason:`Oba afiksy należą do najlepszych 30% w tej kategorii. ${p.reason} ${s.reason}`}:null;
+ const base=context.group.rows[`${context.quality}|${context.actualLegendary}|base|${item.base}`];
+ const baseScore=base&&context.actualReference?statScore(base,context.actualReference,kind,profile.race,item.category,profile).score:0;
  const score=Math.max(0,p?.score||0)+Math.max(0,s?.score||0);
  return {pair,prefix,suffix,rank:pair?3:Number(prefix.length>0)+Number(suffix.length>0),score,totalScore:score+baseScore};
 }
