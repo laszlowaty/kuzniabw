@@ -90,6 +90,23 @@ test('planner does not offer recipes whose quality or cost rules are unsupported
  assert.equal(result.length,1);assert.equal(itemClass(result[0]),2);
 });
 
+test('ordinary +0 items are imported and described but cannot be fused before upgrading',()=>{
+ const parsed=importInventory('Kusza\nKusza (+1)',data);
+ assert.equal(parsed.error,null);
+ assert.deepEqual(parsed.ignored,[]);
+ assert.deepEqual(parsed.items.map(itemClass),[0,1]);
+ assert.equal(parsed.items[0].prefix,'');
+ assert.equal(parsed.items[0].suffix,'');
+ assert.ok(lookupItem(parsed.items[0],details));
+ assert.equal(merge(parsed.items[0],parsed.items[1],data),null);
+ assert.deepEqual(explore(parsed.items,data,1).results,[]);
+ const upgraded=importInventory('Kusza (+1)\nKusza (+1)',data).items;
+ assert.equal(itemClass(explore(upgraded,data,1).results[0]),2);
+ const good=importInventory('Dobra Kusza\nDobra Kusza',data).items;
+ assert.deepEqual(good.map(itemClass),[6,6]);
+ assert.equal(itemClass(explore(good,data,1).results[0]),7);
+});
+
 test('a deeper intermediate of a different quality can enable a valid final fusion',()=>{
  const table={};for(const [a,b,result]of [['one','one','two'],['one','two','three'],['two','two','four'],['one','three','four'],['four','last','final']]){table[`${a}|${b}`]=result;table[`${b}|${a}`]=result;}
  const toy={categories:[{id:'toy',label:'Toy',axes:{base:{values:['b'],table:{'b|b':'b'},blocked:[],refs:{}},prefix:{values:['one','two','three','four','last','final'],table,blocked:[],refs:{}}}}]};
