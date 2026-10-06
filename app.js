@@ -23,7 +23,7 @@ let resultOrder='fewest';
 const simulationHistory=[];
 const enteredCosts=new Map();
 let renderedRecipeKey=null;
-let goalWorker=null,goalRun=0,goalDeadlineTimer=null,goalLoadingTimer=null;
+let goalWorker=null,goalRun=0,goalDeadlineTimer=null,goalLoadingTimer=null,goalResultState=null,goalMatchedPlans=[],goalVisibleLimit=100;
 let itemDetails=null,itemCatalog=null;
 const profile=()=>({race:$('profileRace').value,tattoo:$('profileTattoo').value,sex:$('profileSex').value});
 const profileActive=()=>!!(profile().tattoo||profile().race);
@@ -117,7 +117,7 @@ function renderCostSummary(steps){
  const totals=totalCosts(steps,new Map(steps.map(s=>[costKey(s),effectiveCosts(s)])));
  $('costSummary').innerHTML=`<div class="resourceTotals">${[['mana','Mana'],['nanites','Nanity']].map(([key,name])=>{const t=totals[key];return `<div><span>${name}</span><strong>${t.invalid?'Popraw kwoty':t.known?t.total.toLocaleString('pl'):'—'}</strong><small>${t.invalid?'Wpisz całe liczby od 0':t.complete?'Łącznie za cały przepis':`Znane koszty · ${t.known}/${steps.length} spawów`}</small></div>`;}).join('')}<div><span>Kamienie przemiany</span><strong>${steps.length}</strong><small>1 kamień na każdy spaw</small></div></div><p class="costCompletion">${totals.mana.complete&&totals.nanites.complete?'Suma obejmuje wyłącznie spawy tego przepisu. Sprawdź kwoty w Studni przed wykonaniem.':'Koszt niepełny. Puste pola oznaczają brak danych, a nie darmowy spaw.'}</p>`;
 }
-function clearGoalResults(){goalRun++;clearTimeout(goalDeadlineTimer);clearInterval(goalLoadingTimer);goalWorker?.terminate();goalWorker=null;$('goalStop').hidden=true;$('goalSearch').disabled=!data||!$('goalCategory').value;$('goalResults').innerHTML='';}
+function clearGoalResults(){goalRun++;clearTimeout(goalDeadlineTimer);clearInterval(goalLoadingTimer);goalWorker?.terminate();goalWorker=null;goalResultState=null;goalMatchedPlans=[];goalVisibleLimit=100;$('goalStop').hidden=true;$('goalSearch').disabled=!data||!$('goalCategory').value;$('goalResults').innerHTML='';}
 function goalTargetName(target){return target.base?itemName(target):`Dowolna baza${target.prefix?` · prefiks: ${label(target.prefix)}`:''}${target.suffix?` · sufiks: ${label(target.suffix)}`:''}`;}
 function updateGoalPreview(){
  try{$('goalPreview').textContent=`Szukany wynik: ${goalTargetName(createGoalTarget(data,$('goalCategory').value,$('goalBase').value,$('goalPrefix').value,$('goalSuffix').value))}`;}
@@ -135,11 +135,26 @@ function updateGoalCategory(){
  }
  updateGoalPreview();
 }
+function renderGoalPlanCards(){
+ if(!goalResultState)return;
+ const {plans}=goalResultState,query=$('goalTextFilter').value.trim().toLocaleLowerCase('pl'),prefix=$('goalPrefixFilter').value,suffix=$('goalSuffixFilter').value;
+ goalMatchedPlans=plans.filter(plan=>{const missing=ingredients(plan).filter(item=>item.missing);return missing.length?missing.some(item=>(!query||itemName(item).toLocaleLowerCase('pl').includes(query))&&(!prefix||item.prefix===prefix)&&(!suffix||item.suffix===suffix)):!query&&!prefix&&!suffix;});
+ const visible=goalMatchedPlans.slice(0,goalVisibleLimit);
+ $('goalResultCount').textContent=`Pokazano ${visible.length.toLocaleString('pl')} z ${goalMatchedPlans.length.toLocaleString('pl')} pasujących · ${plans.length.toLocaleString('pl')} łącznie`;
+ $('goalPlanList').innerHTML=goalMatchedPlans.length?visible.map((plan,index)=>{const missing=ingredients(plan).filter(i=>i.missing),owned=ingredients(plan).filter(i=>!i.missing),steps=recipeSteps(plan);return `<details ${index===0?'open':''}><summary>${plan.steps} ${plan.steps===1?'spaw':plan.steps<5?'spawy':'spawów'} · ${missing.length?`brakuje ${missing.length}: ${missing.map(i=>esc(itemName(i))).join(', ')}`:'wszystkie składniki masz'}</summary><div class="goalPlanBody"><p><strong>Masz:</strong> ${owned.length?owned.map(i=>`#${i.id+1} ${esc(i.original)}${requiresUpgrade(i)?' (podnieś do +1)':''}`).join(', '):'brak pasujących składników w ekwipunku'}</p><p><strong>Potrzebujesz:</strong> ${missing.length?missing.map(i=>esc(i.original)).join(', '):'niczego'}</p><ol>${steps.map(step=>`<li>${esc(step.left.left?fullItemName(step.left):step.left.original)} + ${esc(step.right.left?fullItemName(step.right):step.right.original)} → ${esc(fullItemName(step))}</li>`).join('')}</ol>${owned.some(requiresUpgrade)?'<p>Zwykłe składniki +0 trzeba podnieść do +1 przed spawem.</p>':''}</div></details>`;}).join(''):'<p class="goalNoMatches">Brak kombinacji pasujących do filtrów.</p>';
+ $('goalShowMore').hidden=goalMatchedPlans.length<=goalVisibleLimit;
+}
 function renderGoalPlans(target,response){
  const {plans,partial}=response;
  if(!plans.length){$('goalResults').innerHTML=`<p class="goalStatus">${partial?'Osiągnięto limit czasu, zanim znaleziono przepis. Spróbuj ponownie z krótszą listą.':'Nie znaleziono przepisu w wybranym limicie spawów i najwyżej dwóch brakujących składnikach.'}</p>`;return;}
- const lead=plans[0].missingCount===0?'Ten przedmiot da się zbudować z Twojego ekwipunku.':`Z Twoich przedmiotów brakuje co najmniej ${plans[0].missingCount} ${plans[0].missingCount===1?'składnika':'składników'}.`;
- $('goalResults').innerHTML=`<p class="goalStatus"><strong>${esc(goalTargetName(target))}</strong> · ${lead} ${partial?'Wyniki są częściowe.':''} Poniżej konkretne warianty; nowe składniki zakładamy na poziomie +1.</p><div class="goalPlans">${plans.map((plan,index)=>{const missing=ingredients(plan).filter(i=>i.missing),owned=ingredients(plan).filter(i=>!i.missing),steps=recipeSteps(plan);return `<details ${index===0?'open':''}><summary>${plan.steps} ${plan.steps===1?'spaw':plan.steps<5?'spawy':'spawów'} · ${missing.length?`brakuje ${missing.length}: ${missing.map(i=>esc(itemName(i))).join(', ')}`:'wszystkie składniki masz'}</summary><div class="goalPlanBody"><p><strong>Masz:</strong> ${owned.length?owned.map(i=>`#${i.id+1} ${esc(i.original)}${requiresUpgrade(i)?' (podnieś do +1)':''}`).join(', '):'brak pasujących składników w ekwipunku'}</p><p><strong>Potrzebujesz:</strong> ${missing.length?missing.map(i=>esc(i.original)).join(', '):'niczego'}</p><ol>${steps.map(step=>`<li>${esc(step.left.left?fullItemName(step.left):step.left.original)} + ${esc(step.right.left?fullItemName(step.right):step.right.original)} → ${esc(fullItemName(step))}</li>`).join('')}</ol>${owned.some(requiresUpgrade)?'<p>Zwykłe składniki +0 trzeba podnieść do +1 przed spawem.</p>':''}</div></details>`;}).join('')}</div>`;
+ const minMissing=plans.reduce((min,plan)=>Math.min(min,plan.missingCount),Infinity),lead=minMissing===0?'Ten przedmiot da się zbudować z Twojego ekwipunku.':`Z Twoich przedmiotów brakuje co najmniej ${minMissing} ${minMissing===1?'składnika':'składników'}`;
+ goalResultState={target,plans};
+ const category=data.categories.find(item=>item.id===target.category),prefixes=category?.axes.prefix?.values||[],suffixes=category?.axes.suffix?.values||[];
+ $('goalResults').innerHTML=`<p class="goalStatus"><strong>${esc(goalTargetName(target))}</strong> · ${lead}. ${partial?'Wyniki są częściowe.':''} Pokazujemy wszystkie znalezione kombinacje; nowe składniki zakładamy na poziomie +1.</p><div class="goalFilters"><label for="goalTextFilter">Brakujący przedmiot<input id="goalTextFilter" type="search" placeholder="Szukaj nazwy, prefiksu lub sufiksu"></label><label for="goalPrefixFilter">Prefiks brakującego<select id="goalPrefixFilter"><option value="">Wszystkie prefiksy</option>${prefixes.map(value=>`<option value="${esc(value)}">${esc(label(value))}</option>`).join('')}</select></label><label for="goalSuffixFilter">Sufiks brakującego<select id="goalSuffixFilter"><option value="">Wszystkie sufiksy</option>${suffixes.map(value=>`<option value="${esc(value)}">${esc(label(value))}</option>`).join('')}</select></label><p id="goalResultCount" class="goalResultCount" aria-live="polite"></p></div><div id="goalPlanList" class="goalPlans"></div><button id="goalShowMore" class="secondary more" type="button" hidden>Pokaż kolejne 100</button>`;
+ const resetPage=()=>{goalVisibleLimit=100;renderGoalPlanCards();};
+ $('goalTextFilter').oninput=resetPage;$('goalPrefixFilter').onchange=resetPage;$('goalSuffixFilter').onchange=resetPage;
+ $('goalShowMore').onclick=()=>{goalVisibleLimit+=100;renderGoalPlanCards();};
+ renderGoalPlanCards();
 }
 function searchMissing(event){
  event.preventDefault();clearGoalResults();
