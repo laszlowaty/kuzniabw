@@ -149,10 +149,10 @@ function searchMissing(event){
  const run=++goalRun,timeMs=Number($('goalTimeBudget').value||5)*1000;
  try{goalWorker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});}catch{$('goalResults').textContent='Nie udało się uruchomić obliczeń.';return;}
  $('goalSearch').disabled=true;$('goalStop').hidden=false;
- $('goalResults').innerHTML='Szukam brakujących składników… <span id="goalCountdown" aria-live="off"></span>';
- const start=performance.now(),tick=()=>{$('goalCountdown').textContent=`${Math.max(0,(timeMs-performance.now()+start)/1000).toFixed(0)} s do limitu obliczeń.`;};tick();goalLoadingTimer=setInterval(tick,1000);
+ $('goalResults').innerHTML='Szukam brakujących składników… <span id="goalCountdown" aria-live="off"></span><small id="goalWork"></small>';
+ const start=performance.now(),tick=()=>{const countdown=$('goalCountdown');if(countdown)countdown.textContent=`${Math.max(0,(timeMs-performance.now()+start)/1000).toFixed(0)} s do limitu obliczeń.`;};tick();goalLoadingTimer=setInterval(tick,1000);
  const finish=()=>{goalRun++;clearTimeout(goalDeadlineTimer);clearInterval(goalLoadingTimer);goalWorker?.terminate();goalWorker=null;$('goalStop').hidden=true;$('goalSearch').disabled=false;};
- goalWorker.onmessage=({data:response})=>{if(run!==goalRun)return;finish();if(response.type==='missingDone')renderGoalPlans(target,response);else $('goalResults').textContent=response.message||'Nie udało się sprawdzić przepisów.';};
+ goalWorker.onmessage=({data:response})=>{if(run!==goalRun)return;if(response.type==='progress'){$('goalWork').textContent=`${response.phase==='spawy'?'Liczenie spawów':'Sprawdzanie składników'} · ${response.attempts?.toLocaleString('pl')||0} sprawdzonych kombinacji · ${response.states?.toLocaleString('pl')||0} stanów`;return;}finish();if(response.type==='missingDone')renderGoalPlans(target,response);else $('goalResults').textContent=response.message||'Nie udało się sprawdzić przepisów.';};
  goalWorker.onerror=()=>{if(run!==goalRun)return;finish();$('goalResults').textContent='Nie udało się sprawdzić przepisów.';};
  const finishGraceMs=Math.min(30000,Math.max(2000,timeMs*0.05));
  goalDeadlineTimer=setTimeout(()=>{if(run!==goalRun)return;finish();$('goalResults').textContent='Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek lub liczbę spawów i spróbuj ponownie.';},timeMs+finishGraceMs);

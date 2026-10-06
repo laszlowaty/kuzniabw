@@ -10,18 +10,26 @@ export function createGoalTarget(data,categoryId,base,prefix='',suffix=''){
  return {...target,original:itemName(target)};
 }
 
-// Invert each table axis, then let merge() verify the whole recipe and quality.
-function complements(target,known,category){
- const axes={};
- for(const axis of ['base','prefix','suffix']){
-  const table=category.axes[axis];
-  if(!table){if(target[axis]||known[axis])return [];axes[axis]=[''];continue;}
-  if(axis!=='base'&&!target[axis]){axes[axis]=[''];continue;}
-  if(axis!=='base'&&!known[axis])return [];
-  axes[axis]=table.values.filter(value=>!table.blocked.includes([known[axis],value].sort((a,b)=>table.values.indexOf(a)-table.values.indexOf(b)).join('|'))&&table.table[`${known[axis]}|${value}`]===target[axis]);
-  if(!axes[axis].length)return [];
+// Invert each table axis lazily so large affix tables can be stopped on time.
+function* axisComplements(target,known,category,axis,pulse){
+ const table=category.axes[axis];
+ if(!table){if(!target[axis]&&!known[axis])yield '';return;}
+ if(axis!=='base'&&!target[axis]){yield '';return;}
+ if(axis!=='base'&&!known[axis])return;
+ const order=new Map(table.values.map((value,index)=>[value,index])),blocked=new Set(table.blocked);
+ for(const value of table.values){
+  if(pulse())return;
+  const pair=[known[axis],value].sort((a,b)=>order.get(a)-order.get(b)).join('|');
+  if(!blocked.has(pair)&&table.table[`${known[axis]}|${value}`]===target[axis])yield value;
  }
- return axes.base.flatMap(base=>axes.prefix.flatMap(prefix=>axes.suffix.map(suffix=>({category:category.id,rarity:known.rarity,base,prefix,suffix}))));
+}
+function* complements(target,known,category,pulse){
+ for(const base of axisComplements(target,known,category,'base',pulse))
+  for(const prefix of axisComplements(target,known,category,'prefix',pulse))
+   for(const suffix of axisComplements(target,known,category,'suffix',pulse)){
+    if(pulse())return;
+    yield {category:category.id,rarity:known.rarity,base,prefix,suffix};
+   }
 }
 
 function newIngredient(shape,id){
@@ -29,21 +37,32 @@ function newIngredient(shape,id){
  return {...n,original:`${itemName(n)} (+1)`};
 }
 
-function firstCandidates(known,target,category){
+function* firstCandidates(known,target,category,pulse){
  const prefixes=known.prefix&&target.prefix?(category.axes.prefix?.values||[]):[''];
  const suffixes=known.suffix&&target.suffix?(category.axes.suffix?.values||[]):[''];
- return category.axes.base.values.flatMap(base=>prefixes.flatMap(prefix=>suffixes.map(suffix=>({category:category.id,rarity:known.rarity,base,prefix,suffix}))));
+ for(const base of category.axes.base.values)for(const prefix of prefixes)for(const suffix of suffixes){
+  if(pulse())return;
+  yield {category:category.id,rarity:known.rarity,base,prefix,suffix};
+ }
 }
 
-export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit=5}={}){
+export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit=5,onProgress=()=>{}}={}){
  if(!Number.isInteger(maxSteps)||maxSteps<1||maxSteps>25)throw new Error('Liczba spawów musi wynosić od 1 do 25.');
  const category=data.categories.find(c=>c.id===target.category);
  if(!category)throw new Error('Nie rozpoznano rodzaju przedmiotu.');
  const owned=items.filter(i=>i.category===target.category&&i.rarity===target.rarity&&itemClass(i)!==null&&itemClass(i)<18);
- const deadline=performance.now()+timeMs,found=new Map();let partial=false,attempts=0,bestMissing=Infinity;
+ const started=performance.now(),deadline=started+timeMs,found=new Map();let partial=false,attempts=0,work=0,bestMissing=Infinity,lastProgress=started;
+ const pulse=()=>{
+  work++;
+  if(work%128!==0)return partial;
+  const now=performance.now();
+  if(now>=deadline){partial=true;return true;}
+  if(work%1024===0||now-lastProgress>=180){lastProgress=now;onProgress({attempts:work,states:found.size,elapsedMs:now-started,phase:'składniki'});}
+  return partial;
+ };
  const timedOut=()=>{if(performance.now()>=deadline){partial=true;return true;}return false;};
  const consider=(left,right)=>{
-  if(++attempts%256===0&&timedOut())return null;
+  attempts++;if(pulse())return null;
   const merged=merge(left,right,data);return merged?{...merged,left,right}:null;
  };
  const accept=node=>{
@@ -60,7 +79,7 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
  // budget can still return a useful partial result.
  for(const a of owned){
   if(partial)break;
-  for(const shape of complements(target,a,category))accept(build(a,newIngredient(shape,items.length)));
+  for(const shape of complements(target,a,category,pulse))accept(build(a,newIngredient(shape,items.length)));
  }
  // Existing inventory takes priority over recommendations to acquire anything.
  const ownedPairs=[];
@@ -81,15 +100,15 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
  if(maxSteps>=2){
   for(const mid of ownedPairs){
    if(partial)break;
-   for(const shape of complements(target,mid,category))accept(build(mid,newIngredient(shape,items.length)));
+   for(const shape of complements(target,mid,category,pulse))accept(build(mid,newIngredient(shape,items.length)));
   }
   for(const final of owned){
    if(partial)break;
-   for(const desired of complements(target,final,category)){
+   for(const desired of complements(target,final,category,pulse)){
     if(partial)break;
     for(const first of owned){
      if(first.id===final.id)continue;
-     for(const shape of complements(desired,first,category)){
+     for(const shape of complements(desired,first,category,pulse)){
       const mid=build(first,newIngredient(shape,items.length));
       if(mid&&sameName(mid,desired))accept(build(mid,final));
       if(partial)break;
@@ -105,7 +124,7 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
    if(partial)break;
    for(const suffix of target.suffix?(category.axes.suffix?.values||[]):['']){
     const first=newIngredient({category:category.id,rarity:target.rarity,base,prefix,suffix},items.length);
-    for(const shape of complements(target,first,category))accept(build(first,newIngredient(shape,items.length+1)));
+    for(const shape of complements(target,first,category,pulse))accept(build(first,newIngredient(shape,items.length+1)));
     if(partial)break;
    }
   }
@@ -113,17 +132,17 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
  // If needed, use one owned item with two purchased ingredients in two fusions.
  if(maxSteps>=2)for(const ownedItem of owned){
   if(partial)break;
-  for(const shape of firstCandidates(ownedItem,target,category)){
+  for(const shape of firstCandidates(ownedItem,target,category,pulse)){
    const mid=build(ownedItem,newIngredient(shape,items.length));
    if(!mid)continue;
-   for(const finalShape of complements(target,mid,category))accept(build(mid,newIngredient(finalShape,items.length+1)));
+   for(const finalShape of complements(target,mid,category,pulse))accept(build(mid,newIngredient(finalShape,items.length+1)));
   }
  }
  // The short-plan inversion above finds missing ingredients quickly. For a larger
  // limit, also enumerate valid recipes made entirely from the owned inventory.
  if(maxSteps>2&&!timedOut()&&owned.length>=2){
   const remaining=Math.max(1,deadline-performance.now());
-  const extended=explore(owned,{categories:[category]},Math.min(25,maxSteps),()=>{},{timeMs:remaining,maxSteps,states:Infinity,attempts:Infinity});
+  const extended=explore(owned,{categories:[category]},Math.min(25,maxSteps),progress=>onProgress({...progress,attempts:work+progress.attempts,states:found.size+progress.states,phase:'spawy'}),{timeMs:remaining,maxSteps,states:Infinity,attempts:Infinity});
   attempts+=extended.attempts;
   partial ||= extended.truncated;
   for(const node of extended.results){
@@ -131,16 +150,16 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
    accept(node);
    if(partial)continue;
    if(node.steps>=maxSteps)continue;
-   for(const shape of complements(target,node,category)){
+   for(const shape of complements(target,node,category,pulse)){
     if(timedOut())break;
     accept(build(node,newIngredient(shape,items.length)));
    }
    if(node.steps+2>maxSteps||bestMissing<2)continue;
-   for(const shape of firstCandidates(node,target,category)){
+   for(const shape of firstCandidates(node,target,category,pulse)){
     if(timedOut())break;
     const mid=build(node,newIngredient(shape,items.length));
     if(!mid)continue;
-    for(const finalShape of complements(target,mid,category)){
+    for(const finalShape of complements(target,mid,category,pulse)){
      if(timedOut())break;
      accept(build(mid,newIngredient(finalShape,items.length+1)));
     }
@@ -148,5 +167,6 @@ export function findMissingPlans(items,target,data,{maxSteps=2,timeMs=5000,limit
   }
  }
  const plans=[...found.values()].sort((a,b)=>a.missingCount-b.missingCount||(ingredients(b).length-b.missingCount)-(ingredients(a).length-a.missingCount)||a.steps-b.steps||ingredients(a).filter(i=>i.missing).map(itemName).join('|').localeCompare(ingredients(b).filter(i=>i.missing).map(itemName).join('|'),'pl'));
+ onProgress({attempts:work,states:found.size,elapsedMs:performance.now()-started,done:true});
  return {plans:plans.slice(0,limit),partial,attempts};
 }
