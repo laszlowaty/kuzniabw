@@ -63,13 +63,13 @@ function filterOptions(){
  for(const [id,axis]of [['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']]){
   const previous=$(id).value;
   const values=[...new Set(cats.flatMap(c=>c.axes[axis]?.values||[]))].sort((a,b)=>label(a).localeCompare(label(b),'pl'));
-  $(id).innerHTML='<option value="all">Wszystkie</option>'+(axis==='base'?'':'<option value="none">Bez '+(axis==='prefix'?'prefiksu':'sufiksu')+'</option>')+values.map(v=>`<option value="${esc(v)}">${esc(axis==='base'?itemName({base:v}):label(v))}</option>`).join('');
-  $(id).value=previous==='none'&&axis!=='base'||values.includes(previous)?previous:'all';
+  $(id).innerHTML='<option value="all">Wszystkie</option>'+(axis==='base'?'':'<option value="any">Dowolny</option><option value="none">Bez '+(axis==='prefix'?'prefiksu':'sufiksu')+'</option>')+values.map(v=>`<option value="${esc(v)}">${esc(axis==='base'?itemName({base:v}):label(v))}</option>`).join('');
+  $(id).value=(previous==='none'||previous==='any')&&axis!=='base'||values.includes(previous)?previous:'all';
  }
 }
 function matchesCurrentFilters(n){
  const category=$('category').value;
- return (category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>$(id).value==='all'||($(id).value==='none'?!n[key]:n[key]===$(id).value));
+ return (category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>{const value=$(id).value;return value==='all'||(value==='none'?!n[key]:value==='any'?Boolean(n[key]):n[key]===value);});
 }
 function filtered(){
  const matching=results.filter(n=>matchesCurrentFilters(n)&&possibleForSex(n,profile().sex,itemDetails,itemCatalog));
