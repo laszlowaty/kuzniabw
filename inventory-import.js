@@ -13,7 +13,7 @@ function getPatterns(data){
 export function cleanInventoryText(raw){
  return String(raw).replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi,'\n').replace(/<\/?(?:br|div|p|tr|td|li|h[1-6])\b[^>]*>/gi,'\n').replace(/<[^>]*>/g,' ').replace(/\[(?:\/?(?:b|i|u|color|size|url)|\*)[^\]]*\]/gi,'').replace(/&(?:nbsp|amp|quot|apos|lt|gt);/gi,m=>({'&nbsp;':' ','&amp;':'&','&quot;':'"','&apos;':"'",'&lt;':'<','&gt;':'>'}[m.toLowerCase()])).replace(/&#(x[\da-f]+|\d+);/gi,(_,n)=>{const v=n[0].toLowerCase()==='x'?parseInt(n.slice(1),16):Number(n);return v>0&&v<=0x10ffff?String.fromCodePoint(v):' ';}).replace(/\\[nrt]/g,'\n').replace(/\u00a0/g,' ').replace(/[\u200b-\u200d\ufeff]/g,'').replace(/\r/g,'\n');
 }
-export function importInventory(raw,data){
+export function importInventory(raw,data,category='all'){
  const items=[],ignored=[];
  if(String(raw).length>500000)return {items,ignored,error:'Wklej maksymalnie 500 tys. znaków naraz.'};
  const source=cleanInventoryText(raw).replace(/(?<![\p{L}\p{N}_])(?:SPRZEDAJ|ZAŁÓŻ|ZDEJMIJ|PRZENIEŚ|USUŃ|WYPOSAŻ|SCHOWAJ)(?![\p{L}\p{N}_])/giu,'\n$&\n').replace(/(?<![\p{L}\p{N}_])(?:WYMAGANIA|CECHY|CENA(?: SPRZEDAŻY)?|MANA|NANITY|OBRONA|OBRAŻENIA|PŁEĆ|STREFA)\s*:/giu,'\n$&').replace(/[;|\t]+/g,'\n');
@@ -37,6 +37,7 @@ export function importInventory(raw,data){
    if(Number(name.match(/\(\+(\d+)\)/)?.[1]||0)>5)continue;
    const parsed=parseInventory(name,data);
    if(parsed.errors.length||parsed.items.length!==1)continue;
+   if(category!=='all'&&parsed.items[0].category!==category){ignored.push({line:lineIndex+1,text:name});accepted.push(hit);end=hit.end;continue;}
    const qty=before.match(/(?:^|\s)(\d+)\s*[x×]\s*$/)?.[1];
    const count=qty?Number(qty):1;
    if(!Number.isSafeInteger(count)||count<1){ignored.push({line:lineIndex+1,text:original});continue;}

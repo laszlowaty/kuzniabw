@@ -214,12 +214,12 @@ async function calculate(){
  });
 }
 function parseFeedback(){
- const parsed=importInventory($('inventoryText').value,data);
+ const parsed=importInventory($('inventoryText').value,data,$('importCategory').value);
  $('parseFeedback').innerHTML=`<strong>Rozpoznano ${parsed.items.length} szt.</strong> Pominięto ${parsed.ignored.length} fragmentów tekstu.${parsed.error?`<p class="parseError">${esc(parsed.error)}</p>`:''}${parsed.items.length?`<details open><summary>Przedmioty do importu</summary><ol class="importPreview">${parsed.items.map(i=>`<li>${esc(i.original)}</li>`).join('')}</ol></details>`:''}${parsed.ignored.length?`<details><summary>Co zostało pominięte?</summary>${parsed.ignored.slice(0,30).map(e=>`<div class="parseError">Linia ${e.line}: ${esc(e.text)}</div>`).join('')}${parsed.ignored.length>30?'<p>Pokazano pierwszych 30 pominiętych fragmentów.</p>':''}</details>`:''}`;
  return parsed;
 }
-function loadInventory(text,{preserveHistory=false}={}){
- const parsed=importInventory(text,data);if(parsed.error)throw new Error(parsed.error);
+function loadInventory(text,{preserveHistory=false,category='all'}={}){
+ const parsed=importInventory(text,data,category);if(parsed.error)throw new Error(parsed.error);
  clearGoalResults();
  if(!preserveHistory){enteredCosts.clear();simulationHistory.length=0;$('inventoryChange').textContent=parsed.ignored.length?`Zaimportowano ${parsed.items.length} szt. Pominięto ${parsed.ignored.length} fragmentów tekstu.`:'';}
  inventoryText=parsed.items.map(i=>i.original).join('\n');inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';return calculate();
@@ -266,6 +266,7 @@ async function init(){
  const response=await fetch('./data.json');if(!response.ok)throw new Error('Nie udało się wczytać tabel R21.');data=await response.json();
  try{const [details,catalog,requirements]=await Promise.all(['./item-details.json','./item-catalog.json','./item-requirements.json'].map(url=>fetch(url).catch(()=>null)));if(details?.ok)itemDetails=await details.json();if(catalog?.ok)itemCatalog=await catalog.json();if(requirements?.ok){itemDetails??={items:{}};itemDetails.requirementModels=(await requirements.json()).models;}}catch{}
  const options=data.categories.map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');$('category').insertAdjacentHTML('beforeend',options);$('tableCategory').innerHTML=options;
+ $('importCategory').insertAdjacentHTML('beforeend',options);
  $('goalCategory').insertAdjacentHTML('beforeend',options);
  $('goalForm').onsubmit=searchMissing;$('goalCategory').onchange=updateGoalCategory;
  for(const id of ['goalBase','goalPrefix','goalSuffix'])$(id).onchange=updateGoalPreview;
@@ -296,8 +297,8 @@ async function init(){
  $('loadMore').onclick=()=>{visibleLimit+=50;renderResults();};
  $('editInventory').onclick=()=>{$('inventoryText').value=inventoryText;$('parseFeedback').textContent='';$('inventoryDialog').showModal();};
  $('editInventoryFromGoal').onclick=()=>$('editInventory').click();
- $('closeDialog').onclick=()=>$('inventoryDialog').close();$('validateText').onclick=parseFeedback;
- $('inventoryForm').onsubmit=e=>{e.preventDefault();const p=parseFeedback();if(p.error)return;$('inventoryDialog').close();loadInventory($('inventoryText').value).catch(()=>{});};
+ $('closeDialog').onclick=()=>$('inventoryDialog').close();$('validateText').onclick=parseFeedback;$('importCategory').onchange=parseFeedback;
+ $('inventoryForm').onsubmit=e=>{e.preventDefault();const p=parseFeedback();if(p.error)return;const category=$('importCategory').value;$('inventoryDialog').close();loadInventory($('inventoryText').value,{category}).catch(()=>{});};
  $('gunExample').onclick=()=>loadInventory(GUNS).catch(()=>{});
  $('undoPlan').onclick=()=>{if(running||!simulationHistory.length)return;const previous=simulationHistory.pop();$('inventoryChange').textContent='Cofnięto ostatni plan. Składniki wróciły do ekwipunku.';return loadInventory(previous,{preserveHistory:true}).catch(()=>{});};
  registerTools();loadCatalog().catch(()=>{});await calculate();
