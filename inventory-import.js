@@ -48,5 +48,7 @@ export function importInventory(raw,data,category='all'){
   let rest=clean;for(const hit of [...accepted].reverse())rest=rest.slice(0,hit.start)+' '+rest.slice(hit.end);
   if(rest.replace(/[\s\d.,:#>()[\]{}"'✓☐•*+×=-]/g,'').trim())ignored.push({line:lineIndex+1,text:rest.trim()});
  }
- return {items,ignored,error:items.length?null:'Nie rozpoznano żadnego przedmiotu. Obecny ekwipunek nie został zmieniony.'};
+ const selectedCategory=data.categories.find(c=>c.id===category);
+ const emptyError=category==='all'?'Nie rozpoznano żadnego przedmiotu. Obecny ekwipunek nie został zmieniony.':`Nie rozpoznano żadnego przedmiotu rodzaju „${selectedCategory?.label||category}”. Obecny ekwipunek nie został zmieniony.`;
+ return {items,ignored,error:items.length?null:emptyError};
 }
