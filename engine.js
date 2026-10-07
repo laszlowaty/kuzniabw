@@ -87,7 +87,11 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
  const started=performance.now();let lastProgress=started,stopReason=null;
  const activeCategories=data.categories.filter(c=>items.some(i=>i.category===c.id));
  if(items.length>100)throw new Error('Maksymalnie 100 przedmiotów na analizę.');
- const results=new Map();let states=items.length,attempts=0,truncated=false;
+ const results=new Map(),recipeSignatures=new Map();let states=items.length,attempts=0,truncated=false;
+ function recipeSignature(node){
+  const ids=[];function collect(n){if(!n.left)ids.push(n.id);else{collect(n.left);collect(n.right);}}
+  collect(node);return ids.sort((a,b)=>a-b).join(',');
+ }
  function* searchCategory(c){
   const pool=items.filter(i=>i.category===c.id);const maxLeaves=Math.min(pool.length,2**maxDepth,limits.maxSteps+1);
   const layers=Array.from({length:maxLeaves+1},()=>new Map());
@@ -105,7 +109,13 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
      if(old&&old.depth<=depth)continue;
      const n={...m,mask,depth,steps:leaves-1,left:a,right:b};layers[leaves].set(key,n);
      const result=resultKey(n),previous=results.get(result);
-     if(!previous||n.steps<previous.steps||n.steps===previous.steps&&n.depth<previous.depth)results.set(result,n);
+     if(!previous){results.set(result,{...n,recipes:[n]});recipeSignatures.set(result,new Set([recipeSignature(n)]));}
+     else{
+      const recipes=previous.recipes||[previous],signatures=recipeSignatures.get(result),signature=recipeSignature(n);
+      if(!signatures.has(signature)){recipes.push(n);signatures.add(signature);}
+      if(n.steps<previous.steps||n.steps===previous.steps&&n.depth<previous.depth)Object.assign(previous,n);
+      previous.recipes=recipes;
+     }
      if(!old&&++states>limits.states){truncated=true;stopReason='memory';return;}
     }
    }
@@ -123,7 +133,9 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
   if(stopReason)break;
   if(pending.length&&!finished)current=(current+1)%pending.length;
  }
- return {results:[...results.values()].sort((a,b)=>a.steps-b.steps||a.depth-b.depth||itemName(a).localeCompare(itemName(b),'pl')),states,attempts,truncated,maxDepth,stopReason,maxSteps:limits.maxSteps,elapsedMs:performance.now()-started};
+ const output=[...results.values()];
+ for(const result of output)result.recipes?.sort((a,b)=>a.steps-b.steps||a.depth-b.depth||recipeSignature(a).localeCompare(recipeSignature(b)));
+ return {results:output.sort((a,b)=>a.steps-b.steps||a.depth-b.depth||itemName(a).localeCompare(itemName(b),'pl')),states,attempts,truncated,maxDepth,stopReason,maxSteps:limits.maxSteps,elapsedMs:performance.now()-started};
 }
 export function recipeSteps(node){const out=[];function walk(n){if(!n.left)return;walk(n.left);walk(n.right);out.push(n);}walk(node);return out;}
 export function ingredients(node){return node.left?[...ingredients(node.left),...ingredients(node.right)]:[node];}
