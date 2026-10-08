@@ -25,6 +25,21 @@ try{
  assert.equal(await page.locator('#inventoryCount').textContent(),'0');
  await page.locator('#craftingTab').click();
  await page.locator('.profileDisclosure>summary').click();
+ const originalText='  Czapka  \n\nKusza (+1)\nSPRZEDAJ\n';
+ await page.locator('#editInventory').click();
+ await page.locator('#inventoryText').fill(originalText);
+ for(const [category,name]of [['head','Czapka'],['ranged','Kusza (+1)']]){
+  await page.locator('#importCategory').selectOption(category);
+  assert.equal(await page.locator('#inventoryText').inputValue(),originalText);
+  await page.locator('#inventoryForm button[type=submit]').click();
+  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+  assert.equal(await page.locator('#inventoryCount').textContent(),'1');
+  assert.equal(await page.locator('#inventoryList .itemInfoTrigger').textContent(),name);
+  await page.locator('#editInventory').click();
+  assert.equal(await page.locator('#inventoryText').inputValue(),originalText);
+ }
+ await page.locator('#importCategory').selectOption('all');
+ await page.locator('#closeDialog').click();
  async function inventory(text){
   await page.locator('#editInventory').click();await page.locator('#inventoryText').fill(text);
   await page.locator('#inventoryForm button[type=submit]').click();

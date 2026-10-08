@@ -248,7 +248,7 @@ function loadInventory(text,{preserveHistory=false,category='all'}={}){
  const parsed=importInventory(text,data,category);if(parsed.error)throw new Error(parsed.error);
  clearGoalResults();
  if(!preserveHistory){enteredCosts.clear();simulationHistory.length=0;$('inventoryChange').textContent=parsed.ignored.length?`Zaimportowano ${parsed.items.length} szt. Pominięto ${parsed.ignored.length} fragmentów tekstu.`:'';}
- inventoryText=parsed.items.map(i=>i.original).join('\n');inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';return calculate();
+ inventoryText=text;inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';return calculate();
 }
 async function applyPlan(node){
  if(running)throw new Error('Poczekaj na zakończenie obliczeń.');
@@ -257,7 +257,7 @@ async function applyPlan(node){
  const remaining=inventory.filter(i=>!ids.has(i.id));
  const name=fullItemName(node);const nextText=[...remaining.map(i=>i.original),name].join('\n');
  const check=parseInventory(nextText,data);if(check.errors.length)throw new Error('Nie udało się dodać wyniku do listy składników.');
- simulationHistory.push(inventoryText);
+ simulationHistory.push(inventory.map(i=>i.original).join('\n'));
  $('inventoryChange').textContent=`Zastosowano plan: zużyto ${used.length} szt., dodano ${name}. Ekwipunek: ${inventory.length} → ${remaining.length+1} szt.`;
  return await loadInventory(nextText,{preserveHistory:true});
 }
