@@ -46,7 +46,9 @@ export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getI
  function leave(e){if(panel.contains(e.relatedTarget)||target?.contains(e.relatedTarget))return;clearTimeout(closeTimer);closeTimer=setTimeout(close,220);}
  document.addEventListener('pointerover',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger&&trigger!==target&&(e.pointerType==='mouse'||e.pointerType==='pen'))show(trigger,e);else if(panel.contains(e.target))clearTimeout(closeTimer);});
  document.addEventListener('pointerout',leave);
- document.addEventListener('focusin',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger===skipFocusOnce&&trigger)return;if(trigger)show(trigger);else if(!panel.contains(e.target))close();});
+ // Pointer focus precedes click: opening here can cover the tapped item and
+ // redirect that click to the popover. Keyboard focus still opens immediately.
+ document.addEventListener('focusin',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger===skipFocusOnce&&trigger)return;if(trigger?.matches(':focus-visible'))show(trigger);else if(!panel.contains(e.target))close();});
  document.addEventListener('click',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger&&trigger.isConnected!==false)show(trigger,e.detail?e:null);else if(!panel.contains(e.target))close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='ArrowDown'&&target===e.target&&!panel.hidden){e.preventDefault();document.getElementById('closeItemInfo').focus();}});
  window.addEventListener('resize',close);

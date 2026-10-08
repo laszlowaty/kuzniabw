@@ -1,4 +1,4 @@
-import {ingredients,itemName,resultKey} from './engine.js';
+import {ingredients,itemName,resultKey,label} from './engine.js';
 
 // Plans are alternatives: keep the largest quantity needed by a single plan.
 export function missingItemList(plans){
@@ -20,4 +20,14 @@ export function missingItemList(plans){
 
 export function missingListText(items){
  return items.map(({quantity,name})=>`${quantity} - ${name}`).join('\n');
+}
+
+// Use canonical affixes, not the gendered prefix in the full item name.
+export function missingAffixList(plans,axis){
+ if(axis!=='prefix'&&axis!=='suffix')throw new RangeError('Nieznany rodzaj afiksu.');
+ const names=new Set();
+ for(const plan of plans)for(const item of ingredients(plan)){
+  if(item.missing&&item[axis])names.add(label(item[axis]));
+ }
+ return [...names].sort((a,b)=>a.localeCompare(b,'pl'));
 }

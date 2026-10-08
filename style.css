@@ -33,3 +33,168 @@
 .detail{min-width:0}.recipeTitle{min-width:0}.recipeTitle h3{overflow-wrap:anywhere}.recipeMeta{flex-wrap:wrap}.recipeChoice{display:grid;gap:7px;min-width:0;margin:0 0 14px;color:var(--muted);font-size:12px}.recipeChoice select{display:block;width:100%;max-width:100%;min-width:0;min-height:42px;padding:9px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--bg);border:1px solid #3b4351;border-radius:3px;color:var(--text)}
 
 .goalResultsLayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,340px);gap:16px;align-items:start}.goalCardsColumn{min-width:0}.goalMissingSidebar{position:sticky;top:18px;min-width:0;padding:16px;background:var(--raised);border:1px solid var(--line);border-radius:4px}.goalMissingSidebar h3{margin:0 0 10px;color:var(--gold);font-size:16px}.goalMissingSidebar p{margin:0 0 12px}.goalMissingSidebar textarea{display:block;width:100%;height:360px;max-height:55dvh;min-height:160px;resize:vertical;padding:12px;margin:12px 0;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:3px;font-size:13px;line-height:1.7}.goalMissingSidebar #goalCopyStatus{margin:10px 0 0;color:var(--gold)}@media(max-width:1100px){.goalResultsLayout{grid-template-columns:minmax(0,1fr)}.goalMissingSidebar{position:static;grid-row:1}.goalMissingSidebar textarea{height:220px}}
+
+/* Shared layout: keep controls readable before introducing another column. */
+body{line-height:1.5}
+main{max-width:1720px;padding:28px 28px 40px}
+h1{font-family:inherit;font-weight:650;font-size:clamp(26px,2.4vw,36px);line-height:1.2;letter-spacing:-.8px}
+h2{line-height:1.4}
+button:disabled{cursor:not-allowed}
+button,.primary,.secondary,select,input:not([type=range]),textarea{border-radius:6px}
+button:not(.itemInfoTrigger),.textButton,summary{min-height:44px}
+select{max-width:100%;min-width:0;text-overflow:ellipsis}
+input,select,textarea{scroll-margin-block:24px}
+.panel{border-radius:10px}
+.top{min-height:76px;padding-inline:28px}
+.mark{border-radius:10px}
+.top nav{gap:24px}
+.toolLayout{display:block}
+.toolTabs{position:static;display:flex;flex-direction:row;align-self:auto;gap:6px;padding:6px;margin:0 0 24px;width:fit-content;max-width:100%;height:auto;overflow:visible;border-radius:10px}
+.toolTabs button{flex:1 1 auto;min-width:0;min-height:46px;padding:10px 22px;font-size:14px;text-align:center}
+.toolTabs button[aria-selected=true]{background:#352a27;border-color:#885147;color:#ffb2a6}
+.toolTabs button[aria-selected=true]::before{display:none}
+.toolHeading,.heading{padding:0;border:0;background:none;margin:0 0 24px;gap:20px}
+.toolHeading>div,.heading>div{min-width:0}
+.toolHeading h1{margin-bottom:10px}
+.toolHeading .secondary{white-space:normal}
+.profileDisclosure{margin:0 0 18px;background:transparent}
+.profileDisclosure>summary,.helpDisclosure>summary{display:list-item;padding:12px 18px;font-size:14px;color:var(--text);cursor:pointer}
+.profileDisclosure>summary span{color:var(--muted);font-size:13px;margin-left:12px}
+.profileDisclosure[open]>summary{border-bottom:1px solid var(--line)}
+.profileSettings{margin:0;border:0;border-radius:0;padding:18px;gap:16px}
+.profileSettings .field{min-width:0;flex:1 1 190px}
+.profileHint{flex-basis:100%;margin:0}
+.helpDisclosure{margin:14px 0;background:transparent}
+.helpDisclosure .scope{margin:0;padding:0 18px 18px;max-width:1100px}
+.guide{margin-bottom:20px;background:transparent}
+.guideContent{background:var(--panel)}
+.catalogStatus{margin:12px 0}
+.toolPanel .goalSearch{padding:24px}
+.toolPanel .goalSearch form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:end;gap:20px 16px}
+.toolPanel .goalSearch form>div,.goalPreview{grid-column:1/-1}
+.formIntro{margin-bottom:4px}
+.goalSearch .formIntro h2{font-size:18px;color:var(--text);margin-bottom:6px}
+.goalSearch .formIntro p{max-width:760px;font-size:14px;line-height:1.65}
+.toolPanel .goalSearch label{min-width:0;font-size:14px;color:#d9dde4}
+.goalSearch select,.goalFilters select,.goalFilters input,.recipeChoice select{min-height:46px}
+.goalSearch #goalSearch{grid-column:3/-1;min-height:46px}
+.goalPreview:empty{display:none}
+.goalSearch #goalStop{grid-column:3/-1}
+.settings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:20px 16px;padding:22px;border-radius:10px}
+.settings .depth{grid-column:span 2;min-width:0}
+.settings .field{min-width:0}
+.settings .field select{font-size:14px;min-height:46px}
+.settings .primary{margin:0;align-self:end;min-height:46px}
+.settings .textButton,.settings .secondary{align-self:end}
+.settingsActions{display:flex;flex-direction:column;gap:8px;min-width:0;align-self:end}
+.settingsActions button{width:100%;white-space:normal}
+.depthControl input{min-height:32px;margin:0}
+.workspace{grid-template-columns:minmax(220px,.8fr) minmax(0,1.1fr) minmax(0,1fr);gap:18px}
+.workspace>.panel{min-width:0}
+.inventory{grid-row:auto}
+.detail{grid-column:auto;position:sticky;top:18px;scroll-margin-top:18px}
+.panelHead{flex-wrap:wrap;padding:18px}
+.panelHead>div{min-width:0}
+.itemInfoTrigger,.resultName,.goalPlans summary,.goalPlanBody,.empty{overflow-wrap:anywhere}
+.itemInfoTrigger{min-width:0}
+.resultSort{gap:6px;padding:12px}
+.resultSort button{flex:1 1 110px;min-height:44px}
+.resultHelp{border-bottom:1px solid var(--line)}
+.resultHelp summary{padding:12px 18px;font-size:13px;color:var(--muted);cursor:pointer}
+.strongComboNote{margin:0;border:0;padding-top:0}
+.result{padding:18px}
+.result.selected{box-shadow:inset 0 0 0 1px #885147;border-left-color:var(--accent)}
+.recipeNavigation{display:none}
+.goalFilters{grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr))}
+.goalResultsLayout{grid-template-columns:minmax(0,1fr) minmax(260px,320px)}
+.goalPlans details{padding:0;border-radius:8px}
+.goalPlans summary{padding:14px;font-size:14px;line-height:1.6}
+.goalPlanBody{padding:0 14px 14px}
+.goalMissingSidebar{grid-row:auto}
+.goalMissingSidebar textarea{font-size:14px}
+.goalMissingSidebar .missingListMode{display:block;font-size:14px;color:var(--text);margin:14px 0}
+.missingListMode select{width:100%;min-height:46px;margin-top:7px;padding:10px 12px;background:var(--bg);color:var(--text);border:1px solid var(--line);font-size:16px}
+.auditSummary{border-radius:10px;overflow:hidden}
+.tableScroll{max-width:100%;max-height:65dvh}
+.tableHint{margin-bottom:10px}
+#inventoryDialog{width:min(760px,calc(100% - 24px));max-height:calc(100dvh - 24px);border-radius:12px;overscroll-behavior:contain}
+#inventoryDialog .panelHead{position:sticky;top:0;background:var(--panel);z-index:2}
+#inventoryDialog label{display:block;font-size:14px;margin:14px 0 8px;color:var(--text)}
+#importCategory{width:100%;min-height:46px;padding:10px 12px;color:var(--text);background:var(--bg);border:1px solid var(--line);margin-bottom:16px}
+#inventoryText{display:block;min-height:180px}
+.dialogActions{bottom:-23px;border-top:1px solid var(--line)}
+.itemPopover header button{flex:0 0 44px;min-height:44px}
+@media(max-width:1250px){
+ .workspace{grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr)}
+ .inventory{grid-column:1;grid-row:1}
+ .results{grid-column:2;grid-row:1/span 2}
+ .detail{grid-column:1;grid-row:2;position:static;max-height:80dvh}
+ .recipeNavigation{display:block}
+ #showRecipe{margin:12px;width:calc(100% - 24px)}
+ .goalResultsLayout{grid-template-columns:minmax(0,1fr)}
+ .goalMissingSidebar{position:static;grid-row:1}
+ .goalMissingSidebar textarea{height:180px}
+}
+@media(max-width:900px){
+ main{padding:24px 20px 32px}
+ .settings,.toolPanel .goalSearch form{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .goalSearch #goalSearch,.goalSearch #goalStop{grid-column:auto}
+ .goalFilters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .goalFilters label:first-child{grid-column:1/-1}
+ .toolTabs button{font-size:14px}
+ .toolHeading{align-items:flex-start}
+}
+@media(max-width:760px){
+ main{padding:20px 12px 28px}
+ .top{padding:16px;gap:16px}
+ .top nav{flex-basis:100%;height:44px;gap:12px}
+ .top nav button{flex:1}
+ .realm{font-size:10px;padding:6px 8px}
+ .brand{gap:10px}
+ .toolTabs{width:100%;margin-bottom:22px}
+ .toolTabs button{flex:1 1 0;padding:10px 8px;font-size:13px}
+ .toolHeading{flex-direction:column;gap:14px}
+ .toolHeading button{width:100%}
+ .eyebrow{font-size:10px;letter-spacing:1.2px}
+ .profileDisclosure>summary span{display:block;margin:3px 0 0 18px}
+ .profileSettings .field{flex-basis:100%}
+ .toolPanel .goalSearch{padding:16px}
+ .toolPanel .goalSearch form{gap:18px 12px}
+ .settings{padding:16px;gap:18px 12px}
+ .settings .field select,.field select,.goalSearch select,.goalFilters input,.goalFilters select,.recipeChoice select,#importCategory,textarea,.stepCosts input{font-size:16px}
+ .settings .field select{padding:10px}
+ .settingsActions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
+ .settingsActions button{flex:1 1 140px}
+ .workspace{display:flex;gap:20px}
+ .inventory{order:1;max-height:none;overflow:hidden}
+ #inventoryList{max-height:260px;overflow:auto}
+ .results{order:2}
+ #resultsList{max-height:60dvh;overflow:auto;scrollbar-gutter:stable}
+ .detail{order:3;max-height:none;position:static}
+ .detail #recipe{overflow:visible;scrollbar-gutter:auto}
+ .detail .panelHead{align-items:start}
+ .detail .recipeNavigation{font-size:13px}
+ .recipeTitle h3{font-size:25px}
+ .goalFilters{grid-template-columns:minmax(0,1fr)}
+ .goalMissingSidebar{padding:14px}
+ .goalMissingSidebar textarea{font-size:16px;height:160px}
+ .goalMissingSidebar button{width:100%;white-space:normal}
+ #inventoryDialog form{padding:0 16px 16px}
+ #inventoryDialog .panelHead{padding:12px 0}
+ #inventoryDialog p{font-size:13px}
+ .dialogActions{bottom:-16px;padding:12px 0;margin-top:12px;gap:8px}
+ .dialogActions button{min-height:46px}
+ .tableControls{gap:14px}
+ .auditSummary span{font-size:12px}
+ footer{padding:20px 16px}
+}
+@media(max-width:420px){
+ .toolPanel .goalSearch form{grid-template-columns:minmax(0,1fr)}
+ .goalSearch #goalSearch,.goalSearch #goalStop{grid-column:1}
+ .settings{grid-template-columns:minmax(0,1fr)}
+ .settings .depth{grid-column:1}
+ .toolTabs button{font-size:12px}
+ .panelHead{padding:14px}
+ .resourceTotals{gap:8px}
+ .resourceTotals strong{font-size:19px}
+}

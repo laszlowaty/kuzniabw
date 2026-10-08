@@ -23,6 +23,8 @@ try{
  await page.goto(origin);
  await page.waitForFunction(()=>document.querySelector('#catalogStatus').textContent.includes('Dane R21 gotowe'));
  assert.equal(await page.locator('#inventoryCount').textContent(),'0');
+ await page.locator('#craftingTab').click();
+ await page.locator('.profileDisclosure>summary').click();
  async function inventory(text){
   await page.locator('#editInventory').click();await page.locator('#inventoryText').fill(text);
   await page.locator('#inventoryForm button[type=submit]').click();
@@ -66,6 +68,7 @@ try{
  await page.route('**/item-requirements.json',route=>route.abort());
  await page.reload();
  await page.waitForFunction(()=>document.querySelector('#catalogStatus').textContent.includes('Nie wczytano dokładnych wymagań'));
+ await page.locator('#craftingTab').click();
  await page.locator('#gunExample').click();
  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  assert.ok(Number(await page.locator('#resultCount').textContent())>1);
