@@ -272,18 +272,31 @@ input,select,textarea{scroll-margin-block:24px}
 /* Denser phone layout, including when embedded in a narrow game panel. */
 @media(max-width:760px){
  body{font-size:14px}
- main{padding:16px 10px 22px}
- .heading{margin-bottom:16px}
- .heading h1{font-size:26px}
- .toolTabs{margin-bottom:16px}
+ main{padding:12px 10px 18px}
+ .top{padding:12px;gap:10px}
+ .heading{margin-bottom:12px}
+ .heading h1{font-size:23px;letter-spacing:-.5px}
+ .heading>a{margin-top:12px;font-size:12px}
+ .toolTabs{margin-bottom:12px}
  .toolHeading{gap:10px}
  .settings,.toolPanel .goalSearch{padding:12px;gap:12px}
  .toolPanel .goalSearch form{gap:12px 10px}
- .workspace{gap:14px}
- .panelHead{padding:12px}
- h2{font-size:15px}
+ .workspace{gap:12px}
+ .panelHead{padding:10px 12px}
+ h2{font-size:14px}
+ .auditSummary{margin-bottom:16px}
+ .auditSummary div{padding:11px 12px}
+ .auditSummary strong{font-size:23px;line-height:1.2}
+ .auditSummary span{font-size:11px;line-height:1.4;margin-top:5px}
+ .tableControls{gap:10px;margin-bottom:12px}
+ .depth label,.field label,.toolPanel .goalSearch label{font-size:12px;margin-bottom:6px}
+ .field input,.field select{padding:8px 10px}
+ .tableControls .field select{min-height:40px}
+ .audit{padding:12px;margin-top:16px}
+ .audit p,.audit summary{font-size:12px}
+ .profileDisclosure>summary,.helpDisclosure>summary{padding:10px 12px;font-size:13px}
  .status,.notice,.strongComboNote{padding:8px 12px;font-size:11px;line-height:1.45}
- .result{padding:10px 12px}
+ .result{padding:8px 10px}
  .resultName{font-size:14px;line-height:1.35;margin-bottom:6px}
  .resultMeta{font-size:11px;gap:6px}
  .pill{padding:2px 6px}
