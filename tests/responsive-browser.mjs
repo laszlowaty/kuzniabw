@@ -28,6 +28,10 @@ try{
   await page.locator('#missingTab').click();await fits(`missing ${width}`);
   await page.locator('#craftingTab').click();await fits(`crafting ${width}`);
   await page.locator('#tablesTab').click();await fits(`tables ${width}`);
+  // Journeys hide the inventory and keep the completion column on screen.
+  await page.locator('#journeyTab').click();await page.locator('#journeyTable .journeyChance').first().waitFor();await fits(`journeys ${width}`);
+  assert.equal(await page.locator('#sharedInventory').isVisible(),false,`journeys ${width}: inventory hidden`);
+  assert.ok(await page.locator('#journeyTable .journeyChance').last().evaluate(e=>e.getBoundingClientRect().right<=innerWidth+1),`journeys ${width}: completion visible`);
   await page.locator('#forgeTab').click();
  }
  await page.setViewportSize({width:375,height:812});

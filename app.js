@@ -10,6 +10,7 @@ import {assessProfileAffixes,tattoos,races,possibleForSex,requiredSex} from './p
 import {sortResults} from './result-sort.js';
 import {createGoalTarget} from './missing-planner.js';
 import {missingItemList,missingListText,missingAffixList} from './missing-list.js';
+import {createJourneyPanel} from './journey-panel.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const axisLabels={base:'Baza',prefix:'Prefiks',suffix:'Sufiks'};
@@ -290,7 +291,8 @@ function renderTierEstimate(){
  $('tierShelf').innerHTML=estimate.items.map(({item,status})=>`<div class="tierShelfItem"><strong>#${item.id+1} ${itemPopover.markup(item,item.original)}</strong><span>${statuses[status]}</span></div>`).join('')||'<p>Brak przedmiotów.</p>';
 }
 function showToolPanel(which,focus=false){itemPopover.close();const tabs=[['missingTab','missingPanel','missing'],['craftingTab','craftingPanel','crafting'],['tiersTab','tiersPanel','tiers']];for(const [tab,panel,name]of tabs){$(panel).hidden=name!==which;$(tab).setAttribute('aria-selected',String(name===which));$(tab).tabIndex=name===which?0:-1;}if(which==='tiers'){tierVisibleLimit=50;renderTierEstimate();}if(which==='crafting'&&craftingDirty)calculate().catch(()=>{});if(focus)$(`${which}Tab`).focus();}
-function showView(which){itemPopover.close();$('forgeView').hidden=which!=='forge';$('tablesView').hidden=which!=='tables';for(const [id,view]of [['forgeTab','forge'],['tablesTab','tables']]){if(view===which)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}}
+let journeyPanel;
+function showView(which){itemPopover.close();$('forgeView').hidden=which!=='forge';$('tablesView').hidden=which!=='tables';$('journeyView').hidden=which!=='journey';document.querySelector('.sharedInventoryLayout').hidden=which==='journey';for(const [id,view]of [['forgeTab','forge'],['tablesTab','tables'],['journeyTab','journey']]){if(view===which)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}if(which==='journey')(journeyPanel??=createJourneyPanel()).open();}
 function registerTools(){
  const context=document.modelContext;if(!context?.registerTool)return;
  const abort=new AbortController();window.addEventListener('pagehide',()=>abort.abort(),{once:true});
@@ -329,7 +331,7 @@ async function init(){
  $('corrections').innerHTML=data.corrections.map(c=>`<div class="correction">${esc(c.cell)}: <s>${esc(c.from)}</s> → ${esc(c.to)}</div>`).join('');
  tableCategoryChanged();
  $('tableCategory').onchange=tableCategoryChanged;$('tableAxis').onchange=renderTables;
- $('forgeTab').onclick=()=>showView('forge');$('tablesTab').onclick=()=>showView('tables');
+ $('forgeTab').onclick=()=>showView('forge');$('tablesTab').onclick=()=>showView('tables');$('journeyTab').onclick=()=>showView('journey');
  $('showRecipe').onclick=()=>{$('recipePanel').focus({preventScroll:true});$('recipePanel').scrollIntoView({block:'start'});};
  $('backToResults').onclick=()=>{const target=$('resultsList').querySelector('.selected')||$('craftingResults');target.focus({preventScroll:true});target.scrollIntoView({block:'center'});};
  for(const [index,name]of ['missing','crafting','tiers'].entries()){

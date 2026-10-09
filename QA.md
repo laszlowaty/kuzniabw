@@ -34,3 +34,12 @@ Zakładka „Podbijanie tierów” bada każdą parę fizycznych sztuk ze wspól
 
 - `tests/tier-estimate.test.mjs` — bilans obu osi, utrata afiksu, duplikaty, klasyfikacja półki, blokady receptur i nieobsługiwane jakości.
 - `node tests/tier-browser.mjs <ścieżka-do-playwright/index.mjs>` — import bez uruchamiania wieloetapowej analizy, przejście do zwykłego planera, filtry, klawiatura, zachowanie oryginalnego tekstu, 68 sztuk / 2278 par, paginacja i szerokości 320–1440 px.
+
+## Szansa ukończenia podróży
+
+Zakładka „Podróże” korzysta z `journey-sim.js` i `journey-data.json`. Każda lokacja dostaje te same 100 wylosowanych tras (stałe ziarno, więc te same dane dają te same liczby). Węzły trasy są rozgrywane regułą: płać tym parametrem, który zostawia największą szansę na pokonanie bossa, a przy remisie tym, którego zostaje najwięcej; krew tylko wtedy, gdy daje wyraźnie lepszy wynik albo nic innego nie wystarcza. Walki z bossami są liczone dokładnie (expectimax) po wszystkich losowych slotach rund i po wszystkich ośmiu możliwych mini bossach.
+
+- `tests/journey-sim.test.mjs` — koszty według aktu i poziomu z zaokrągleniem połówek w górę, koszt mini bossa +50%, bossa +50% bez mini bossa i +100% z mini bossem na trasie (Szklana Pustynia: potwór 36–84, boss na poziomie 8: 156), układ trasy dla poziomów 1–9, pojedynczy parametr w 3. rundzie po zwykłej stawce bossa (Skarbiec, poziom 5: 162), krew tylko w całości, przeczekiwanie i opłacanie przeszkód czasowych, planowanie rund bossa, dokładne uśrednianie losowych slotów, mini boss wyłącznie spoza lokacji i jego pozycja z układu trasy, powtarzalność 100 tras, „Zalicz najtrudniejszą” (szukanie od poziomu 9 w dół, zgodność z planerem na znalezionym poziomie i poziom wyżej, niezależność od suwaka, skrajne parametry), podróż na żywo (szansa startowa równa wynikowi planera, inna podpowiedź przy powtórzonym wrogu po wydaniu parametru, przeczekiwanie przeszkód, wybór mini bossa i rundy do końca, dziennik zatrzymany na pierwszym wpisie, którego nie da się opłacić), etykiety procentów (bez zaokrąglania do 100%) i progi kolorów, walidacja wejścia oraz spójność danych.
+- `tests/responsive-browser.mjs` obejmuje widok „Podróże”: brak przewijania strony w poziomie, ukryty ekwipunek i widoczna kolumna ukończenia od 320 px.
+
+Nieuwzględnione lub założone: ataki specjalne bossów (brak wzoru na koszt), wagi losowania spotkań (wszystkie równe), kombo w 3. rundzie jako 75% stawki walki z bossem. Wynik dotyczy jednego zapasu parametrów, bez odpoczynku.

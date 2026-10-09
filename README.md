@@ -8,6 +8,27 @@ Lista brakujących składników ma trzy widoki: pełne przedmioty z ilością, u
 
 Obok rasy i tatuażu można wybrać płeć postaci. Wyniki spawów są wtedy filtrowane według ograniczeń „PŁEĆ” w katalogu R21, a niepasujące przedmioty w ekwipunku są oznaczone. Wyszukiwarka brakujących składników ostrzega, gdy wybrany cel jest niedostępny dla tej płci. Brak wyboru płci pokazuje wszystkie wyniki.
 
+## Podróże
+
+Widok „Podróże” szacuje szansę ukończenia każdej z dziewięciu lokacji (akty I–III) na jednym zapasie parametrów. Wpisuje się 9 parametrów postaci z początku podróży, punkty krwi i poziom trudności; układ trasy wynika z poziomu. Planer losuje 100 tras, wspólnych dla wszystkich lokacji, a walki z mini bossem i bossem liczy dokładnie dla każdego losowego parametru rundy. Wynik to średnia z 100 tras: zielony oznacza 100%, żółty mniej niż 100%, czerwony mniej niż 30%. Tabela pokazuje też średnią liczbę przebytych węzłów oraz szansę pokonania mini bossa i bossa. Poziom trudności ustawia się suwakiem. Pole „Zalicz najtrudniejszą” blokuje suwak i dla każdej lokacji sprawdza poziomy od 9 w dół na tych samych trasach. Pokazuje najwyższy poziom ze 100% szans, koszty na tym poziomie i szansę na kolejnym poziomie.
+
+Przycisk „Wyrusz w podróż” przy lokacji prowadzi przez podróż na żywo. Parametry są wtedy zablokowane, a zamiast tabeli widać pasek węzłów trasy, mini bossa i bossa. Dla każdego węzła wybiera się wroga, który pojawił się w grze, i jego drugi parametr. Planer pokazuje opcje zapłaty z szansą na ukończenie po każdej z nich i oznacza najlepszą. Po kliknięciu opcji użytej w grze koszt jest odejmowany, a reszta trasy przeliczana od bieżących parametrów, więc powtórzony wróg dostaje podpowiedź z uwzględnieniem wcześniej wydanych punktów. Przy bossach wybiera się mini bossa, a potem każdą rundę osobno. Kliknięcie zaliczonego węzła pokazuje, czym zapłacono, i pozwala zmienić przebieg od tego miejsca. „Cofnij krok” usuwa ostatni wpis, a „Zakończ podróż” wraca do tabeli. Podróż w toku zostaje zapisana w przeglądarce i wraca po odświeżeniu strony.
+
+Koszt starcia to X = baza aktu + przyrost × poziom (akt I: 8 + 4 × poziom, akt II: 30 + 6 × poziom, akt III: 63 + 9 × poziom). Potwór kosztuje X, mini boss 1,5 × X, a boss 1,5 × X na poziomach bez mini bossa i 2 × X na poziomach z mini bossem (6–9), po zaokrągleniu do całości. Kombo w 3. rundzie kosztuje 75% stawki bossa za każdy z dwóch parametrów; pojedynczy parametr kosztuje pełną stawkę. Krew zastępuje cały koszt (5 krwi = 1 punkt) i nie uzupełnia brakującej części. Przeszkody czasowe można przeczekać bez kosztu, ale bez nagrody z worka. Mini boss to boss jednej z pozostałych lokacji.
+
+Układ trasy jest taki sam dla wszystkich lokacji (zmieniają się tylko koszty):
+
+| Poziom | Trasa |
+|---|---|
+| 1 | 3 węzły → boss |
+| 2–3 | 4 węzły → boss |
+| 4–5 | 5 węzłów → boss |
+| 6 | 3 węzły → mini boss → 2 węzły → boss |
+| 7–8 | 3 węzły → mini boss → 3 węzły → boss |
+| 9 | 3 węzły → mini boss → 4 węzły → boss |
+
+Dane są w `journey-data.json`. Pole `routes` podaje dla każdego poziomu liczbę węzłów (`nodes`) i to, po którym węźle stoi mini boss (`miniAfter`; brak pola oznacza poziom bez mini bossa). Opcjonalne pole `weight` przy spotkaniu zmienia szansę jego wylosowania (domyślnie wszystkie są równe). Ataki specjalne bossów są zapisane, ale nie wchodzą do obliczeń, bo ich koszt nie jest znany, więc wynik jest szacunkiem ostrożnym.
+
 ## Uruchomienie lokalne
 
 Otwórz projekt przez lokalny serwer HTTP, ponieważ aplikacja korzysta z modułów JavaScript i Web Workera. Przykładowo:

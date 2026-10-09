@@ -1,0 +1,60 @@
+{
+ "params": [
+  {"id":"sila","label":"Siła"},
+  {"id":"zwinnosc","label":"Zwinność"},
+  {"id":"odpornosc","label":"Odporność"},
+  {"id":"wyglad","label":"Wygląd"},
+  {"id":"charyzma","label":"Charyzma"},
+  {"id":"wplywy","label":"Wpływy"},
+  {"id":"spostrzegawczosc","label":"Spostrzegawczość"},
+  {"id":"inteligencja","label":"Inteligencja"},
+  {"id":"wiedza","label":"Wiedza"}
+ ],
+ "costs": {"acts":{"1":{"base":8,"perLevel":4},"2":{"base":30,"perLevel":6},"3":{"base":63,"perLevel":9}},"levels":{"min":1,"max":9},"type":{"monster":1,"miniboss":1.5,"boss":1.5,"bossAfterMini":2},"blood":5,"combo":0.75},
+ "routes": {"1":{"nodes":3},"2":{"nodes":4},"3":{"nodes":4},"4":{"nodes":5},"5":{"nodes":5},"6":{"nodes":5,"miniAfter":3},"7":{"nodes":6,"miniAfter":3},"8":{"nodes":6,"miniAfter":3},"9":{"nodes":7,"miniAfter":3}},
+ "encounters": [
+  {"name":"Amalgamat","type":"enemy","fixed":"charyzma","random":["wyglad","zwinnosc","spostrzegawczosc"]},
+  {"name":"Bandyci","type":"enemy","fixed":"spostrzegawczosc","random":["sila","wplywy","zwinnosc"]},
+  {"name":"Burza Piaskowa","type":"timed","fixed":"odpornosc","waitMinutes":5},
+  {"name":"Chimera","type":"enemy","fixed":"inteligencja","random":["spostrzegawczosc","zwinnosc","odpornosc"]},
+  {"name":"Diabelska Grzesznica","type":"enemy","fixed":"odpornosc","random":["wyglad","wplywy","charyzma"]},
+  {"name":"Kolekcjoner Kości","type":"enemy","fixed":"charyzma","random":["wyglad","wiedza","inteligencja"]},
+  {"name":"Mutant","type":"enemy","fixed":"wyglad","random":["spostrzegawczosc","odpornosc","inteligencja"]},
+  {"name":"Magowie Rady","type":"enemy","fixed":"inteligencja","random":["sila","wplywy","charyzma"]},
+  {"name":"Najemnicy Trzech Oczu","type":"enemy","fixed":"wplywy","random":["wyglad","charyzma","sila"]},
+  {"name":"Napromieniowane Ghule","type":"enemy","fixed":"sila","random":["wiedza","zwinnosc","odpornosc"]},
+  {"name":"Oddział Łowczych Rady","type":"enemy","fixed":"spostrzegawczosc","random":["wplywy","wiedza","sila"]},
+  {"name":"Parch","type":"enemy","fixed":"odpornosc","random":["wplywy","wyglad","wiedza"]},
+  {"name":"Patrol Zabójców Rady","type":"enemy","fixed":"wiedza","random":["wyglad","zwinnosc","charyzma"]},
+  {"name":"Plaga Szczurów","type":"enemy","fixed":"zwinnosc","random":["spostrzegawczosc","sila","odpornosc"]},
+  {"name":"Ranny Wilkołak","type":"enemy","fixed":"wiedza","random":["charyzma","inteligencja","sila"]},
+  {"name":"Wataha Piekielnych Ogarów","type":"timed","fixed":"wplywy","waitMinutes":5},
+  {"name":"Skrytobójca","type":"enemy","fixed":"wplywy","random":["wiedza","spostrzegawczosc","inteligencja"]},
+  {"name":"Troll","type":"enemy","fixed":"sila","random":["inteligencja","wiedza","zwinnosc"]},
+  {"name":"Trzęsienie Ziemi","type":"timed","fixed":"zwinnosc","waitMinutes":5},
+  {"name":"Zmiennokształtny","type":"enemy","fixed":"wyglad","random":["inteligencja","odpornosc","wplywy"]},
+  {"name":"Zmutowany Herszt","type":"enemy","fixed":"zwinnosc","random":["odpornosc","spostrzegawczosc","charyzma"]}
+ ],
+ "bosses": [
+  {"id":"wsciekly-wilkolak","name":"Wściekły Wilkołak","rounds":[{"fixed":"wplywy","random":["wyglad","charyzma","zwinnosc"]},{"fixed":"zwinnosc","random":["wplywy","wyglad"]},{"combo":["sila","wiedza"],"single":"wplywy"}],"specials":[{"param":"wyglad","effect":"Obniża koszt użycia parametrów o 20% do końca walki.","mostFrequent":true}]},
+  {"id":"troll-king","name":"Troll King","rounds":[{"fixed":"sila","random":["zwinnosc","inteligencja","wyglad"]},{"fixed":"zwinnosc","random":["wiedza","inteligencja"]},{"combo":["sila","zwinnosc"],"single":"inteligencja"}],"specials":[{"param":"inteligencja","effect":"W następnej rundzie możesz użyć parametru, którego Twoja postać będzie mieć najwięcej","mostFrequent":true},{"param":"odpornosc","effect":"20% szans na natychmiastowe wygranie rundy.","mostFrequent":false},{"param":"wiedza","effect":"Obniża koszt użycia parametrów o 30% do końca walki.","mostFrequent":false},{"param":"spostrzegawczosc","effect":"Obniża koszt użycia parametrów o 40% w następnej rundzie.","mostFrequent":false}]},
+  {"id":"billy-kid","name":"Billy Kid","rounds":[{"fixed":"spostrzegawczosc","random":["wplywy","sila","zwinnosc"]},{"fixed":"wiedza","random":["spostrzegawczosc","sila"]},{"combo":["wplywy","inteligencja"],"single":"spostrzegawczosc"}],"specials":[{"param":"wiedza","effect":"Podwaja bieżącą liczbę punktów SPOSTRZEGAWCZOŚCI.","mostFrequent":true},{"param":"odpornosc","effect":"20% szans na natychmiastowe wygranie rundy.","mostFrequent":false},{"param":"charyzma","effect":"Regeneruje wszystkie parametry o 20% wartości z początku Podróży (oprócz CHARYZMY).","mostFrequent":false},{"param":"inteligencja","effect":"Umożliwia użycie innego, losowego parametru.","mostFrequent":false},{"param":"wplywy","effect":"Obniża koszt użycia parametrów o 25% do końca walki.","mostFrequent":false},{"param":"wiedza","effect":"Obniża koszt użycia parametrów o 30% do końca walki.","mostFrequent":false},{"param":"spostrzegawczosc","effect":"Obniża koszt użycia parametrów o 40% w następnej rundzie.","mostFrequent":false}]},
+  {"id":"piaskowy-ifrit","name":"Piaskowy Ifrit","rounds":[{"fixed":"wiedza","random":["inteligencja","sila","charyzma"]},{"fixed":"inteligencja","random":["wplywy","sila"]},{"combo":["odpornosc","wyglad"],"single":"sila"}],"specials":[{"param":"zwinnosc","effect":"Pozwala użyć ZWINNOŚCI w następnej rundzie.","mostFrequent":true},{"param":"odpornosc","effect":"20% szans na natychmiastowe wygranie rundy.","mostFrequent":false},{"param":"inteligencja","effect":"Umożliwia użycie innego, losowego parametru.","mostFrequent":false}]},
+  {"id":"zmutowany-wodz","name":"Zmutowany Wódz","rounds":[{"fixed":"wyglad","random":["spostrzegawczosc","odpornosc","charyzma"]},{"fixed":"spostrzegawczosc","random":["inteligencja","odpornosc"]},{"combo":["charyzma","wplywy"],"single":"wyglad"}],"specials":[{"param":"sila","effect":"Regeneruje do pełna parametr, którego zużyto najwięcej (oprócz SIŁY).","mostFrequent":true}]},
+  {"id":"znieksztalcony-prezydent","name":"Zniekształcony Prezydent","rounds":[{"fixed":"charyzma","random":["odpornosc","wiedza","wplywy"]},{"fixed":"wyglad","random":["wplywy","charyzma"]},{"combo":["odpornosc","sila"],"single":"charyzma"}],"specials":[{"param":"spostrzegawczosc","effect":"Pozwala użyć w bieżącej rundzie parametru, którego masz najwięcej.","mostFrequent":true},{"param":"charyzma","effect":"Regeneruje wszystkie parametry o 20% wartości z początku Podróży (oprócz CHARYZMY).","mostFrequent":false},{"param":"odpornosc","effect":"20% szans na natychmiastowe wygranie rundy.","mostFrequent":false},{"param":"wplywy","effect":"Obniża koszt użycia parametrów o 25% do końca walki.","mostFrequent":false},{"param":"wiedza","effect":"Obniża koszt użycia parametrów o 30% do końca walki.","mostFrequent":false}]},
+  {"id":"wieksza-mumia","name":"Większa Mumia","rounds":[{"fixed":"wplywy","random":["odpornosc","zwinnosc","wiedza"]},{"fixed":"spostrzegawczosc","random":["wiedza","odpornosc"]},{"combo":["inteligencja","charyzma"],"single":"odpornosc"}],"specials":[{"param":"charyzma","effect":"Regeneruje wszystkie parametry o 20% wartości z początku Podróży (oprócz CHARYZMY).","mostFrequent":true},{"param":"wplywy","effect":"Obniża koszt użycia parametrów o 25% do końca walki.","mostFrequent":false},{"param":"odpornosc","effect":"Zwiększa koszt użycia parametrów w obecnej rundzie o 20% ale zmniejsza o 50% w kolejnej rundzie.","mostFrequent":false}]},
+  {"id":"grobowy-skorpion","name":"Grobowy Skorpion","rounds":[{"fixed":"zwinnosc","random":["odpornosc","inteligencja","wiedza"]},{"fixed":"inteligencja","random":["zwinnosc","wiedza"]},{"combo":["odpornosc","spostrzegawczosc"],"single":"sila"}],"specials":[{"param":"spostrzegawczosc","effect":"Zwiększa 3 losowe parametry o 50%","mostFrequent":true},{"param":"spostrzegawczosc","effect":"Obniża koszt użycia parametrów o 40% w następnej rundzie.","mostFrequent":false},{"param":"wiedza","effect":"Obniża koszt użycia parametrów o 30% do końca walki.","mostFrequent":false},{"param":"wplywy","effect":"Obniża koszt użycia parametrów o 25% do końca walki.","mostFrequent":false}]},
+  {"id":"falszywy-prorok","name":"Fałszywy Prorok","rounds":[{"fixed":"wyglad","random":["charyzma","zwinnosc","spostrzegawczosc"]},{"fixed":"wiedza","random":["wyglad","spostrzegawczosc"]},{"combo":["charyzma","odpornosc"],"single":"spostrzegawczosc"}],"specials":[{"param":"charyzma","effect":"50% szans na natychmiastowe wygranie rundy.","mostFrequent":true},{"param":"spostrzegawczosc","effect":"Obniża koszt użycia parametrów o 40% w następnej rundzie.","mostFrequent":false},{"param":"charyzma","effect":"Regeneruje wszystkie parametry o 20% wartości z początku Podróży (oprócz CHARYZMY).","mostFrequent":false}]}
+ ],
+ "locations": [
+  {"id":"ochrona-karawany","name":"Ochrona Karawany","act":1,"boss":"wsciekly-wilkolak"},
+  {"id":"kanaly","name":"Kanały","act":1,"boss":"troll-king"},
+  {"id":"szlak-przemytnikow","name":"Szlak Przemytników","act":1,"boss":"billy-kid"},
+  {"id":"szklana-pustynia","name":"Szklana Pustynia","act":2,"boss":"piaskowy-ifrit"},
+  {"id":"zaginiona-oaza","name":"Zaginiona Oaza","act":2,"boss":"zmutowany-wodz"},
+  {"id":"bagna-przemienionych","name":"Bagna Przemienionych","act":2,"boss":"znieksztalcony-prezydent"},
+  {"id":"skarbiec","name":"Skarbiec","act":3,"boss":"wieksza-mumia"},
+  {"id":"starozytny-grobowiec","name":"Starożytny Grobowiec","act":3,"boss":"grobowy-skorpion"},
+  {"id":"ukryte-miasto","name":"Ukryte Miasto","act":3,"boss":"falszywy-prorok"}
+ ]
+}
