@@ -36,7 +36,7 @@ try{
  await page.locator('#goalMissingList').waitFor();
  const initial=await page.locator('#goalMissingList').inputValue();
  function expectedAffixes(text,axis){
-  const parsed=parseInventory(text.replace(/^\d+ - /gm,''),data);
+  const parsed=parseInventory(text.split('\n').filter(line=>/^\d+ - /.test(line)).map(line=>line.replace(/^\d+ - /,'')).join('\n'),data);
   assert.deepEqual(parsed.errors,[]);
   return [...new Set(parsed.items.map(item=>item[axis]).filter(Boolean).map(label))].sort((a,b)=>a.localeCompare(b,'pl')).join('\n');
  }
@@ -50,15 +50,19 @@ try{
  }
  assert.ok(initial.split('\n').length>100,'List includes more than one page of ingredients');
  assert.equal(await page.locator('#goalPlanList details').count(),100);
- assert.ok(initial.split('\n').every(line=>/^[12] - .+/.test(line)));
- assert.equal(new Set(initial.split('\n').map(line=>line.slice(4))).size,initial.split('\n').length);
+ assert.ok(initial.split('\n').every(line=>!line||/^Zestaw #\d+ · 1 spaw$/.test(line)||/^[12] - .+/.test(line)));
+ const headers=initial.split('\n').filter(line=>line.startsWith('Zestaw #'));
+ assert.ok(headers.length>100,'Groups include recipes beyond the visible page');
+ assert.ok((await page.locator('#goalPlanList summary').first().textContent()).startsWith(headers[0]));
+ assert.equal(new Set(headers).size,headers.length);
  const sidebarBox=await page.locator('.goalMissingSidebar').boundingBox();
  const plansBox=await page.locator('#goalPlanList').boundingBox();
  assert.ok(sidebarBox.x>plansBox.x+plansBox.width,'Desktop sidebar is beside recipes');
  await page.locator('#goalShowMore').click();
  assert.equal(await page.locator('#goalMissingList').inputValue(),initial,'Pagination does not change the list');
  const displayed=await page.locator('#goalPlanList details').count();
- await page.locator('#goalPlanList details').nth(1).locator('summary').click();
+ await page.locator('#goalPlanList details').nth(1).locator('summary').focus();
+ await page.keyboard.press('Enter');
  await checkAffixModes(initial);
  assert.equal(await page.locator('#goalPlanList details').count(),displayed,'Mode keeps pagination');
  assert.equal(await page.locator('#goalPlanList details').nth(1).evaluate(e=>e.open),true,'Mode keeps open recipes');
@@ -66,7 +70,7 @@ try{
  assert.equal(await page.locator('#goalMissingList').inputValue(),initial,'Full item quantities are preserved');
  await page.locator('#goalStepsFilter').selectOption('1');
  await page.locator('#goalMissingFilter').selectOption('2');
- assert.ok((await page.locator('#goalPlanList summary').allTextContents()).every(text=>text.startsWith('1 spaw · brakuje 2:')));
+ assert.ok((await page.locator('#goalPlanList summary').allTextContents()).every(text=>/^Zestaw #\d+ · 1 spaw · brakuje 2:/.test(text)));
  await page.context().grantPermissions(['clipboard-read','clipboard-write']);
  for(const mode of ['items','prefix','suffix']){
   await page.locator('#goalMissingListMode').selectOption(mode);
@@ -80,6 +84,11 @@ try{
  await page.locator('#goalMissingListMode').selectOption('items');
  const filtered=await page.locator('#goalMissingList').inputValue();
  assert.ok(filtered.length>0&&filtered.length<initial.length,'Affix filter narrows recipes');
+ const filteredHeaders=filtered.split('\n').filter(line=>line.startsWith('Zestaw #'));
+ assert.ok(filteredHeaders.every(header=>headers.includes(header)),'Filters preserve recipe numbers');
+ for(const summary of await page.locator('#goalPlanList summary').allTextContents()){
+  assert.ok(filteredHeaders.includes(summary.split(' · brakuje')[0]),'Each visible recipe has a matching shopping group');
+ }
  await checkAffixModes(filtered);
  await page.locator('#goalPrefixFilter').selectOption('');
  await page.locator('#goalTextFilter').fill('nieistniejacy item');

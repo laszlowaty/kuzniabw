@@ -1,9 +1,21 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {missingItemList,missingListText,missingAffixList} from '../missing-list.js';
+import {missingItemList,missingListText,missingPlanListText,missingAffixList} from '../missing-list.js';
 
 const item=(base,missing=true)=>({category:'head',rarity:'normal',base,prefix:'',suffix:'',missing});
 const plan=(left,right)=>({left,right});
+
+test('shopping groups preserve ingredient pairs, quantities and original recipe numbers after filtering',()=>{
+ const plans=[
+  {...plan(item('czapka'),item('maska')),steps:1},
+  {...plan(item('korona',false),plan(item('czapka'),item('czapka'))),steps:2},
+  {...plan(item('czapka',false),item('maska',false)),steps:1},
+ ];
+ assert.equal(missingPlanListText(plans),'Zestaw #1 · 1 spaw\n1 - Czapka\n1 - Maska\n\nZestaw #2 · 2 spawy\n2 - Czapka');
+ assert.equal(missingPlanListText([plans[1]],plans),'Zestaw #2 · 2 spawy\n2 - Czapka');
+ assert.equal(missingPlanListText([]),'');
+ assert.equal(missingPlanListText([plans[2]],plans),'');
+});
 
 test('alternative recipes do not multiply shopping quantities; owned items are excluded',()=>{
  const plans=Array.from({length:150},()=>plan(item('czapka'),item('korona',false)));

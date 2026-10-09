@@ -22,6 +22,17 @@ export function missingListText(items){
  return items.map(({quantity,name})=>`${quantity} - ${name}`).join('\n');
 }
 
+// Keep each recipe's shopping list separate, with stable numbers from all results.
+export function missingPlanListText(plans,allPlans=plans){
+ const numbers=new Map(allPlans.map((plan,index)=>[plan,index+1]));
+ return plans.map(plan=>{
+  const items=missingItemList([plan]);
+  if(!items.length)return '';
+  const steps=plan.steps;
+  return `Zestaw #${numbers.get(plan)} · ${steps} ${steps===1?'spaw':steps<5?'spawy':'spawów'}\n${missingListText(items)}`;
+ }).filter(Boolean).join('\n\n');
+}
+
 // Use canonical affixes, not the gendered prefix in the full item name.
 export function missingAffixList(plans,axis){
  if(axis!=='prefix'&&axis!=='suffix')throw new RangeError('Nieznany rodzaj afiksu.');
