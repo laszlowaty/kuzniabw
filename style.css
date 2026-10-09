@@ -250,7 +250,6 @@ input,select,textarea{scroll-margin-block:24px}
 
 /* Compact item previews share the same presentation in every tool. */
 .itemPopover{width:min(370px,calc(100vw - 16px));padding:14px;font-size:13px;line-height:1.5;border-radius:8px;box-shadow:0 10px 32px #0009}
-.itemPopover[data-mode=hover]{pointer-events:none}
 .itemPopover header{gap:8px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
 .itemPopover .eyebrow{font-size:10px;letter-spacing:1px;margin:0 0 5px}
 .itemPopover h3{font-size:16px;line-height:1.4;margin:0}

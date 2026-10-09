@@ -43,10 +43,26 @@ try{
   await name.hover();
   assert.ok(await page.locator('#itemInfo').isVisible());
   assert.ok((await page.locator('#itemInfo').boundingBox()).width<=370);
-  assert.equal(await name.evaluate(el=>{
-   el.dispatchEvent(new PointerEvent('pointerout',{bubbles:true,pointerType:'mouse',relatedTarget:document.querySelector('#itemInfo')}));
-   return document.querySelector('#itemInfo').hidden;
-  }),true,'Hover preview closes synchronously, even towards the popup');
+  const popup=page.locator('#itemInfo'),link=popup.locator('a');
+  const nameRect=await name.boundingBox(),panelRect=await popup.boundingBox();
+  // Move in small steps so the pointer really crosses the gap.
+  await page.mouse.move(nameRect.x+nameRect.width/2,nameRect.y+nameRect.height/2);
+  await page.mouse.move(panelRect.x+panelRect.width/2,panelRect.y+panelRect.height/2,{steps:8});
+  await page.waitForTimeout(220);
+  assert.ok(await popup.isVisible(),'Hovering inside keeps the popup open');
+  await link.evaluate(el=>el.addEventListener('click',e=>{e.preventDefault();el.dataset.clicked='yes';}));
+  await link.click();
+  assert.equal(await link.getAttribute('data-clicked'),'yes','Catalog link receives clicks');
+  assert.ok(await popup.isVisible());
+  assert.equal(await popup.evaluate(el=>{
+   el.dispatchEvent(new PointerEvent('pointerout',{bubbles:true,pointerType:'mouse',relatedTarget:document.body}));
+   return el.hidden;
+  }),true,'Leaving the popup closes it immediately');
+  await page.mouse.move(0,0);
+  await name.hover();
+  await page.mouse.move(0,0);
+  await popup.waitFor({state:'hidden'});
+
  }
  await page.locator('.tierShelf > summary').click();
  await page.locator('#tierShelf .itemInfoTrigger').first().scrollIntoViewIfNeeded();

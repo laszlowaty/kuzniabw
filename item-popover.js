@@ -19,14 +19,14 @@ export function detailContent(n,details,catalog,profile,inventory=[]){
  return `<header><div><p class="eyebrow">KATALOG R21 · ${esc(qualityLabel(c))}</p><h3>${esc(row?.name||itemName(n))}</h3></div><button type="button" id="closeItemInfo" class="textButton" aria-label="Zamknij dane przedmiotu">×</button></header>${restricted?`<p class="sexNotice">Ten przedmiot jest tylko dla ${sex==='female'?'kobiet':'mężczyzn'} i nie pasuje do wybranej płci postaci.</p>`:''}${affixContent(n,profile,details,catalog,inventory)}${row?`<div class="itemStats">${row.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div><details class="itemExtra"><summary>Źródło i zakres statystyk</summary><p class="itemSourceNote">${row.composed?'Statystyki złożone z danych bazy, prefiksu i sufiksu.':'Dokładny wariant z oficjalnego katalogu.'} Dane: 03–04.10.2026. Poziom postaci: 80. Bonusy opisane jako „niekompletny” wymagają zestawu — nie traktuj ich jako aktywnych bonusów samego itemu.</p></details>`:`<p class="missingStats">Brak tego wariantu w zapisanej bazie. Nie podstawiamy statystyk innej jakości. ${c===null?'Link otworzy wariant zwykły (+1); wybierz właściwą jakość w katalogu.':''}</p>`}${n.left?'<details class="itemExtra"><summary>Jakość wyniku spawu</summary><p class="itemSourceNote">Jakość wyniku wyznaczona z jakości składników według reguł Morii. Lista planów nadal wybiera najkrótszą ścieżkę dla każdej nazwy, nie najtańszy wariant.</p></details>':''}${url?`<a href="${esc(url)}" target="_blank" rel="noreferrer">Sprawdź ten wariant w oficjalnym katalogu R21</a>`:''}`;
 }
 export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getInventory=()=>[]){
- const nodes=new Map();let target=null,mode='hover',skipFocusOnce=null;
+ const nodes=new Map();let target=null,mode='hover',skipFocusOnce=null,closeTimer;
  const panel=document.getElementById('itemInfo');
  const attrs=n=>{const key=detailKey(n);nodes.set(key,n);return `data-item-detail="${esc(key)}" aria-haspopup="dialog"`;};
  const inline=(n,text,decorated)=>{const key=detailKey(n);nodes.set(key,n);return `<span class="itemInfoTrigger" data-item-detail="${esc(key)}">${decorated??esc(text)}</span>`;};
  const markup=(n,text,decorated)=>`<button type="button" class="itemInfoTrigger" ${attrs(n)}>${decorated??esc(text)}</button>`;
- function close(){panel.hidden=true;target?.removeAttribute('aria-describedby');target=null;}
+ function close(){clearTimeout(closeTimer);panel.hidden=true;target?.removeAttribute('aria-describedby');target=null;}
  function show(element,point,interaction='keyboard'){
-  mode=interaction;panel.dataset.mode=mode;const n=nodes.get(element.dataset.itemDetail);if(!n)return;
+  clearTimeout(closeTimer);mode=interaction;panel.dataset.mode=mode;const n=nodes.get(element.dataset.itemDetail);if(!n)return;
   if(target!==element)target?.removeAttribute('aria-describedby');target=element;
   panel.innerHTML=detailContent(n,getDetails(),getCatalog(),getProfile(),getInventory());panel.hidden=false;
   target.setAttribute('aria-describedby','itemInfo');
@@ -43,9 +43,19 @@ export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getI
   }
   panel.style.left=left+'px';panel.style.top=Math.max(margin,Math.min(top,window.innerHeight-height-margin))+'px';
  }
- // A hover preview belongs only to the item name, including its highlighted spans.
- document.addEventListener('pointerover',e=>{const trigger=e.target.closest?.('[data-item-detail]');if(trigger&&trigger!==target&&(e.pointerType==='mouse'||e.pointerType==='pen'))show(trigger,e,'hover');});
- document.addEventListener('pointerout',e=>{if(mode==='hover'&&target?.contains(e.target)&&!target.contains(e.relatedTarget))close();});
+ // Allow crossing the small gap from the name to the interactive panel.
+ const inside=e=>e&&(target?.contains(e)||panel.contains(e));
+ document.addEventListener('pointerover',e=>{
+  if(inside(e.target))clearTimeout(closeTimer);
+  const trigger=e.target.closest?.('[data-item-detail]');
+  if(trigger&&trigger!==target&&(e.pointerType==='mouse'||e.pointerType==='pen'))show(trigger,e,'hover');
+ });
+ document.addEventListener('pointerout',e=>{
+  if(mode!=='hover'||!inside(e.target)||inside(e.relatedTarget))return;
+  clearTimeout(closeTimer);
+  if(panel.contains(e.target)||!e.relatedTarget)close();
+  else closeTimer=setTimeout(close,160);
+ });
  // Pointer focus precedes click: opening here can cover the tapped item and
  // redirect that click to the popover. Keyboard focus still opens immediately.
  document.addEventListener('focusin',e=>{const trigger=e.target.closest?.('[data-item-detail]')||e.target.querySelector?.('[data-item-detail]');if(trigger===skipFocusOnce&&trigger)return;if(trigger&&e.target.matches(':focus-visible'))show(trigger);else if(!panel.contains(e.target))close();});
