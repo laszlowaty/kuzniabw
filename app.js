@@ -271,12 +271,17 @@ const tierKindLabel={gain:'Awans bez strat',mixed:'Awans kosztem drugiego afiksu
 function renderTierEstimate(){
  if(!data)return;
  const scope=inventory.filter(i=>$('tierCategory').value==='all'||i.category===$('tierCategory').value);
- const estimate=estimateTiers(scope,data),pairs=estimate.pairs.filter(p=>$('tierKind').value==='all'||p.kind===$('tierKind').value);
+ const minGain=Number($('tierMinGain').value);
+ $('tierMinGain').max=Math.max(2,...data.categories.map(c=>['prefix','suffix'].reduce((sum,axis)=>sum+Math.max(0,(c.axes[axis]?.values.length||0)-1),0)));
+ const minGainLabel=minGain?`+${minGain}`:'Bez minimum';
+ $('tierMinGainValue').value=minGainLabel;
+ $('tierMinGain').setAttribute('aria-valuetext',minGainLabel);
+ const estimate=estimateTiers(scope,data),pairs=estimate.pairs.filter(p=>($('tierKind').value==='all'||p.kind===$('tierKind').value)&&(!minGain||p.gain>=minGain));
  const signed=n=>n>0?'+'+n:String(n);
  $('tierSummary').innerHTML=`<div><strong>${scope.length}</strong><span>szt. w ekwipunku</span></div><div><strong>${estimate.pairs.length}</strong><span> dozwolonych par z afiksami</span></div><div class="tierStatGain"><strong>${estimate.pairs.filter(p=>p.kind==='gain').length}</strong><span>awansów bez strat</span></div><div><strong>${Math.min(pairs.length,tierVisibleLimit)} / ${pairs.length}</strong><span>widoczne pary</span></div>`;
  $('tierPairs').innerHTML=pairs.slice(0,tierVisibleLimit).map(p=>`<article class="panel tierPair ${p.kind}">
   <div class="tierPairHeading"><strong>${tierKindLabel[p.kind]}</strong><span class="tierBalance">Bilans <b>${signed(p.gain)}</b></span></div>
-  <div class="tierResult"><span class="tierSectionLabel">Wynik · 1 spaw</span><h3>${itemPopover.markup(p.node,fullItemName(p.node))}</h3></div>
+  <div class="tierResult"><span class="tierSectionLabel">Wynik · 1 spaw</span><h3>${itemPopover.markup(p.node,fullItemName(p.node))}</h3>${p.lowTier?`<span class="tierLowBadge" title="Suma tierów prefiksu i sufiksu wyniku jest poniżej 6; brak afiksu liczy się jako 0.">Słaby wynik · suma tierów ${p.resultTierSum} &lt; 6</span>`:''}</div>
   <div class="tierIngredients"><span class="tierSectionLabel">Składniki</span>${[p.node.left,p.node.right].map(n=>`<div class="tierIngredient"><span class="tierItemIndex">#${n.id+1}</span><span>${itemPopover.markup(n,n.original)}${requiresUpgrade(n)?' '+upgradeBadge:''}</span></div>`).join('')}</div>
   <div class="tierAxes">${Object.entries(p.axes).map(([axis,a])=>`<div class="tierAxis"><div class="tierAxisHeading"><strong>${axisLabels[axis]}: <span class="tierDelta ${a.delta>0?'positive':a.delta<0?'negative':'unchanged'}">${signed(a.delta)}</span></strong><span class="tierFormula">T${a.left} + T${a.right} <span aria-hidden="true">→</span> <b>T${a.result}</b></span></div><p>${esc(label(p.node.left[axis]||'brak'))} + ${esc(label(p.node.right[axis]||'brak'))} → <strong>${esc(label(p.node[axis]||'brak'))}</strong></p></div>`).join('')}</div>
  </article>`).join('')||`<div class="empty">${inventory.length?'Brak par dla wybranych filtrów. Kategorie bez afiksów nie mają oceny tierów.':'Wklej ekwipunek, aby sprawdzić pojedyncze spawy.'}</div>`;
@@ -332,6 +337,7 @@ async function init(){
   $(name+'Tab').onkeydown=e=>{const names=['missing','crafting','tiers'];let next;if(['ArrowRight','ArrowDown'].includes(e.key))next=(index+1)%3;else if(['ArrowLeft','ArrowUp'].includes(e.key))next=(index+2)%3;else if(e.key==='Home')next=0;else if(e.key==='End')next=2;else return;e.preventDefault();showToolPanel(names[next],true);};
  }
  for(const id of ['tierCategory','tierKind'])$(id).onchange=()=>{tierVisibleLimit=50;renderTierEstimate();};
+ $('tierMinGain').oninput=()=>{tierVisibleLimit=50;renderTierEstimate();};
  $('tierMore').onclick=()=>{tierVisibleLimit+=50;renderTierEstimate();};
  $('depth').oninput=()=>{$('depthValue').value=$('depth').value;clearTimeout(depthTimer);$('status').textContent=`Głębokość ${$('depth').value} — za chwilę automatycznie przeliczę wyniki…`;depthTimer=setTimeout(()=>calculate().catch(()=>{}),250);};
  $('calculate').onclick=()=>calculate().catch(()=>{});

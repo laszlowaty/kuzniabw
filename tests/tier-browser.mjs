@@ -23,6 +23,8 @@ try{
  await page.waitForFunction(()=>document.querySelector('#catalogStatus').textContent.includes('Dane R21 gotowe'));
  await page.locator('#tiersTab').click();
  assert.ok(await page.locator('#tiersPanel').isVisible());
+ assert.equal(await page.locator('#tierMinGain').inputValue(),'2');
+ assert.equal(await page.locator('#tierMinGainValue').textContent(),'+2');
  assert.match(await page.locator('#tierPairs').textContent(),/Wklej ekwipunek/);
  await page.locator('#tiersTab').press('Home');
  assert.ok(await page.locator('#missingPanel').isVisible());
@@ -34,6 +36,12 @@ try{
  await page.locator('#inventoryForm button[type=submit]').click();
  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  assert.ok(await page.locator('.tierPair').count()>0);
+ assert.ok((await page.locator('.tierBalance b').allTextContents()).every(value=>Number(value)>=2));
+ await page.locator('#tierMinGain').fill('3');
+ assert.equal(await page.locator('#tierMinGainValue').textContent(),'+3');
+ assert.ok((await page.locator('.tierBalance b').allTextContents()).every(value=>Number(value)>=3));
+ await page.locator('#tierMinGain').fill('0');
+ assert.equal(await page.locator('#tierMinGainValue').textContent(),'Bez minimum');
  assert.match(await page.locator('.tierPair').first().textContent(),/1 spaw/);
  assert.match(await page.locator('.tierPair').first().textContent(),/Prefiks:/);
  assert.match(await page.locator('#tierShelf').textContent(),/Brak obsługiwanej pary/);

@@ -21,7 +21,8 @@ export function estimateTiers(items,data){
   available.add(left.id);available.add(right.id);
   if(kind==='gain'){useful.add(left.id);useful.add(right.id);}
   if(kind==='mixed'){mixed.add(left.id);mixed.add(right.id);}
-  pairs.push({node:{...result,left,right,steps:1,depth:1},axes,gain,kind});
+  const resultTierSum=Object.values(axes).reduce((sum,axis)=>sum+axis.result,0);
+  pairs.push({node:{...result,left,right,steps:1,depth:1},axes,gain,kind,resultTierSum,lowTier:resultTierSum<6});
  }
  const order={gain:0,mixed:1,neutral:2,loss:3};
  pairs.sort((a,b)=>order[a.kind]-order[b.kind]||b.gain-a.gain||a.node.left.id-b.node.left.id||a.node.right.id-b.node.right.id);
