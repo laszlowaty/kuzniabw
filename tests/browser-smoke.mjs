@@ -55,6 +55,7 @@ try{
  assert.ok(await page.locator('#inventoryList .tattooBadge').count()>=1);
  await page.locator('#profileTattoo').selectOption('');
  await page.locator('#profileRace').selectOption('');
+ await page.locator('#inventoryContents > summary').click();
  await page.locator('#inventoryList .itemInfoTrigger').first().click();
  assert.match(await page.locator('#itemInfo').textContent(),/Dobra para/);
  assert.match(await page.locator('#itemInfo').textContent(),/Przyrost względem przedmiotu/);
@@ -70,11 +71,15 @@ try{
  await page.locator('#resultsList .result').first().click();
  assert.equal(await page.locator('#step-mana-0').inputValue(),'216');
  assert.equal(await page.locator('#step-nanites-0').inputValue(),'72');
+ await page.locator('#inventoryList .itemInfoTrigger').first().scrollIntoViewIfNeeded();
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  await page.locator('#inventoryList .itemInfoTrigger').first().hover();
  await page.locator('#itemInfo').waitFor({state:'visible'});
  assert.match(await page.locator('#itemInfo').textContent(),/Nanity: 36/);
  await page.keyboard.press('Escape');
  await inventory('Epicka Bojowa Korona\nStarożytna Władcza Kurtka Narkomana');
+ await page.locator('#inventoryList .itemInfoTrigger').first().scrollIntoViewIfNeeded();
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  await page.locator('#inventoryList .itemInfoTrigger').first().hover();
  assert.match(await page.locator('#itemInfo').textContent(),/POZIOM: 108, SIŁA: 104/);
  await page.keyboard.press('Escape');
@@ -84,6 +89,7 @@ try{
  await page.reload();
  await page.waitForFunction(()=>document.querySelector('#catalogStatus').textContent.includes('Nie wczytano dokładnych wymagań'));
  await page.locator('#craftingTab').click();
+ await page.locator('#inventoryContents > summary').click();
  await page.locator('#gunExample').click();
  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  assert.ok(Number(await page.locator('#resultCount').textContent())>1);

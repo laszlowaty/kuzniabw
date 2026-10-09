@@ -32,11 +32,21 @@ try{
  }
  await page.setViewportSize({width:375,height:812});
  await page.locator('#missingTab').click();
- await page.locator('#editInventoryFromGoal').click();
+ await page.locator('#editInventory').click();
  await page.locator('#inventoryText').fill('Kusza Doskonałości (+1)\nKusza Doskonałości (+1)\nKusza Doskonałości (+1)');
  await fits('mobile import');
  await page.locator('#inventoryForm button[type=submit]').click();
  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ // Every view uses the same editor and keeps the imported inventory.
+ for(const tab of ['missingTab','tiersTab','craftingTab','tablesTab']){
+  await page.locator('#'+tab).click();
+  assert.equal(await page.locator('#inventoryCount').textContent(),'3');
+  await page.locator('#editInventory').click();
+  assert.equal(await page.locator('#inventoryText').inputValue(),'Kusza Doskonałości (+1)\nKusza Doskonałości (+1)\nKusza Doskonałości (+1)');
+  await page.locator('#closeDialog').click();
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'editInventory');
+ }
+ await page.locator('#forgeTab').click();
  await page.locator('#craftingTab').click();
  await page.locator('#resultsList .result').first().click();
  await page.locator('#showRecipe').click();
@@ -46,6 +56,7 @@ try{
  await page.locator('#backToResults').click();
  assert.equal(await page.locator('#resultsList .selected').evaluate(e=>document.activeElement===e),true);
  await page.keyboard.press('Escape');
+ await page.locator('#inventoryContents > summary').click();
  await page.locator('#inventoryList .itemInfoTrigger').first().scrollIntoViewIfNeeded();
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  await page.locator('#inventoryList .itemInfoTrigger').first().tap();
@@ -81,6 +92,16 @@ try{
    await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,`kuznia-crafting-${width}.png`),fullPage:true});
   }
  }
+ await page.locator('#applyPlan').click();
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ assert.equal(await page.locator('#inventoryCount').textContent(),'2');
+ await page.locator('#tiersTab').click();
+ await page.locator('#undoPlan').click();
+ assert.equal(await page.locator('#inventoryCount').textContent(),'3');
+ assert.equal(await page.locator('#undoPlan').isVisible(),false);
+ await page.locator('#craftingTab').click();
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ assert.ok(await page.locator('#resultsList .result').count()>0);
  assert.deepEqual(errors,[]);
  console.log('Responsive browser QA passed: 320–1920 px, both tools, tables, import, profile, item popup, recipe navigation and populated results.');
 }finally{await browser.close();server.close();}

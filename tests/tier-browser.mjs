@@ -28,7 +28,7 @@ try{
  assert.ok(await page.locator('#missingPanel').isVisible());
  await page.locator('#missingTab').press('End');
  assert.ok(await page.locator('#tiersPanel').isVisible());
- await page.locator('#editInventoryFromTiers').click();
+ await page.locator('#editInventory').click();
  const raw='Utwardzana Czapka Podróżnika (+1)\nWzmocniona Czapka Przezorności (+1)\nPomocna Czapka Ochrony (+1)\nMagnum (+1)\nMagnum (+1)';
  await page.locator('#inventoryText').fill(raw);
  await page.locator('#inventoryForm button[type=submit]').click();
@@ -49,7 +49,7 @@ try{
  await page.locator('#tierCategory').selectOption('gun1');
  assert.equal(await page.locator('.tierPair').count(),0);
  await page.locator('#tierCategory').selectOption('all');
- await page.locator('#editInventoryFromTiers').click();
+ await page.locator('#editInventory').click();
  assert.equal(await page.locator('#inventoryText').inputValue(),raw);
  await page.locator('#inventoryText').fill(Array(68).fill('Utwardzana Czapka Podróżnika (+1)').join('\n'));
  await page.locator('#inventoryForm button[type=submit]').click();

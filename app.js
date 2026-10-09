@@ -4,6 +4,7 @@ import {costKey,parseCost,totalCosts} from './costs.js';
 import {fusionCost,fullItemName} from './item-details.js';
 import {createItemPopover} from './item-popover.js';
 import {importInventory} from './inventory-import.js';
+import {createInventoryPanel} from './inventory-panel.js';
 import {isStrongCombo,assessAffixes} from './strong-combos.js';
 import {assessProfileAffixes,tattoos,races,possibleForSex,requiredSex} from './profile-affixes.js';
 import {sortResults} from './result-sort.js';
@@ -11,12 +12,6 @@ import {createGoalTarget} from './missing-planner.js';
 import {missingItemList,missingListText,missingAffixList} from './missing-list.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const GUNS=`Magnum (+1)
-Desert Eagle (+1)
-Desert Eagle (+1)
-Karabin snajperski (+1)
-AK-47 (+1)
-AK-47 (+1)`;
 const axisLabels={base:'Baza',prefix:'Prefiks',suffix:'Sufiks'};
 let data,inventory=[],inventoryText='',results=[],lastRun=null,worker,selected,selectedRecipeIndex=0,visibleLimit=50,running=false,runCounter=0,activeReject=null;
 let loadingTimer,deadlineTimer;
@@ -57,11 +52,15 @@ const itemMarkup=(n,text)=>itemPopover.markup(n,text,highlightedName(n,text))+st
 const upgradeBadge='<span class="upgradeBadge">podnieś do +1</span>';
 function effectiveCosts(step){return {...(fusionCost(step,itemDetails)||{}),...enteredCosts.get(costKey(step))};}
 const categoryName=id=>data.categories.find(c=>c.id===id)?.label||id;
+const inventoryPanel=createInventoryPanel({
+ getTables:()=>data,getText:()=>inventoryText,itemMarkup,
+ canUse:item=>possibleForSex(item,profile().sex,itemDetails,itemCatalog),
+ onImport:(text,options)=>loadInventory(text,options),
+ onUndo:()=>{if(running||!simulationHistory.length)return;const previous=simulationHistory.pop();$('inventoryChange').textContent='Cofnięto ostatni plan. Składniki wróciły do ekwipunku.';return loadInventory(previous,{preserveHistory:true});}
+});
 function renderInventory(){
  if(!$('tiersPanel').hidden)renderTierEstimate();
- $('inventoryCount').textContent=inventory.length;
- $('undoPlan').hidden=simulationHistory.length===0;
- $('inventoryList').innerHTML=data.categories.map(c=>{const items=inventory.filter(i=>i.category===c.id);return items.length?`<div class="inventoryGroup"><div class="groupLabel"><span>${esc(c.label)}</span><span>${items.length} szt.</span></div>${items.map(i=>`<div class="item"><span class="itemIndex">${String(i.id+1).padStart(2,'0')}</span>${itemMarkup(i,i.original)}${possibleForSex(i,profile().sex,itemDetails,itemCatalog)?'':'<span class="sexBadge">NIE DLA TWOJEJ PŁCI</span>'}</div>`).join('')}</div>`:'';}).join('')||'<div class="empty">Lista jest pusta. Dodaj składniki.</div>';
+ inventoryPanel.render(inventory,simulationHistory.length>0);
 }
 function filterOptions(){
  const cats=data.categories.filter(c=>$('category').value==='all'||c.id===$('category').value);
@@ -203,7 +202,7 @@ function searchMissing(event){
  goalDeadlineTimer=setTimeout(()=>{if(run!==goalRun)return;finish();$('goalResults').textContent='Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek lub liczbę spawów i spróbuj ponownie.';},timeMs+finishGraceMs);
  try{goalWorker.postMessage({mode:'missing',items:inventory,target,tables:data,maxSteps:Number($('goalSteps').value),timeMs});}catch{finish();$('goalResults').textContent='Nie udało się przekazać składników do obliczeń.';}
 }
-function setBusy(b){running=b;$('loadingState').hidden=!b;if(!b){clearInterval(loadingTimer);clearTimeout(deadlineTimer);}$('calculate').disabled=b;$('stop').hidden=!b;$('editInventory').disabled=b;$('gunExample').disabled=b;$('undoPlan').disabled=b;}
+function setBusy(b){running=b;$('loadingState').hidden=!b;if(!b){clearInterval(loadingTimer);clearTimeout(deadlineTimer);}$('calculate').disabled=b;$('stop').hidden=!b;inventoryPanel.setBusy(b);}
 async function calculate(){
  if(!data)return;
  craftingDirty=false;
@@ -242,11 +241,6 @@ async function calculate(){
   deadlineTimer=setTimeout(()=>fail('Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek i spróbuj ponownie.'),timeMs+finishGraceMs);
   try{worker.postMessage({items:scope.items,tables:scope.tables,depth,timeMs});}catch{fail('Nie udało się przekazać składników do obliczeń. Spróbuj ponownie.');}
  });
-}
-function parseFeedback(){
- const parsed=importInventory($('inventoryText').value,data,$('importCategory').value);
- $('parseFeedback').innerHTML=`<strong>Rozpoznano ${parsed.items.length} szt.</strong> Pominięto ${parsed.ignored.length} fragmentów tekstu.${parsed.error?`<p class="parseError">${esc(parsed.error)}</p>`:''}${parsed.items.length?`<details open><summary>Przedmioty do importu</summary><ol class="importPreview">${parsed.items.map(i=>`<li>${esc(i.original)}</li>`).join('')}</ol></details>`:''}${parsed.ignored.length?`<details><summary>Co zostało pominięte?</summary>${parsed.ignored.slice(0,30).map(e=>`<div class="parseError">Linia ${e.line}: ${esc(e.text)}</div>`).join('')}${parsed.ignored.length>30?'<p>Pokazano pierwszych 30 pominiętych fragmentów.</p>':''}</details>`:''}`;
- return parsed;
 }
 function loadInventory(text,{preserveHistory=false,category='all'}={}){
  const parsed=importInventory(text,data,category);if(parsed.error)throw new Error(parsed.error);
@@ -334,7 +328,6 @@ async function init(){
  }
  for(const id of ['tierCategory','tierKind'])$(id).onchange=()=>{tierVisibleLimit=50;renderTierEstimate();};
  $('tierMore').onclick=()=>{tierVisibleLimit+=50;renderTierEstimate();};
- $('editInventoryFromTiers').onclick=()=>$('editInventory').click();
  $('depth').oninput=()=>{$('depthValue').value=$('depth').value;clearTimeout(depthTimer);$('status').textContent=`Głębokość ${$('depth').value} — za chwilę automatycznie przeliczę wyniki…`;depthTimer=setTimeout(()=>calculate().catch(()=>{}),250);};
  $('calculate').onclick=()=>calculate().catch(()=>{});
  $('stop').onclick=()=>{clearTimeout(depthTimer);runCounter++;worker?.terminate();worker=null;activeReject?.(new Error('Obliczenia zatrzymane.'));activeReject=null;setBusy(false);results=[];newKeys=new Set();$('status').textContent='Obliczenia zatrzymane. Zmniejsz głębokość lub listę i przelicz ponownie.';renderResults();};
@@ -343,12 +336,7 @@ async function init(){
  $('clearFilters').onclick=()=>{const changed=$('category').value!=='all';$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';if(changed)calculate().catch(()=>{});else renderResults();};
  $('timeBudget').onchange=()=>calculate().catch(()=>{});
  $('loadMore').onclick=()=>{visibleLimit+=50;renderResults();};
- $('editInventory').onclick=()=>{$('inventoryText').value=inventoryText;$('parseFeedback').textContent='';$('inventoryDialog').showModal();};
- $('editInventoryFromGoal').onclick=()=>$('editInventory').click();
- $('closeDialog').onclick=()=>$('inventoryDialog').close();$('validateText').onclick=parseFeedback;$('importCategory').onchange=parseFeedback;
- $('inventoryForm').onsubmit=e=>{e.preventDefault();const p=parseFeedback();if(p.error)return;const category=$('importCategory').value;$('inventoryDialog').close();loadInventory($('inventoryText').value,{category}).catch(()=>{});};
- $('gunExample').onclick=()=>loadInventory(GUNS).catch(()=>{});
- $('undoPlan').onclick=()=>{if(running||!simulationHistory.length)return;const previous=simulationHistory.pop();$('inventoryChange').textContent='Cofnięto ostatni plan. Składniki wróciły do ekwipunku.';return loadInventory(previous,{preserveHistory:true}).catch(()=>{});};
+ inventoryPanel.bind();
  registerTools();loadCatalog().catch(()=>{});await calculate();
 }
 init().catch(e=>{$('status').textContent=e.message;$('status').className='status warning';});

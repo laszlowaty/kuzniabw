@@ -24,7 +24,7 @@ try{
  await page.route('**/*',route=>{if(!route.request().url().startsWith(origin)){external.push(route.request().url());return route.abort();}return route.continue();});
  await page.goto(origin);
  await page.waitForFunction(()=>document.querySelector('#catalogStatus').textContent.includes('Dane R21 gotowe'));
- await page.locator('#editInventoryFromGoal').click();
+ await page.locator('#editInventory').click();
  await page.locator('#inventoryText').fill('Bojowa Czapka Gladiatora (+1)');
  await page.locator('#inventoryForm button[type=submit]').click();
  await page.locator('#missingTab').click();
