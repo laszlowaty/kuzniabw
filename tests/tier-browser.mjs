@@ -37,6 +37,22 @@ try{
  assert.match(await page.locator('.tierPair').first().textContent(),/1 spaw/);
  assert.match(await page.locator('.tierPair').first().textContent(),/Prefiks:/);
  assert.match(await page.locator('#tierShelf').textContent(),/Brak obsługiwanej pary/);
+ for(const selector of ['.tierResult .itemInfoTrigger','.tierIngredient .itemInfoTrigger']){
+  const name=page.locator(selector).first();await name.scrollIntoViewIfNeeded();
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  await name.hover();
+  assert.ok(await page.locator('#itemInfo').isVisible());
+  assert.ok((await page.locator('#itemInfo').boundingBox()).width<=370);
+  assert.equal(await name.evaluate(el=>{
+   el.dispatchEvent(new PointerEvent('pointerout',{bubbles:true,pointerType:'mouse',relatedTarget:document.querySelector('#itemInfo')}));
+   return document.querySelector('#itemInfo').hidden;
+  }),true,'Hover preview closes synchronously, even towards the popup');
+ }
+ await page.locator('.tierShelf > summary').click();
+ await page.locator('#tierShelf .itemInfoTrigger').first().scrollIntoViewIfNeeded();
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ await page.locator('#tierShelf .itemInfoTrigger').first().hover();
+ assert.ok(await page.locator('#itemInfo').isVisible());
  await page.locator('#craftingTab').click();
  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  assert.ok(await page.locator('#resultsList .result').count()>0);

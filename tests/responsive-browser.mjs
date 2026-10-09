@@ -77,6 +77,13 @@ try{
  await page.locator('#goalSteps').selectOption('1');
  await page.locator('#goalSearch').click();
  await page.locator('#goalMissingList').waitFor();
+ const missingName=page.locator('#goalPlanList .goalPlanBody .itemInfoTrigger').first();
+ await missingName.scrollIntoViewIfNeeded();
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ await missingName.tap();
+ assert.ok(await page.locator('#itemInfo').isVisible(),'Missing-plan items open the shared details on touch');
+ await page.keyboard.press('Escape');
+
  for(const width of [320,375,768,1024,1440]){
   await page.setViewportSize({width,height:900});await fits(`populated missing ${width}`);
   if(process.env.UI_SCREENSHOTS&&[375,1440].includes(width)){

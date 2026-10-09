@@ -199,7 +199,40 @@ input,select,textarea{scroll-margin-block:24px}
  .resourceTotals strong{font-size:19px}
 }
 
-.tierControls{display:flex;flex-wrap:wrap;gap:16px;margin:20px 0}.tierControls label{flex:1 1 230px;min-width:0}.tierControls select{display:block;width:100%;margin-top:8px}.tierPairs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px}.tierPair{padding:18px;min-width:0;overflow-wrap:anywhere}.tierPairHeading{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}.tierPairHeading span{color:var(--muted)}.tierPair.gain{border-left:3px solid #87bd98}.tierPair.mixed{border-left:3px solid #d2b175}.tierPair.loss{border-left:3px solid #ed796d}.tierPair p{line-height:1.6}.tierPair h3{font-size:17px;line-height:1.5}.tierIngredients{display:flex;flex-direction:column;gap:3px}.tierShelf{padding:18px;margin-top:24px;overflow-wrap:anywhere}.tierShelf summary{cursor:pointer}.tierShelf p{line-height:1.6}.toolTabs{flex-wrap:wrap}
+/* Tier estimates: result first, then ingredients and separate affix changes. */
+.tierHelp{margin-bottom:16px}
+.tierControls{display:flex;flex-wrap:wrap;gap:16px;padding:16px;margin:16px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.tierControls label{flex:1 1 230px;min-width:0;color:var(--muted);font-size:13px}
+.tierControls select{display:block;width:100%;min-height:44px;margin-top:7px;padding:10px 12px;background:var(--bg);border:1px solid #3b4351;color:var(--text);font-size:14px}
+.tierSummary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;overflow:hidden;background:var(--line);border:1px solid var(--line);border-radius:10px}
+.tierSummary>div{display:flex;flex-direction:column;gap:4px;padding:16px;background:var(--panel)}
+.tierSummary strong{font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums}
+.tierSummary span{color:var(--muted);font-size:12px}
+.tierStatGain strong{color:var(--good)}
+.tierListHint{margin:14px 0 18px;color:var(--muted);font-size:13px}
+.tierPairs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,390px),1fr));gap:16px;align-items:start}
+.tierPair{--tier-color:var(--muted);padding:0;min-width:0;overflow-wrap:anywhere;border-top:3px solid var(--tier-color)}
+.tierPair.gain{--tier-color:var(--good)}.tierPair.mixed{--tier-color:var(--gold)}.tierPair.loss{--tier-color:#ff9a90}
+.tierPairHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:12px;color:var(--tier-color)}
+.tierBalance{display:flex;align-items:center;gap:8px;flex-shrink:0;color:var(--muted)}
+.tierBalance b{font-size:18px;color:var(--tier-color);font-variant-numeric:tabular-nums}
+.tierResult{padding:16px 16px 14px;background:var(--raised)}
+.tierSectionLabel{display:block;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.tierResult h3{margin:6px 0 0;font-size:17px;line-height:1.45;color:var(--gold)}
+.tierIngredients{display:grid;gap:8px;padding:14px 16px}
+.tierIngredient{display:flex;align-items:baseline;gap:10px;font-size:13px;line-height:1.5}
+.tierItemIndex{flex:0 0 auto;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.tierAxes{margin:0 16px 16px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tierAxis{padding:10px 12px}.tierAxis+.tierAxis{border-top:1px solid var(--line)}
+.tierAxisHeading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;font-size:13px}
+.tierDelta{margin-left:4px}.tierDelta.positive{color:var(--good)}.tierDelta.negative{color:#ff9a90}.tierDelta.unchanged{color:var(--muted)}
+.tierFormula{color:var(--muted);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}.tierFormula b{color:var(--text)}
+.tierAxis p{margin:6px 0 0;color:var(--muted);font-size:12px;line-height:1.6}.tierAxis p strong{color:var(--text);font-weight:500}
+.tierShelf{padding:0;margin-top:24px;overflow-wrap:anywhere}.tierShelf summary{padding:14px 18px;cursor:pointer;font-size:14px}.tierShelf>p{margin:0;padding:0 18px 16px;color:var(--muted);font-size:13px;line-height:1.6}
+.tierShelfItem{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 20px;padding:12px 18px;border-top:1px solid var(--line);font-size:13px}.tierShelfItem strong{font-weight:500}.tierShelfItem>span{color:var(--muted);font-size:12px}
+.toolTabs{flex-wrap:wrap}
+@media(max-width:600px){.tierSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.tierSummary>div{padding:12px}.tierSummary strong{font-size:21px}.tierControls{padding:12px;gap:12px}.tierPairHeading{padding:10px 12px}.tierResult,.tierIngredients{padding:12px}.tierAxes{margin:0 12px 12px}}
+
 
 /* Page-level inventory stays available across tools and the tables view. */
 .sharedInventoryLayout{max-width:1800px;margin:24px auto 0;padding:0 32px}
@@ -214,3 +247,22 @@ input,select,textarea{scroll-margin-block:24px}
 #sharedInventory .inventoryFoot button{width:auto;margin:0;white-space:normal}
 @media(max-width:1200px){.sharedInventoryLayout{padding:0 20px}}
 @media(max-width:760px){.sharedInventoryLayout{padding:0 12px;margin-top:16px}#inventoryList{max-height:260px}#sharedInventory .inventoryFoot button{width:100%}}
+
+/* Compact item previews share the same presentation in every tool. */
+.itemPopover{width:min(370px,calc(100vw - 16px));padding:14px;font-size:13px;line-height:1.5;border-radius:8px;box-shadow:0 10px 32px #0009}
+.itemPopover[data-mode=hover]{pointer-events:none}
+.itemPopover header{gap:8px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.itemPopover .eyebrow{font-size:10px;letter-spacing:1px;margin:0 0 5px}
+.itemPopover h3{font-size:16px;line-height:1.4;margin:0}
+.itemPopover header button{flex:0 0 28px;min-width:28px;min-height:28px;font-size:22px}
+.itemPopover .itemStats p{padding:6px 0;font-size:13px;line-height:1.5}
+.itemPopover .itemStats p:first-child{padding-top:0}
+.itemPopover .affixAdvice{margin:10px 0;padding:10px;border-radius:5px}
+.itemPopover .affixAdvice h4{font-size:12px;margin:0 0 6px}
+.itemPopover .affixAdvice p{margin:5px 0;line-height:1.5}
+.itemPopover .itemSourceNote{font-size:11px;line-height:1.5;margin:6px 0}
+.itemPopover .itemExtra{border-top:1px solid var(--line);margin-top:8px;padding-top:4px}
+.itemPopover .itemExtra summary{min-height:28px;padding:4px 0;font-size:11px;color:var(--muted);cursor:pointer}
+.itemPopover>a{margin-top:10px;font-size:12px}
+.itemPopover .sexNotice{margin:8px 0;padding:8px;font-size:12px}
+.goalPlans summary .itemInfoTrigger{font:inherit;color:inherit}
