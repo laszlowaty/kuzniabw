@@ -1,4 +1,4 @@
-import {detailKey,itemClass,qualityLabel,officialUrl,lookupItem} from './item-details.js';
+import {detailKey,itemClass,qualityLabel,officialUrl,lookupItem,fullItemName} from './item-details.js';
 import {itemName,label} from './engine.js';
 import {assessAffixes} from './strong-combos.js';
 import {assessProfileAffixes,tattoos,races,possibleForSex,requiredSex} from './profile-affixes.js';
@@ -16,17 +16,23 @@ export function affixContent(n,profile,details,catalog,inventory=[]){
 export function detailContent(n,details,catalog,profile,inventory=[]){
  const row=lookupItem(n,details,catalog),c=itemClass(n),url=row?.url||officialUrl(n,catalog,c??1);
  const restricted=profile?.sex&&!possibleForSex(n,profile.sex,details,catalog),sex=requiredSex(n,details,catalog);
- return `<header><div><p class="eyebrow">KATALOG R21 · ${esc(qualityLabel(c))}</p><h3>${esc(row?.name||itemName(n))}</h3></div><button type="button" id="closeItemInfo" class="textButton" aria-label="Zamknij dane przedmiotu">×</button></header>${restricted?`<p class="sexNotice">Ten przedmiot jest tylko dla ${sex==='female'?'kobiet':'mężczyzn'} i nie pasuje do wybranej płci postaci.</p>`:''}${affixContent(n,profile,details,catalog,inventory)}${row?`<div class="itemStats">${row.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div><details class="itemExtra"><summary>Źródło i zakres statystyk</summary><p class="itemSourceNote">${row.composed?'Statystyki złożone z danych bazy, prefiksu i sufiksu.':'Dokładny wariant z oficjalnego katalogu.'} Dane: 03–04.10.2026. Poziom postaci: 80. Bonusy opisane jako „niekompletny” wymagają zestawu — nie traktuj ich jako aktywnych bonusów samego itemu.</p></details>`:`<p class="missingStats">Brak tego wariantu w zapisanej bazie. Nie podstawiamy statystyk innej jakości. ${c===null?'Link otworzy wariant zwykły (+1); wybierz właściwą jakość w katalogu.':''}</p>`}${n.left?'<details class="itemExtra"><summary>Jakość wyniku spawu</summary><p class="itemSourceNote">Jakość wyniku wyznaczona z jakości składników według reguł Morii. Lista planów nadal wybiera najkrótszą ścieżkę dla każdej nazwy, nie najtańszy wariant.</p></details>':''}${url?`<a href="${esc(url)}" target="_blank" rel="noreferrer">Sprawdź ten wariant w oficjalnym katalogu R21</a>`:''}`;
+ return `<header><div><p class="eyebrow">KATALOG R21 · ${esc(qualityLabel(c))}</p><h3>${esc(row?.name||itemName(n))}</h3></div><button type="button" id="closeItemInfo" class="textButton" aria-label="Zamknij dane przedmiotu">×</button></header>${restricted?`<p class="sexNotice">Ten przedmiot jest tylko dla ${sex==='female'?'kobiet':'mężczyzn'} i nie pasuje do wybranej płci postaci.</p>`:''}${affixContent(n,profile,details,catalog,inventory)}${row?`<div class="itemStats">${row.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div><details class="itemExtra"><summary>Źródło i zakres statystyk</summary><p class="itemSourceNote">${row.composed?'Statystyki złożone z danych bazy, prefiksu i sufiksu.':'Dokładny wariant z oficjalnego katalogu.'} Dane: 03–04.10.2026. Poziom postaci: 80. Bonusy opisane jako „niekompletny” wymagają zestawu — nie traktuj ich jako aktywnych bonusów samego itemu.</p></details>`:`<p class="missingStats">Brak tego wariantu w zapisanej bazie. Nie podstawiamy statystyk innej jakości. ${c===null?'Link otworzy wariant zwykły (+1); wybierz właściwą jakość w katalogu.':''}</p>`}${n.left||n.crafted?'<details class="itemExtra"><summary>Jakość wyniku spawu</summary><p class="itemSourceNote">Jakość wyniku wyznaczona z jakości składników według reguł Morii. Lista planów nadal wybiera najkrótszą ścieżkę dla każdej nazwy, nie najtańszy wariant.</p></details>':''}${url?`<a href="${esc(url)}" target="_blank" rel="noreferrer">Sprawdź ten wariant w oficjalnym katalogu R21</a>`:''}`;
+}
+// Keep only display data on the live trigger. A global registry would retain
+// recipe graphs even after their results and DOM had been replaced.
+export function popoverItem(n){
+ const {category,rarity,base,prefix,suffix}=n;
+ return {category,rarity,base,prefix,suffix,original:itemClass(n)===null?'Nieustalony (+99)':fullItemName(n),crafted:!!n.left};
 }
 export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getInventory=()=>[]){
- const nodes=new Map();let target=null,mode='hover',skipFocusOnce=null,closeTimer;
+ let target=null,mode='hover',skipFocusOnce=null,closeTimer;
  const panel=document.getElementById('itemInfo');
- const attrs=n=>{const key=detailKey(n);nodes.set(key,n);return `data-item-detail="${esc(key)}" aria-haspopup="dialog"`;};
- const inline=(n,text,decorated)=>{const key=detailKey(n);nodes.set(key,n);return `<span class="itemInfoTrigger" data-item-detail="${esc(key)}">${decorated??esc(text)}</span>`;};
+ const attrs=n=>{return `data-item-detail="${esc(detailKey(n))}" data-item-value="${esc(JSON.stringify(popoverItem(n)))}" aria-haspopup="dialog"`;};
+ const inline=(n,text,decorated)=>{return `<span class="itemInfoTrigger" ${attrs(n)}>${decorated??esc(text)}</span>`;};
  const markup=(n,text,decorated)=>`<button type="button" class="itemInfoTrigger" ${attrs(n)}>${decorated??esc(text)}</button>`;
  function close(){clearTimeout(closeTimer);panel.hidden=true;target?.removeAttribute('aria-describedby');target=null;}
  function show(element,point,interaction='keyboard'){
-  clearTimeout(closeTimer);mode=interaction;panel.dataset.mode=mode;const n=nodes.get(element.dataset.itemDetail);if(!n)return;
+  clearTimeout(closeTimer);mode=interaction;panel.dataset.mode=mode;const value=element.dataset.itemValue;if(!value)return;const n=JSON.parse(value);
   if(target!==element)target?.removeAttribute('aria-describedby');target=element;
   panel.innerHTML=detailContent(n,getDetails(),getCatalog(),getProfile(),getInventory());panel.hidden=false;
   target.setAttribute('aria-describedby','itemInfo');

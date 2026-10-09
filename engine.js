@@ -83,7 +83,7 @@ export function analysisScope(items,data,category='all'){
 }
 export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
  if(!Number.isInteger(maxDepth)||maxDepth<1||maxDepth>25)throw new Error('Głębokość musi wynosić od 1 do 25.');
- limits={states:30000,attempts:20000000,timeMs:5000,maxSteps:25,...limits};
+ limits={states:30000,attempts:20000000,timeMs:5000,maxSteps:25,collectRecipes:true,...limits};
  const started=performance.now();let lastProgress=started,stopReason=null;
  const activeCategories=data.categories.filter(c=>items.some(i=>i.category===c.id));
  if(items.length>100)throw new Error('Maksymalnie 100 przedmiotów na analizę.');
@@ -107,16 +107,20 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
      const m=merge(a,b,data);if(!m)continue;
      const mask=a.mask|b.mask;const key=mask+'|'+resultKey(m)+'|'+itemClass({left:a,right:b});const old=layers[leaves].get(key);
      if(old&&old.depth<=depth)continue;
+     if(!old&&states>=limits.states){truncated=true;stopReason='memory';return;}
      const n={...m,mask,depth,steps:leaves-1,left:a,right:b};layers[leaves].set(key,n);
      const result=resultKey(n),previous=results.get(result);
-     if(!previous){results.set(result,{...n,recipes:[n]});recipeSignatures.set(result,new Set([recipeSignature(n)]));}
+     if(!limits.collectRecipes){
+      if(!previous||n.steps<previous.steps||n.steps===previous.steps&&n.depth<previous.depth)results.set(result,n);
+     }
+     else if(!previous){results.set(result,{...n,recipes:[n]});recipeSignatures.set(result,new Set([recipeSignature(n)]));}
      else{
       const recipes=previous.recipes||[previous],signatures=recipeSignatures.get(result),signature=recipeSignature(n);
       if(!signatures.has(signature)){recipes.push(n);signatures.add(signature);}
       if(n.steps<previous.steps||n.steps===previous.steps&&n.depth<previous.depth)Object.assign(previous,n);
       previous.recipes=recipes;
      }
-     if(!old&&++states>limits.states){truncated=true;stopReason='memory';return;}
+     if(!old)states++;
     }
    }
    onProgress({category:c.label,leaves,states,results:results.size,attempts,elapsedMs:performance.now()-started});

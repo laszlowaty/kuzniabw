@@ -1,12 +1,61 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {parseInventory,ingredients,merge,resultKey,itemClass} from '../engine.js';
+import {parseInventory,ingredients,merge,resultKey,itemClass,explore} from '../engine.js';
 import {createGoalTarget,findMissingPlans} from '../missing-planner.js';
 
 const data=JSON.parse(fs.readFileSync(new URL('../data.json',import.meta.url)));
 const parse=text=>{const result=parseInventory(text,data);assert.deepEqual(result.errors,[]);return result.items;};
 const target=parse('Czapka Prekognicji')[0];
+
+test('retained missing plans are bounded even with unlimited display and a long deadline',()=>{
+ const owned=parse('Bojowa Czapka Gladiatora (+1)');
+ const goal=createGoalTarget(data,'head','','smiercionosny','prekognicji');
+ const result=findMissingPlans(owned,goal,data,{maxSteps:25,timeMs:600000,limit:Infinity,maxPlans:50});
+ assert.equal(result.plans.length,50);
+ assert.equal(result.partial,true);
+ assert.equal(result.stopReason,'memory');
+ for(const plan of result.plans){
+  assert.equal(plan.prefix,goal.prefix);
+  assert.equal(plan.suffix,goal.suffix);
+  assert.ok(ingredients(plan).filter(item=>item.missing).length<=2);
+ }
+});
+
+test('a plan storage limit cannot hide a directly owned recipe behind purchases',()=>{
+ const owned=parse('Czapka Gladiatora (+1)\nCzapka Magii (+1)');
+ const result=findMissingPlans(owned,target,data,{maxSteps:2,maxPlans:1,limit:Infinity});
+ assert.equal(result.plans[0].missingCount,0);
+});
+
+test('indexed complements match exhaustive fusion including wildcard bases and blocked pairs',()=>{
+ const values=['a','b','c'],table=Object.fromEntries(values.flatMap((a,i)=>values.map((b,j)=>[`${a}|${b}`,values[(i+j)%3]])));
+ const axis={values,table,blocked:['a|b'],refs:{}};
+ const toy={categories:[{id:'toy',axes:{base:axis,prefix:axis,suffix:axis}}]};
+ const shapes=values.flatMap(base=>values.flatMap(prefix=>values.map(suffix=>({category:'toy',rarity:'normal',base,prefix,suffix,original:`${base} (+1)`}))));
+ const key=leaves=>leaves.map(resultKey).sort().join(';');
+ for(const base of ['',...values]){
+  const goal=createGoalTarget(toy,'toy',base,'c','b'),expected=new Set();
+  for(const a of shapes)for(const b of shapes){
+   const merged=merge(a,b,toy);
+   if(merged&&(!base||merged.base===base)&&merged.prefix==='c'&&merged.suffix==='b')expected.add(key([a,b]));
+  }
+  const result=findMissingPlans([],goal,toy,{maxSteps:1,limit:Infinity});
+  assert.equal(result.partial,false);
+  assert.deepEqual(new Set(result.plans.map(plan=>key(ingredients(plan)))),expected);
+ }
+});
+
+test('extended inventory search bounds states and can omit unused alternative recipe graphs',()=>{
+ const owned=parse(Array(14).fill('Czapka (+1)').join('\n'));
+ const result=explore(owned,data,25,()=>{},{states:100,timeMs:600000,collectRecipes:false});
+ assert.equal(result.states,100);
+ assert.equal(result.stopReason,'memory');
+ assert.equal(result.truncated,true);
+ assert.ok(result.results.length);
+ const visit=node=>{assert.equal(node.recipes,undefined);if(node.left){visit(node.left);visit(node.right);}};
+ result.results.forEach(visit);
+});
 
 test('target selection accepts independent base, prefix and suffix from one category',()=>{
  const selected=createGoalTarget(data,'head','czapka','runiczny','prekognicji');
