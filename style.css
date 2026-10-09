@@ -269,6 +269,46 @@ input,select,textarea{scroll-margin-block:24px}
 .itemPopover .sexNotice{margin:8px 0;padding:8px;font-size:12px}
 .goalPlans summary .itemInfoTrigger{font:inherit;color:inherit}
 
+/* Denser phone layout, including when embedded in a narrow game panel. */
+@media(max-width:760px){
+ body{font-size:14px}
+ main{padding:16px 10px 22px}
+ .heading{margin-bottom:16px}
+ .heading h1{font-size:26px}
+ .toolTabs{margin-bottom:16px}
+ .toolHeading{gap:10px}
+ .settings,.toolPanel .goalSearch{padding:12px;gap:12px}
+ .toolPanel .goalSearch form{gap:12px 10px}
+ .workspace{gap:14px}
+ .panelHead{padding:12px}
+ h2{font-size:15px}
+ .status,.notice,.strongComboNote{padding:8px 12px;font-size:11px;line-height:1.45}
+ .result{padding:10px 12px}
+ .resultName{font-size:14px;line-height:1.35;margin-bottom:6px}
+ .resultMeta{font-size:11px;gap:6px}
+ .pill{padding:2px 6px}
+ .strongBadge{font-size:9px;padding:1px 5px;margin-left:4px;letter-spacing:.3px}
+ .recipeNavigation{font-size:12px;padding:8px 12px;min-height:40px}
+ .recipeTitle{padding:14px 12px}
+ .recipeTitle h3{font-size:21px;margin:8px 0 10px}
+ .recipeIngredients{padding:12px}
+ .steps{padding:4px 12px 12px}
+ .step{padding:12px 0}
+ .ingredient,.stepInput,.item{font-size:13px;line-height:1.45}
+ .stepResult{font-size:14px;padding:9px;margin-top:9px}
+ .itemPopover{width:min(320px,calc(100vw - 20px));max-height:min(65dvh,520px);padding:10px;font-size:12px;line-height:1.4}
+ .itemPopover header{gap:6px;padding-bottom:7px;margin-bottom:7px}
+ .itemPopover h3{font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+ .itemPopover .eyebrow{font-size:9px;margin-bottom:4px}
+ .itemPopover header button{flex-basis:32px;min-width:32px;min-height:32px}
+ .itemPopover .itemStats p{font-size:12px;line-height:1.4;padding:5px 0}
+ .itemPopover .affixAdvice{padding:6px;margin:6px 0}
+ .itemPopover .affixAdvice h4{font-size:11px;margin-bottom:4px}
+ .itemPopover .affixAdvice p{font-size:11px;line-height:1.4;margin:4px 0}
+ .itemPopover .itemExtra{margin-top:6px;padding-top:3px}
+ .itemPopover>a{font-size:11px;margin-top:7px}
+}
+
 
 /* Journeys: stats form, then one row per location grouped by act. */
 .journeyLead{max-width:760px;margin:10px 0 0;font-size:14px}
