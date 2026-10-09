@@ -27,3 +27,10 @@ Próbki zawierają URL, datę odczytu, nazwę i pełne linie opisu z [R21 Item T
 - `node tests/responsive-browser.mjs <ścieżka-do-playwright/index.mjs>` — układ 320–1920 px, obie zakładki, tabele, import, profil, popup dotykowy i klawiaturowy oraz przejścia między wynikami a przepisem. Korzysta z lokalnego Edge; Playwright nie jest zależnością aplikacji. Opcjonalna zmienna `UI_SCREENSHOTS` wskazuje istniejący katalog na zrzuty ekranu.
 
 Kalibracja nie pobiera iloczynu wszystkich baz i afiksów. Wybiera próbki rozróżniające możliwe zaokrąglenia, zapisuje odczyty i ogranicza tempo do pojedynczego żądania po przerwie co najmniej 2,5 sekundy. Uruchomienie wymaga jawnego budżetu zapytań. Nie działa w przeglądarce ani w workflow QA/Pages. Próbki w `validation-r21.json` służą wyłącznie kontroli i nie są używane przy budowie modelu.
+
+## Szacunek podbijania tierów
+
+Zakładka „Podbijanie tierów” bada każdą parę fizycznych sztuk ze wspólnego ekwipunku, wyłącznie w jednym spawie. Korzysta z tych samych receptur i blokad co silnik. Tier jest pozycją w tabeli źródłowej, a zmiana różnicą względem wyższego tieru składnika; brak afiksu ma tier 0. Ranking rozdziela awanse bez strat, wyniki mieszane, neutralne i straty. Ocena półki nie jest wyceną przedmiotu.
+
+- `tests/tier-estimate.test.mjs` — bilans obu osi, utrata afiksu, duplikaty, klasyfikacja półki, blokady receptur i nieobsługiwane jakości.
+- `node tests/tier-browser.mjs <ścieżka-do-playwright/index.mjs>` — import bez uruchamiania wieloetapowej analizy, przejście do zwykłego planera, filtry, klawiatura, zachowanie oryginalnego tekstu, 68 sztuk / 2278 par, paginacja i szerokości 320–1440 px.

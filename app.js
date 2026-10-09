@@ -1,3 +1,4 @@
+import {estimateTiers} from './tier-estimate.js';
 import {parseInventory,itemName,label,normalize,variants,recipeSteps,ingredients,resultKey,requiresUpgrade,fusionInput,analysisScope} from './engine.js';
 import {costKey,parseCost,totalCosts} from './costs.js';
 import {fusionCost,fullItemName} from './item-details.js';
@@ -21,6 +22,7 @@ let data,inventory=[],inventoryText='',results=[],lastRun=null,worker,selected,s
 let loadingTimer,deadlineTimer;
 let depthTimer,completedRun=null,newKeys=new Set();
 let resultOrder='fewest';
+let tierVisibleLimit=50,craftingDirty=false;
 const simulationHistory=[];
 const enteredCosts=new Map();
 let renderedRecipeKey=null;
@@ -56,6 +58,7 @@ const upgradeBadge='<span class="upgradeBadge">podnieś do +1</span>';
 function effectiveCosts(step){return {...(fusionCost(step,itemDetails)||{}),...enteredCosts.get(costKey(step))};}
 const categoryName=id=>data.categories.find(c=>c.id===id)?.label||id;
 function renderInventory(){
+ if(!$('tiersPanel').hidden)renderTierEstimate();
  $('inventoryCount').textContent=inventory.length;
  $('undoPlan').hidden=simulationHistory.length===0;
  $('inventoryList').innerHTML=data.categories.map(c=>{const items=inventory.filter(i=>i.category===c.id);return items.length?`<div class="inventoryGroup"><div class="groupLabel"><span>${esc(c.label)}</span><span>${items.length} szt.</span></div>${items.map(i=>`<div class="item"><span class="itemIndex">${String(i.id+1).padStart(2,'0')}</span>${itemMarkup(i,i.original)}${possibleForSex(i,profile().sex,itemDetails,itemCatalog)?'':'<span class="sexBadge">NIE DLA TWOJEJ PŁCI</span>'}</div>`).join('')}</div>`:'';}).join('')||'<div class="empty">Lista jest pusta. Dodaj składniki.</div>';
@@ -203,6 +206,7 @@ function searchMissing(event){
 function setBusy(b){running=b;$('loadingState').hidden=!b;if(!b){clearInterval(loadingTimer);clearTimeout(deadlineTimer);}$('calculate').disabled=b;$('stop').hidden=!b;$('editInventory').disabled=b;$('gunExample').disabled=b;$('undoPlan').disabled=b;}
 async function calculate(){
  if(!data)return;
+ craftingDirty=false;
  clearTimeout(depthTimer);
  clearInterval(loadingTimer);clearTimeout(deadlineTimer);
  const depth=Number($('depth').value);const run=++runCounter;
@@ -248,7 +252,7 @@ function loadInventory(text,{preserveHistory=false,category='all'}={}){
  const parsed=importInventory(text,data,category);if(parsed.error)throw new Error(parsed.error);
  clearGoalResults();
  if(!preserveHistory){enteredCosts.clear();simulationHistory.length=0;$('inventoryChange').textContent=parsed.ignored.length?`Zaimportowano ${parsed.items.length} szt. Pominięto ${parsed.ignored.length} fragmentów tekstu.`:'';}
- inventoryText=text;inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';return calculate();
+ inventoryText=text;inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';if(!$('tiersPanel').hidden){craftingDirty=true;return Promise.resolve();}return calculate();
 }
 async function applyPlan(node){
  if(running)throw new Error('Poczekaj na zakończenie obliczeń.');
@@ -269,7 +273,19 @@ function renderTables(){
  $('matrix').innerHTML=`<thead><tr><th>${axisLabels[axis]}</th>${a.values.map(v=>`<th>${esc(label(v))}</th>`).join('')}</tr></thead><tbody>${a.values.map(x=>`<tr><th>${esc(label(x))}</th>${a.values.map(y=>`<td class="${isBlocked(x,y)?'conflict':x===y?'diagonal':''}" title="${esc(a.refs[x+'|'+y]||'Brak komórki')}${isBlocked(x,y)?' · para zablokowana':''}">${esc(label(a.table[x+'|'+y]||'brak'))}${isBlocked(x,y)?' ⚠':''}</td>`).join('')}</tr>`).join('')}</tbody>`;
 }
 function tableCategoryChanged(){const c=data.categories.find(c=>c.id===$('tableCategory').value);$('tableAxis').innerHTML=Object.keys(c.axes).map(k=>`<option value="${k}">${axisLabels[k]}</option>`).join('');renderTables();}
-function showToolPanel(which,focus=false){const tabs=[['missingTab','missingPanel','missing'],['craftingTab','craftingPanel','crafting']];for(const [tab,panel,name]of tabs){$(panel).hidden=name!==which;$(tab).setAttribute('aria-selected',String(name===which));$(tab).tabIndex=name===which?0:-1;}if(focus)$(`${which}Tab`).focus();}
+const tierKindLabel={gain:'Awans bez strat',mixed:'Awans kosztem drugiego afiksu',neutral:'Bez zmiany tierów',loss:'Strata tierów'};
+function renderTierEstimate(){
+ if(!data)return;
+ const scope=inventory.filter(i=>$('tierCategory').value==='all'||i.category===$('tierCategory').value);
+ const estimate=estimateTiers(scope,data),pairs=estimate.pairs.filter(p=>$('tierKind').value==='all'||p.kind===$('tierKind').value);
+ const signed=n=>n>0?'+'+n:String(n);
+ $('tierSummary').textContent=`${scope.length} szt. · ${estimate.pairs.length} dozwolonych par z afiksami · ${estimate.pairs.filter(p=>p.kind==='gain').length} awansów bez strat · widoczne ${Math.min(pairs.length,tierVisibleLimit)} z ${pairs.length} par`;
+ $('tierPairs').innerHTML=pairs.slice(0,tierVisibleLimit).map(p=>`<article class="panel tierPair ${p.kind}"><div class="tierPairHeading"><strong>${tierKindLabel[p.kind]}</strong><span>Bilans: ${signed(p.gain)} · 1 spaw</span></div><p class="tierIngredients">${[p.node.left,p.node.right].map(n=>`<span>#${n.id+1} ${esc(n.original)}${requiresUpgrade(n)?' '+upgradeBadge:''}</span>`).join('<span>+</span>')}</p><h3>→ ${esc(fullItemName(p.node))}</h3>${Object.entries(p.axes).map(([axis,a])=>`<p><strong>${axisLabels[axis]}: ${signed(a.delta)}</strong> · T${a.left} + T${a.right} → T${a.result}<br><span class="subtle">${esc(label(p.node.left[axis]||'brak'))} + ${esc(label(p.node.right[axis]||'brak'))} → ${esc(label(p.node[axis]||'brak'))}</span></p>`).join('')}</article>`).join('')||`<div class="empty">${inventory.length?'Brak par dla wybranych filtrów. Kategorie bez afiksów nie mają oceny tierów.':'Wklej ekwipunek, aby sprawdzić pojedyncze spawy.'}</div>`;
+ $('tierMore').hidden=pairs.length<=tierVisibleLimit;
+ const statuses={gain:'Ma parę z awansem bez strat',mixed:'Awans tylko kosztem drugiego afiksu',none:'Brak korzystnej pary',unavailable:'Brak obsługiwanej pary do oceny afiksów'};
+ $('tierShelf').innerHTML=estimate.items.map(({item,status})=>`<p><strong>#${item.id+1} ${esc(item.original)}</strong><br><span>${statuses[status]}</span></p>`).join('')||'<p>Brak przedmiotów.</p>';
+}
+function showToolPanel(which,focus=false){const tabs=[['missingTab','missingPanel','missing'],['craftingTab','craftingPanel','crafting'],['tiersTab','tiersPanel','tiers']];for(const [tab,panel,name]of tabs){$(panel).hidden=name!==which;$(tab).setAttribute('aria-selected',String(name===which));$(tab).tabIndex=name===which?0:-1;}if(which==='tiers'){tierVisibleLimit=50;renderTierEstimate();}if(which==='crafting'&&craftingDirty)calculate().catch(()=>{});if(focus)$(`${which}Tab`).focus();}
 function showView(which){$('forgeView').hidden=which!=='forge';$('tablesView').hidden=which!=='tables';for(const [id,view]of [['forgeTab','forge'],['tablesTab','tables']]){if(view===which)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}}
 function registerTools(){
  const context=document.modelContext;if(!context?.registerTool)return;
@@ -293,6 +309,7 @@ async function init(){
  try{const [details,catalog,requirements]=await Promise.all(['./item-details.json','./item-catalog.json','./item-requirements.json'].map(url=>fetch(url).catch(()=>null)));if(details?.ok)itemDetails=await details.json();if(catalog?.ok)itemCatalog=await catalog.json();if(requirements?.ok){itemDetails??={items:{}};itemDetails.requirementModels=(await requirements.json()).models;}}catch{}
  const options=data.categories.map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');$('category').insertAdjacentHTML('beforeend',options);$('tableCategory').innerHTML=options;
  $('goalCategory').insertAdjacentHTML('beforeend',options);
+ $('tierCategory').insertAdjacentHTML('beforeend',options);
  $('goalForm').onsubmit=searchMissing;$('goalCategory').onchange=updateGoalCategory;
  for(const id of ['goalBase','goalPrefix','goalSuffix'])$(id).onchange=updateGoalPreview;
  $('goalSteps').onchange=clearGoalResults;$('goalTimeBudget').onchange=clearGoalResults;$('goalStop').onclick=()=>{clearGoalResults();$('goalResults').textContent='Wyszukiwanie zatrzymane.';};updateGoalCategory();
@@ -309,11 +326,15 @@ async function init(){
  tableCategoryChanged();
  $('tableCategory').onchange=tableCategoryChanged;$('tableAxis').onchange=renderTables;
  $('forgeTab').onclick=()=>showView('forge');$('tablesTab').onclick=()=>showView('tables');
- $('missingTab').onclick=()=>showToolPanel('missing');$('craftingTab').onclick=()=>showToolPanel('crafting');
  $('showRecipe').onclick=()=>{$('recipePanel').focus({preventScroll:true});$('recipePanel').scrollIntoView({block:'start'});};
  $('backToResults').onclick=()=>{const target=$('resultsList').querySelector('.selected')||$('craftingResults');target.focus({preventScroll:true});target.scrollIntoView({block:'center'});};
- $('missingTab').onkeydown=e=>{if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();showToolPanel('crafting',true);}};
- $('craftingTab').onkeydown=e=>{if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();showToolPanel('missing',true);}};
+ for(const [index,name]of ['missing','crafting','tiers'].entries()){
+  $(name+'Tab').onclick=()=>showToolPanel(name);
+  $(name+'Tab').onkeydown=e=>{const names=['missing','crafting','tiers'];let next;if(['ArrowRight','ArrowDown'].includes(e.key))next=(index+1)%3;else if(['ArrowLeft','ArrowUp'].includes(e.key))next=(index+2)%3;else if(e.key==='Home')next=0;else if(e.key==='End')next=2;else return;e.preventDefault();showToolPanel(names[next],true);};
+ }
+ for(const id of ['tierCategory','tierKind'])$(id).onchange=()=>{tierVisibleLimit=50;renderTierEstimate();};
+ $('tierMore').onclick=()=>{tierVisibleLimit+=50;renderTierEstimate();};
+ $('editInventoryFromTiers').onclick=()=>$('editInventory').click();
  $('depth').oninput=()=>{$('depthValue').value=$('depth').value;clearTimeout(depthTimer);$('status').textContent=`Głębokość ${$('depth').value} — za chwilę automatycznie przeliczę wyniki…`;depthTimer=setTimeout(()=>calculate().catch(()=>{}),250);};
  $('calculate').onclick=()=>calculate().catch(()=>{});
  $('stop').onclick=()=>{clearTimeout(depthTimer);runCounter++;worker?.terminate();worker=null;activeReject?.(new Error('Obliczenia zatrzymane.'));activeReject=null;setBusy(false);results=[];newKeys=new Set();$('status').textContent='Obliczenia zatrzymane. Zmniejsz głębokość lub listę i przelicz ponownie.';renderResults();};
