@@ -400,3 +400,5 @@ input,select,textarea{scroll-margin-block:24px}
 .journeyPast{margin:0 0 12px;padding-left:20px;color:var(--text);font-size:14px;line-height:1.7}
 .journeyStep>.secondary{width:auto}
 @media(max-width:760px){.journeyRunHead,.journeyRunBody{padding:12px}.journeyRunActions{width:100%}.journeyRunActions button{flex:1 1 0}.journeyNode{width:36px;height:36px}.journeyNodes li+li::before{width:8px}.journeyPick select{font-size:16px}}
+
+.goalPlans summary .goalPlanCosts{display:block;margin-top:4px;color:var(--muted);font-size:12px;font-weight:400}
