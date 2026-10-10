@@ -45,6 +45,41 @@ try{
   await page.locator('#inventoryForm button[type=submit]').click();
   await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  }
+ await page.evaluate(()=>{
+  const post=Worker.prototype.postMessage;
+  Worker.prototype.postMessage=function(message,...args){
+   if(!message.mode){window.searchInput={categories:message.items.map(i=>i.category),filters:message.filters};this.addEventListener('message',({data})=>{if(data.type==='done')window.searchOutput={states:data.states,count:data.results.length,stopReason:data.stopReason};});}
+   return post.call(this,message,...args);
+  };
+ });
+ await inventory('Czapka (+1)\nCzapka (+1)\nKusza (+1)\nKusza (+1)');
+ await page.locator('#category').selectOption('head');
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ assert.deepEqual(await page.evaluate(()=>window.searchInput.categories),['head','head']);
+ for(const width of [375,1440]){
+  await page.setViewportSize({width,height:1000});
+  await page.locator('#filterPrefix').selectOption('any');
+  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+  assert.equal(await page.evaluate(()=>window.searchInput.filters.prefix),'any');
+  assert.deepEqual(await page.evaluate(()=>window.searchOutput),{states:0,count:0,stopReason:null});
+  assert.match(await page.locator('#status').textContent(),/0 nazw pasujących do filtrów/);
+  await page.locator('#filterPrefix').selectOption('none');
+  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+  assert.equal(await page.locator('#resultCount').textContent(),'1');
+ }
+ await page.locator('#clearFilters').click();
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ assert.equal(await page.locator('#resultCount').textContent(),'2');
+ await page.locator('#timeBudget').selectOption('30');
+ await page.locator('#depth').fill('12');
+ await inventory(Array.from({length:18},()=> 'Czapka (+1)').join('\n'));
+ assert.match(await page.locator('#status').textContent(),/limit zapisanych wariantów.*Dłuższy czas nie zwiększy/);
+ assert.match(await page.locator('#status').textContent(),/zakres nie został sprawdzony w całości/);
+ await page.locator('#filterPrefix').selectOption('any');
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ assert.deepEqual(await page.evaluate(()=>window.searchOutput),{states:0,count:0,stopReason:null});
+ await page.locator('#depth').fill('3');
+ await page.locator('#timeBudget').selectOption('5');
  await inventory('Dobra Tygrysia Czapka Adrenaliny (+5)\nDobry Tygrysi Hełm Adrenaliny (+5)\nDobra Szybka Pięść Niebios Samobójcy (+5)\nDobry Shuriken Reakcji (+5)');
  assert.ok(await page.locator('#inventoryList .pairBadge').count()>=2);
  await page.locator('#profileRace').selectOption('ssak');

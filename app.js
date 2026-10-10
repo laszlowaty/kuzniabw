@@ -85,6 +85,10 @@ function matchesCurrentFilters(n){
  const category=$('category').value;
  return (category==='all'||n.category===category)&&[['filterBase','base'],['filterPrefix','prefix'],['filterSuffix','suffix']].every(([id,key])=>{const value=$(id).value;return value==='all'||(value==='none'?!n[key]:value==='any'?Boolean(n[key]):n[key]===value);});
 }
+function searchFilters(){
+ return {category:$('category').value,base:$('filterBase').value,prefix:$('filterPrefix').value,suffix:$('filterSuffix').value,
+  allowedBases:Object.fromEntries(data.categories.map(c=>[c.id,c.axes.base.values.filter(base=>possibleForSex({category:c.id,base,prefix:'',suffix:'',rarity:'normal',original:base},profile().sex,itemDetails,itemCatalog))]))};
+}
 function filtered(){
  const matching=results.filter(n=>matchesCurrentFilters(n)&&possibleForSex(n,profile().sex,itemDetails,itemCatalog));
  return sortResults(matching,resultOrder,profileActive()?profile():undefined,itemDetails,itemCatalog,inventory);
@@ -236,7 +240,8 @@ async function calculate(){
  clearInterval(loadingTimer);clearTimeout(deadlineTimer);
  const depth=Number($('depth').value);const run=++runCounter;
  const category=$('category').value,scope=analysisScope(inventory,data,category);
- const inventorySignature=JSON.stringify({category,items:scope.items});
+ const filters=searchFilters();
+ const inventorySignature=JSON.stringify({category,items:scope.items,filters});
  const baseline=completedRun?.inventorySignature===inventorySignature&&!completedRun.truncated?completedRun:null;
  worker?.terminate();worker=null;activeReject?.(new Error('Uruchomiono nowszą analizę.'));activeReject=null;
  results=[];newKeys=new Set();selected=null;lastRun=null;visibleLimit=50;setBusy(true);renderResults();
@@ -259,13 +264,13 @@ async function calculate(){
     const comparison=baseline&&depth>baseline.depth&&!r.truncated?newKeys.size?`Dodano ${newKeys.size} nowych wyników względem głębokości ${baseline.depth}. Oznaczono je etykietą NOWY. `:`Brak nowych nazw względem głębokości ${baseline.depth} — ta pula składników daje te same wyniki w wybranym zakresie. `:'';
     completedRun={inventorySignature,depth,keys:new Set(results.map(resultKey)),truncated:r.truncated};
     $('status').className=r.truncated?'status warning':'status';
-    $('status').textContent=`${r.truncated?(r.stopReason==='memory'?'Wyniki częściowe — osiągnięto limit pamięci wyszukiwania. Zawęź ekwipunek lub zmniejsz głębokość. ':'Wyniki częściowe — osiągnięto limit czasu. Zwiększ czas albo zawęź ekwipunek. '):''}${r.results.length.toLocaleString('pl')} różnych nazw · głębokość do ${depth} · ${((performance.now()-start)/1000).toFixed(2)} s. ${comparison}Dla każdej nazwy pokazujemy najkrótszą znalezioną ścieżkę. Wyniki to alternatywy korzystające ze wspólnej puli.`;
+    $('status').textContent=`${r.truncated?(r.stopReason==='memory'?`Wyniki częściowe — osiągnięto limit zapisanych wariantów (${r.states.toLocaleString('pl')}, razem z półproduktami). Dłuższy czas nie zwiększy tego limitu. Zawęź rodzaj, filtry lub ekwipunek. `:'Wyniki częściowe — osiągnięto limit czasu. Zwiększ czas albo zawęź ekwipunek. '):''}${r.results.length.toLocaleString('pl')} nazw pasujących do filtrów · ustawiona głębokość: ${depth}${r.truncated?' (zakres nie został sprawdzony w całości)':''} · ${((performance.now()-start)/1000).toFixed(2)} s. ${r.truncated&&!r.results.length?'Nie znaleziono dotąd pasującego wyniku — nie oznacza to, że nie da się go uzyskać. ':''}${comparison}Dla każdej nazwy pokazujemy najkrótszą znalezioną ścieżkę. Wyniki to alternatywy korzystające ze wspólnej puli.`;
     renderResults();resolve({count:results.length,partial:r.truncated,depth});
    }
   };
   const finishGraceMs=Math.min(30000,Math.max(2000,timeMs*0.05));
   deadlineTimer=setTimeout(()=>fail('Obliczenia przerwane po przekroczeniu limitu bezpieczeństwa. Zmniejsz ekwipunek i spróbuj ponownie.'),timeMs+finishGraceMs);
-  try{worker.postMessage({items:scope.items,tables:scope.tables,depth,timeMs});}catch{fail('Nie udało się przekazać składników do obliczeń. Spróbuj ponownie.');}
+  try{worker.postMessage({items:scope.items,tables:scope.tables,depth,timeMs,filters});}catch{fail('Nie udało się przekazać składników do obliczeń. Spróbuj ponownie.');}
  });
 }
 function loadInventory(text,{preserveHistory=false,category='all'}={}){
@@ -333,7 +338,7 @@ async function loadCatalog(){
  let count=0;const failed=[];
  await Promise.all(data.categories.map(async c=>{try{const response=await fetch(`./item-components/${c.id}.json`);if(!response.ok)throw new Error('catalog');const group=await response.json();group.requirementModels=itemDetails.requirementModels?.[c.id];itemDetails.components[c.id]=group;}catch{failed.push(c.label);}finally{count++;$('catalogStatus').textContent=`Wczytuję dane przedmiotów: ${count}/${data.categories.length} kategorii…`;}}));
  $('catalogStatus').textContent=failed.length?`Nie wczytano danych: ${failed.join(', ')}. Odśwież stronę; brakujące koszty można wpisać ręcznie.`:!itemDetails.requirementModels?'Nie wczytano dokładnych wymagań epickich i starożytnych przedmiotów. Odśwież stronę.':'Dane R21 gotowe · 10 kategorii · poziom postaci 80 · odczyt 03–04.10.2026';
- if(profile().sex)clearGoalResults();
+ if(profile().sex){clearGoalResults();calculate().catch(()=>{});}
  if(!running){renderInventory();renderResults();}
 }
 async function init(){
@@ -349,7 +354,7 @@ async function init(){
  $('profileTattoo').insertAdjacentHTML('beforeend',Object.entries(tattoos).map(([id,t])=>`<option value="${id}">${esc(t.label)}</option>`).join(''));
  try{const saved=JSON.parse(localStorage.getItem('kuzniaProfile')||'{}');if(races[saved.race])$('profileRace').value=saved.race;if(tattoos[saved.tattoo])$('profileTattoo').value=saved.tattoo;if(['female','male'].includes(saved.sex))$('profileSex').value=saved.sex;}catch{}
  const updateProfile=()=>{const p=profile(),t=tattoos[p.tattoo],r=races[p.race];try{localStorage.setItem('kuzniaProfile',JSON.stringify(p));}catch{}$('profileHint').innerHTML=`${r?`<strong>${esc(r.label)}</strong> · ${esc(r.bonus)}. Bonus rasy wpływa na względną ocenę statystyk. `:''}${t?`<strong>${esc(t.label)}</strong> · broń: ${esc(t.weapons.map(w=>data.categories.find(c=>c.id===w)?.label||w).join(', '))} · obrona głowa/klatka/nogi: ${esc(t.armour)}. Ocena uwzględnia styl walki i możliwy zakres obrony; sprawdź poziom tatuażu oraz cały zestaw.`:'Wybierz rasę i tatuaż, aby ocenić przyrost statystyk dla postaci.'}${p.sex?` Pokazujemy wyniki możliwe do używania przez ${p.sex==='female'?'kobietę':'mężczyznę'}.`:''}`;clearGoalResults();renderInventory();renderResults();};
- $('profileRace').onchange=updateProfile;$('profileTattoo').onchange=updateProfile;$('profileSex').onchange=updateProfile;updateProfile();
+ $('profileRace').onchange=updateProfile;$('profileTattoo').onchange=updateProfile;$('profileSex').onchange=()=>{updateProfile();calculate().catch(()=>{});};updateProfile();
  inventory=[];filterOptions();renderInventory();
  $('sourceLink').href=data.source.url;
  $('conflicts').innerHTML=data.issues.map(i=>`<div class="conflictCard"><b>${esc(i.category)} · ${axisLabels[i.axis]}</b><br>${esc(label(i.a))} + ${esc(label(i.b))}<br>${esc(i.cells[0])}: <b>${esc(label(i.ab))}</b> / ${esc(i.cells[1])}: <b>${esc(label(i.ba))}</b></div>`).join('');
@@ -371,8 +376,8 @@ async function init(){
  $('calculate').onclick=()=>calculate().catch(()=>{});
  $('stop').onclick=()=>{clearTimeout(depthTimer);runCounter++;worker?.terminate();worker=null;activeReject?.(new Error('Obliczenia zatrzymane.'));activeReject=null;setBusy(false);results=[];newKeys=new Set();$('status').textContent='Obliczenia zatrzymane. Zmniejsz głębokość lub listę i przelicz ponownie.';renderResults();};
  $('resultOrder').querySelectorAll('[data-order]').forEach(button=>button.onclick=()=>{resultOrder=button.dataset.order;visibleLimit=50;selected=null;renderResults();});
- for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).onchange=()=>{visibleLimit=50;renderResults();};$('category').onchange=()=>{filterOptions();visibleLimit=50;calculate().catch(()=>{});};
- $('clearFilters').onclick=()=>{const changed=$('category').value!=='all';$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';if(changed)calculate().catch(()=>{});else renderResults();};
+ for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).onchange=()=>{visibleLimit=50;calculate().catch(()=>{});};$('category').onchange=()=>{filterOptions();visibleLimit=50;calculate().catch(()=>{});};
+ $('clearFilters').onclick=()=>{$('category').value='all';filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';calculate().catch(()=>{});};
  $('timeBudget').onchange=()=>calculate().catch(()=>{});
  $('loadMore').onclick=()=>{visibleLimit+=50;renderResults();};
  inventoryPanel.bind();

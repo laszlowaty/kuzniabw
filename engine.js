@@ -1,3 +1,4 @@
+import {searchFilter} from './search-filters.js';
 export const normalize = s => String(s).toLowerCase().replaceAll('ł','l').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 export function itemClass(n){
  if(n.left){const left=itemClass(n.left),right=itemClass(n.right),a=left===0?1:left,b=right===0?1:right;if(a===null||b===null||a>=18||b>=18||a===17&&b===17)return null;const c=Math.min(a,b)+(n.left.base===n.right.base?1:0);return c<18?c:null;}
@@ -85,15 +86,18 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
  if(!Number.isInteger(maxDepth)||maxDepth<1||maxDepth>25)throw new Error('Głębokość musi wynosić od 1 do 25.');
  limits={states:30000,attempts:20000000,timeMs:5000,maxSteps:25,collectRecipes:true,...limits};
  const started=performance.now();let lastProgress=started,stopReason=null;
+ if(limits.filters?.category && limits.filters.category!=='all')({items,tables:data}=analysisScope(items,data,limits.filters.category));
  const activeCategories=data.categories.filter(c=>items.some(i=>i.category===c.id));
  if(items.length>100)throw new Error('Maksymalnie 100 przedmiotów na analizę.');
- const results=new Map(),recipeSignatures=new Map();let states=items.length,attempts=0,truncated=false;
+ const results=new Map(),recipeSignatures=new Map();let states=0,attempts=0,truncated=false;
  function recipeSignature(node){
   const ids=[];function collect(n){if(!n.left)ids.push(n.id);else{collect(n.left);collect(n.right);}}
   collect(node);return ids.sort((a,b)=>a-b).join(',');
  }
  function* searchCategory(c){
-  const pool=items.filter(i=>i.category===c.id);const maxLeaves=Math.min(pool.length,2**maxDepth,limits.maxSteps+1);
+  const categoryPool=items.filter(i=>i.category===c.id),filter=limits.filters?searchFilter(c,categoryPool,limits.filters):null;
+  const pool=filter?categoryPool.filter(filter.useful):categoryPool;states+=pool.length;
+  const maxLeaves=Math.min(pool.length,2**maxDepth,limits.maxSteps+1);
   const layers=Array.from({length:maxLeaves+1},()=>new Map());
   layers[1]=new Map(pool.map(i=>[String(i.id),{...i,mask:1n<<BigInt(i.id),depth:0,steps:0}]));
   for(let leaves=2;leaves<=maxLeaves;leaves++){
@@ -105,10 +109,14 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
      if(a.mask&b.mask||left===right&&a.mask>=b.mask)continue;
      const depth=Math.max(a.depth,b.depth)+1;if(depth>maxDepth)continue;
      const m=merge(a,b,data);if(!m)continue;
+     const matches=!filter||filter.matches(m);
+     if(filter&&(!filter.useful(m)||!matches&&(depth===maxDepth||leaves===maxLeaves)))continue;
      const mask=a.mask|b.mask;const key=mask+'|'+resultKey(m)+'|'+itemClass({left:a,right:b});const old=layers[leaves].get(key);
      if(old&&old.depth<=depth)continue;
      if(!old&&states>=limits.states){truncated=true;stopReason='memory';return;}
      const n={...m,mask,depth,steps:leaves-1,left:a,right:b};layers[leaves].set(key,n);
+     if(!old)states++;
+     if(!matches)continue;
      const result=resultKey(n),previous=results.get(result);
      if(!limits.collectRecipes){
       if(!previous||n.steps<previous.steps||n.steps===previous.steps&&n.depth<previous.depth)results.set(result,n);
@@ -120,7 +128,6 @@ export function explore(items,data,maxDepth=3,onProgress=()=>{},limits={}){
       if(n.steps<previous.steps||n.steps===previous.steps&&n.depth<previous.depth)Object.assign(previous,n);
       previous.recipes=recipes;
      }
-     if(!old)states++;
     }
    }
    onProgress({category:c.label,leaves,states,results:results.size,attempts,elapsedMs:performance.now()-started});
