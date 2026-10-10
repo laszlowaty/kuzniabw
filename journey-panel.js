@@ -1,6 +1,8 @@
 import {planJourneys,hardestCertain,routeLayout,chanceLabel,chanceTone,SIMULATIONS} from './journey-sim.js';
 import {parseCost} from './costs.js';
 import {createJourneyRun,readSavedRun,routeText} from './journey-run.js';
+import {createGearDialog} from './journey-gear.js';
+import {MIN_ITEMS} from './gear-fit.js';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const STORAGE='kuzniaJourney',ACTS={1:'I',2:'II',3:'III'};
@@ -20,14 +22,20 @@ function readSaved(){
 }
 
 // Journey view: loads its own data on first open and recalculates while the form is edited.
-export function createJourneyPanel(){
- let data=null,loading=null,timer=0,live=null;
+// `gear` gives the shared inventory and catalog to "Dopasuj sprzęt".
+export function createJourneyPanel(gear){
+ let data=null,loading=null,timer=0,live=null,gearDialog=null;
  async function open(){
+  syncGear();
   if(data)return;
   // Revalidate every time: the data file is edited by hand and a stale copy would silently win.
   loading??=fetch('./journey-data.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('Nie udało się wczytać danych podróży.');return r.json();});
   try{data=await loading;}catch(error){loading=null;$('journeyStatus').textContent=error.message||'Nie udało się wczytać danych podróży.';return;}
   build(readSaved());
+  gearDialog=createGearDialog({...gear,data,onApply:applyGear,getSettings:()=>{const form=read();return {waitTimed:form.waitTimed,blood:form.values.blood??0};}});
+  $('journeyGear').addEventListener('click',()=>{if(!$('journeyGear').disabled)gearDialog.open();});
+  $('journeyGearEdit').addEventListener('click',gear.editInventory);
+  syncGear();
   live=createJourneyRun({data,root:$('journeyRun'),onEnd:()=>{setRunMode(false);calculate();}});
   const saved=readSavedRun(data);
   if(saved){setRunMode(true);live.start(saved);}else calculate();
@@ -62,7 +70,7 @@ export function createJourneyPanel(){
   $('journeyNotes').innerHTML=[
    `Każda z ${SIMULATIONS} tras ma własne wylosowane spotkania; te same trasy służą wszystkim lokacjom i poziomom. Walki z bossami są liczone dokładnie dla każdego losowego parametru rundy.`,
    `Planer płaci tym parametrem, który zostawia największą szansę na pokonanie bossa. Krew zastępuje cały koszt (${data.costs.blood} krwi = 1 punkt), nie uzupełnia brakującej części.`,
-   `Mini boss kosztuje +${pct(data.costs.type.miniboss-1)} kosztu parametru, boss +${pct(data.costs.type.boss-1)}, a na poziomach z mini bossem +${pct(data.costs.type.bossAfterMini-1)}. Kombo w 3. rundzie to ${pct(data.costs.combo)} stawki tej walki za każdy z dwóch parametrów.`,
+   `Mini boss kosztuje +${pct(data.costs.type.miniboss-1)} kosztu parametru, boss +${pct(data.costs.type.boss-1)}${Object.entries(data.costs.acts).filter(([,a])=>a.boss!=null).map(([act,a])=>` (Akt ${ACTS[act]??act}: +${pct(a.boss-1)})`).join('')}, a na poziomach z mini bossem co najmniej +${pct(data.costs.type.bossAfterMini-1)}. Kombo w 3. rundzie to ${pct(data.costs.combo)} stawki tej walki za każdy z dwóch parametrów.`,
    `Układ trasy zależy tylko od poziomu.${miniLevel?` Od poziomu ${miniLevel} po ${routeLayout(data,miniLevel).miniAfter}. węźle pojawia się mini boss: boss jednej z pozostałych lokacji.`:''}`,
    'Ataki specjalne bossów nie są uwzględnione — ich koszt nie jest znany, więc realna szansa może być wyższa.',
    'Przeciwnicy na trasie są losowani z jednakowym prawdopodobieństwem.',
@@ -82,6 +90,16 @@ export function createJourneyPanel(){
   slider.setAttribute('aria-valuetext',`Poziom ${slider.value}${locked?', zablokowany':''}`);
  }
  function schedule(){clearTimeout(timer);timer=setTimeout(calculate,250);}
+ // Matching starts once the inventory could fill all 8 slots.
+ function syncGear(){
+  const n=gear.getInventory().length,ok=n>=MIN_ITEMS;
+  $('journeyGear').disabled=!ok||!gearDialog;
+  $('journeyGearHint').textContent=ok?`Najlepszy zestaw z ${n} przedmiotów ekwipunku dla każdej lokacji. Wynik możesz wpisać w parametry.`:`Potrzeba co najmniej ${MIN_ITEMS} przedmiotów w ekwipunku — masz ${n}.`;
+ }
+ function applyGear(values){
+  for(const [id,value]of Object.entries(values)){const input=$(`journey-${id}`);if(input){input.value=Math.max(0,value);input.setAttribute('aria-invalid','false');}}
+  clearTimeout(timer);calculate();
+ }
  function read(){
   let invalid=false;
   const values={};
@@ -126,5 +144,5 @@ export function createJourneyPanel(){
    return `<tr>${place(r)}<td>${level}</td><td class="journeyNum">${next}</td><td class="journeyNum">${r.level?costList(r):'—'}</td>${go(r,r.level)}</tr>`;
   });
  }
- return {open};
+ return {open,inventoryChanged(){syncGear();gearDialog?.inventoryChanged();}};
 }

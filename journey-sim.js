@@ -8,8 +8,10 @@ export function mulberry32(seed){
 export function stageCost(data,act,level,type){
  const a=data.costs.acts[act],{min,max}=data.costs.levels;
  if(!a)throw new RangeError(`Nieznany akt: ${act}`);
- // The final boss costs more on levels where a mini boss stands on the route.
- const rates=data.costs.type,rate=type==='boss'&&data.routes?.[level]?.miniAfter!=null?rates.bossAfterMini??rates.boss:rates[type];
+ // An act can set its own boss rate (Act II: +100%). The final boss costs at least bossAfterMini on levels where a
+ // mini boss stands on the route.
+ const rates=data.costs.type,boss=a.boss??rates.boss;
+ const rate=type!=='boss'?rates[type]:data.routes?.[level]?.miniAfter!=null?Math.max(boss,rates.bossAfterMini??boss):boss;
  return Math.round((a.base+a.perLevel*Math.min(Math.max(level,min),max))*rate);
 }
 export function comboCost(data,cost){return Math.round(cost*data.costs.combo);}
@@ -199,6 +201,19 @@ function summary(data,opts,location,routes){
 export function planJourneys(data,input){
  const opts=normalize(data,input),routes=rolledRoutes(data,opts);
  return data.locations.map(location=>summary(data,opts,location,routes));
+}
+
+// One location at fixed settings: planJourneys' completion for any stats (array in data.params order), routes rolled once.
+export function chanceEvaluator(data,input,locationId){
+ const location=data.locations.find(l=>l.id===locationId);
+ if(!location)throw new RangeError(`Nieznana lokacja: ${locationId}`);
+ const opts=normalize(data,{...input,stats:{}}),routes=rolledRoutes(data,opts);
+ // Boss fights depend only on location and level, so their memo is shared by every stats vector.
+ const ctx=prepare(data,opts,location);
+ return stats=>{
+  ctx.start=Float64Array.from([...stats.map(v=>Math.max(0,Math.round(v))),opts.blood]);
+  return routes.reduce((t,r)=>t+chanceFor(ctx,r).chance,0)/routes.length;
+ };
 }
 
 // Highest level with a certain finish on every rolled route, checked from the top down; input.level is ignored.

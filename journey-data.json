@@ -10,7 +10,7 @@
   {"id":"inteligencja","label":"Inteligencja"},
   {"id":"wiedza","label":"Wiedza"}
  ],
- "costs": {"acts":{"1":{"base":8,"perLevel":4},"2":{"base":30,"perLevel":6},"3":{"base":63,"perLevel":9}},"levels":{"min":1,"max":9},"type":{"monster":1,"miniboss":1.5,"boss":1.5,"bossAfterMini":2},"blood":5,"combo":0.75},
+ "costs": {"acts":{"1":{"base":8,"perLevel":4},"2":{"base":30,"perLevel":6,"boss":2},"3":{"base":63,"perLevel":9}},"levels":{"min":1,"max":9},"type":{"monster":1,"miniboss":1.5,"boss":1.5,"bossAfterMini":2},"blood":5,"combo":0.75},
  "routes": {"1":{"nodes":3},"2":{"nodes":4},"3":{"nodes":4},"4":{"nodes":5},"5":{"nodes":5},"6":{"nodes":5,"miniAfter":3},"7":{"nodes":6,"miniAfter":3},"8":{"nodes":6,"miniAfter":3},"9":{"nodes":7,"miniAfter":3}},
  "encounters": [
   {"name":"Amalgamat","type":"enemy","fixed":"charyzma","random":["wyglad","zwinnosc","spostrzegawczosc"]},

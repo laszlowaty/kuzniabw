@@ -19,7 +19,7 @@ const fixture=(bosses,locations,routes=ROUTES)=>({
 });
 const enemy={encounter:0,shown:'b'},storm={encounter:1,shown:null};
 
-test('cost per encounter follows act and difficulty; mini boss +50%, final boss +50% or +100% with a mini boss on the route',()=>{
+test('cost per encounter follows act and difficulty; mini boss +50%, final boss +50% (Act II +100%), at least +100% with a mini boss on the route',()=>{
  const levels=[1,2,3,4,5,6,7,8,9];
  assert.deepEqual(levels.map(l=>stageCost(data,1,l,'monster')),[12,16,20,24,28,32,36,40,44]);
  assert.deepEqual(levels.map(l=>stageCost(data,2,l,'monster')),[36,42,48,54,60,66,72,78,84],'Szklana Pustynia, levels 1–9');
@@ -28,7 +28,9 @@ test('cost per encounter follows act and difficulty; mini boss +50%, final boss 
  assert.equal(stageCost(data,3,6,'miniboss'),176,'117 × 1.5 = 175.5, rounded up');
  assert.equal(stageCost(data,3,6,'boss'),234,'mini boss on the route: final boss × 2');
  assert.equal(stageCost(data,3,5,'boss'),162,'no mini boss: final boss × 1.5');
- assert.deepEqual(levels.map(l=>stageCost(data,2,l,'boss')),[54,63,72,81,90,132,144,156,168]);
+ assert.deepEqual(levels.map(l=>stageCost(data,1,l,'boss')),[18,24,30,36,42,64,72,80,88],'Act I: +50%, +100% with a mini boss');
+ assert.deepEqual(levels.map(l=>stageCost(data,2,l,'boss')),[72,84,96,108,120,132,144,156,168],'Act II: +100% on every level');
+ assert.equal(stageCost(data,2,1,'boss'),72,'Szklana Pustynia, level 1');
  assert.equal(stageCost(data,2,8,'boss'),156,'Szklana Pustynia, level 8');
  assert.equal(comboCost(data,234),176);
  assert.equal(comboCost(data,stageCost(data,1,6,'boss')),48);

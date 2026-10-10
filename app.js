@@ -62,6 +62,7 @@ const inventoryPanel=createInventoryPanel({
 function renderInventory(){
  if(!$('tiersPanel').hidden)renderTierEstimate();
  inventoryPanel.render(inventory,simulationHistory.length>0);
+ journeyPanel?.inventoryChanged();
 }
 function filterOptions(){
  const cats=data.categories.filter(c=>$('category').value==='all'||c.id===$('category').value);
@@ -301,7 +302,8 @@ function renderTierEstimate(){
 }
 function showToolPanel(which,focus=false){itemPopover.close();const tabs=[['missingTab','missingPanel','missing'],['craftingTab','craftingPanel','crafting'],['tiersTab','tiersPanel','tiers']];for(const [tab,panel,name]of tabs){$(panel).hidden=name!==which;$(tab).setAttribute('aria-selected',String(name===which));$(tab).tabIndex=name===which?0:-1;}if(which==='tiers'){tierVisibleLimit=50;renderTierEstimate();}if(which==='crafting'&&craftingDirty)calculate().catch(()=>{});if(focus)$(`${which}Tab`).focus();}
 let journeyPanel;
-function showView(which){itemPopover.close();$('forgeView').hidden=which!=='forge';$('tablesView').hidden=which!=='tables';$('journeyView').hidden=which!=='journey';document.querySelector('.sharedInventoryLayout').hidden=which==='journey';for(const [id,view]of [['forgeTab','forge'],['tablesTab','tables'],['journeyTab','journey']]){if(view===which)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}if(which==='journey')(journeyPanel??=createJourneyPanel()).open();}
+function showView(which){itemPopover.close();$('forgeView').hidden=which!=='forge';$('tablesView').hidden=which!=='tables';$('journeyView').hidden=which!=='journey';document.querySelector('.sharedInventoryLayout').hidden=which==='journey';for(const [id,view]of [['forgeTab','forge'],['tablesTab','tables'],['journeyTab','journey']]){if(view===which)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}if(which==='journey')(journeyPanel??=createJourneyPanel(journeyGear)).open();}
+const journeyGear={getInventory:()=>inventory,getDetails:()=>itemDetails,canUse:item=>possibleForSex(item,profile().sex,itemDetails,itemCatalog),itemMarkup:(n,text)=>itemPopover.markup(n,text),closePopover:()=>itemPopover.close(),editInventory:()=>$('editInventory').click()};
 function registerTools(){
  const context=document.modelContext;if(!context?.registerTool)return;
  const abort=new AbortController();window.addEventListener('pagehide',()=>abort.abort(),{once:true});
