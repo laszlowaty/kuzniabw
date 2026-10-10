@@ -519,3 +519,10 @@ dialog .dialogActions button{min-width:0;min-height:44px;white-space:normal;line
  #inventoryText{height:120px;min-height:90px}
  .itemPopover{max-height:calc(100dvh - 16px)}
 }
+.goalViewControls{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;margin:12px 0 16px;padding:14px;background:var(--raised);border:1px solid var(--line);border-radius:8px}
+.goalViewControls label{min-width:0;font-size:13px;color:var(--text)}
+.goalViewControls select{min-height:46px;max-width:100%;font-size:14px}
+.goalViewControls p{grid-column:1/-1}
+.goalViewControls .goalResultCount{color:var(--gold);font-weight:600}
+.goalTierSummary{display:block;margin-top:5px;color:var(--text);font-size:12px;font-weight:400}
+@media(max-width:680px){.goalViewControls{grid-template-columns:minmax(0,1fr);padding:12px}.goalViewControls select{font-size:16px}.goalCardsColumn>.more{width:100%;min-height:46px;white-space:normal}}

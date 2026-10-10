@@ -34,7 +34,7 @@ try{
  await page.locator('#goalSteps').selectOption('1');
  await page.locator('#goalSearch').click();
  await page.locator('#goalMissingList').waitFor();
- const initial=await page.locator('#goalMissingList').inputValue();
+ let initial=await page.locator('#goalMissingList').inputValue();
  function expectedAffixes(text,axis){
   const parsed=parseInventory(text.split('\n').filter(line=>/^\d+ - /.test(line)).map(line=>line.replace(/^\d+ - /,'')).join('\n'),data);
   assert.deepEqual(parsed.errors,[]);
@@ -48,18 +48,21 @@ try{
    if(process.env.UI_SCREENSHOTS)await page.locator('.goalMissingSidebar').screenshot({path:path.join(process.env.UI_SCREENSHOTS,`missing-${axis}-desktop.png`)});
   }
  }
- assert.ok(initial.split('\n').length>100,'List includes more than one page of ingredients');
- assert.equal(await page.locator('#goalPlanList details').count(),100);
+ assert.equal(await page.locator('#goalLimit').inputValue(),'20');
+ assert.equal(await page.locator('#goalOrder').inputValue(),'tiers');
+ assert.equal(await page.locator('#goalPlanList details').count(),20);
  assert.ok(initial.split('\n').every(line=>!line||/^Zestaw #\d+ · 1 spaw$/.test(line)||/^[12] - .+/.test(line)));
  const headers=initial.split('\n').filter(line=>line.startsWith('Zestaw #'));
- assert.ok(headers.length>100,'Groups include recipes beyond the visible page');
+ assert.equal(headers.length,20,'Shopping list contains exactly the visible recipes');
  assert.ok((await page.locator('#goalPlanList summary').first().textContent()).startsWith(headers[0]));
  assert.equal(new Set(headers).size,headers.length);
  const sidebarBox=await page.locator('.goalMissingSidebar').boundingBox();
  const plansBox=await page.locator('#goalPlanList').boundingBox();
  assert.ok(sidebarBox.x>plansBox.x+plansBox.width,'Desktop sidebar is beside recipes');
  await page.locator('#goalShowMore').click();
- assert.equal(await page.locator('#goalMissingList').inputValue(),initial,'Pagination does not change the list');
+ assert.equal(await page.locator('#goalPlanList details').count(),40);
+ initial=await page.locator('#goalMissingList').inputValue();
+ assert.equal(initial.split('\n').filter(line=>line.startsWith('Zestaw #')).length,40,'Show more expands both lists');
  const displayed=await page.locator('#goalPlanList details').count();
  await page.locator('#goalPlanList details').nth(1).locator('summary').focus();
  await page.keyboard.press('Enter');
@@ -68,6 +71,25 @@ try{
  assert.equal(await page.locator('#goalPlanList details').nth(1).evaluate(e=>e.open),true,'Mode keeps open recipes');
  await page.locator('#goalMissingListMode').selectOption('items');
  assert.equal(await page.locator('#goalMissingList').inputValue(),initial,'Full item quantities are preserved');
+ await page.locator('#goalLimit').selectOption('50');
+ assert.equal(await page.locator('#goalPlanList details').count(),50);
+ await page.locator('#goalOrder').selectOption('steps');
+ await page.locator('#goalOrder').selectOption('missing');
+ await page.locator('#goalOrder').selectOption('tiers');
+ const sums=await page.locator('.goalTierSummary').allTextContents();
+ const tiers=sums.map(text=>Number(text.match(/Tiery braków: (\d+)/)[1]));
+ assert.deepEqual(tiers,[...tiers].sort((a,b)=>a-b));
+ await page.locator('#goalLimit').selectOption('all');
+ const allHeaders=(await page.locator('#goalMissingList').inputValue()).split('\n').filter(line=>line.startsWith('Zestaw #'));
+ assert.ok(allHeaders.length>100);
+ assert.equal(await page.locator('#goalPlanList details').count(),allHeaders.length);
+ assert.equal(await page.locator('#goalShowMore').isVisible(),false);
+ // A recipe beyond the initial limit must remain reachable through filters.
+ const lastName=(await page.locator('#goalMissingList').inputValue()).trim().split('\n').at(-1).replace(/^\d+ - /,'');
+ await page.locator('#goalLimit').selectOption('20');
+ await page.locator('#goalTextFilter').fill(lastName.replace(/ \(\+1\)$/,''));
+ assert.ok(await page.locator('#goalPlanList details').count()>0);
+ await page.locator('#goalTextFilter').fill('');
  await page.locator('#goalStepsFilter').selectOption('1');
  await page.locator('#goalMissingFilter').selectOption('2');
  assert.ok((await page.locator('#goalPlanList summary').allTextContents()).every(text=>/^Zestaw #\d+ · 1 spaw · brakuje 2:/.test(text)));
@@ -85,7 +107,7 @@ try{
  const filtered=await page.locator('#goalMissingList').inputValue();
  assert.ok(filtered.length>0&&filtered.length<initial.length,'Affix filter narrows recipes');
  const filteredHeaders=filtered.split('\n').filter(line=>line.startsWith('Zestaw #'));
- assert.ok(filteredHeaders.every(header=>headers.includes(header)),'Filters preserve recipe numbers');
+ assert.ok(filteredHeaders.every(header=>allHeaders.includes(header)),'Filters preserve recipe numbers');
  for(const summary of await page.locator('#goalPlanList summary').allTextContents()){
   assert.ok(filteredHeaders.includes(summary.split(' · brakuje')[0]),'Each visible recipe has a matching shopping group');
  }
@@ -103,6 +125,10 @@ try{
  assert.ok(mobileSidebar.y+mobileSidebar.height<=mobilePlans.y,'Mobile list is above recipes');
  for(const width of [320,375,768]){
   await page.setViewportSize({width,height:800});
+  for(const id of ['goalOrder','goalLimit']){
+   const box=await page.locator('#'+id).boundingBox();
+   assert.ok(box.width<=width&&box.height>=44,'Touch controls fit and remain large enough');
+  }
   for(const mode of ['items','prefix','suffix']){
    await page.locator('#goalMissingListMode').selectOption(mode);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${mode} fits ${width}px`);
@@ -129,6 +155,17 @@ try{
  }
  await page.locator('#goalMissingListMode').selectOption('items');
  assert.ok((await page.locator('#goalMissingList').inputValue()).length>0,'No affixes does not mean no missing items');
+ await page.locator('#goalLimit').selectOption('50');
+ await page.locator('#goalOrder').selectOption('steps');
+ await page.reload();
+ await page.waitForFunction(()=>document.querySelector('#catalogStatus').textContent.includes('Dane R21 gotowe'));
+ await page.locator('#goalCategory').selectOption('gun1');
+ await page.locator('#goalBase').selectOption('magnum');
+ await page.locator('#goalSteps').selectOption('1');
+ await page.locator('#goalSearch').click();
+ await page.locator('#goalLimit').waitFor();
+ assert.equal(await page.locator('#goalLimit').inputValue(),'50');
+ assert.equal(await page.locator('#goalOrder').inputValue(),'steps');
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
- console.log('Missing list browser QA passed: exact unique affixes, all results, quantities, filters, all copy modes and fallback, pagination/open recipe preservation, 320–1440px, empty affixes and new search.');
+ console.log('Missing list browser QA passed: exact unique affixes, shared limits, tier sorting, persistence, quantities, filters, all copy modes and fallback, pagination/open recipe preservation, 320–1440px, empty affixes and new search.');
 }finally{await browser.close();server.close();}

@@ -8,6 +8,7 @@ import {createInventoryPanel} from './inventory-panel.js';
 import {isStrongCombo,assessAffixes} from './strong-combos.js';
 import {assessProfileAffixes,tattoos,races,possibleForSex,requiredSex} from './profile-affixes.js';
 import {sortResults} from './result-sort.js';
+import {missingPlanStats,sortMissingPlans} from './missing-order.js';
 import {createGoalTarget} from './missing-planner.js';
 import {missingItemList,missingPlanListText,missingAffixList} from './missing-list.js';
 import {createJourneyPanel} from './journey-panel.js';
@@ -22,8 +23,15 @@ let tierVisibleLimit=50,craftingDirty=false;
 const simulationHistory=[];
 const enteredCosts=new Map();
 let renderedRecipeKey=null;
-let goalWorker=null,goalRun=0,goalDeadlineTimer=null,goalLoadingTimer=null,goalResultState=null,goalMatchedPlans=[],goalVisibleLimit=100;
-let goalMissingListMode='items';
+let goalWorker=null,goalRun=0,goalDeadlineTimer=null,goalLoadingTimer=null,goalResultState=null,goalMatchedPlans=[],goalVisibleLimit=20;
+let goalMissingListMode='items',goalOrder='tiers',goalLimit=20;
+try{
+ const saved=JSON.parse(localStorage.getItem('kuzniaMissingView')||'{}');
+ if([20,50,100,'all'].includes(saved.limit))goalLimit=saved.limit;
+ if(['tiers','missing','steps'].includes(saved.order))goalOrder=saved.order;
+}catch{}
+const goalPageSize=()=>goalLimit==='all'?Infinity:goalLimit;
+const saveGoalView=()=>{try{localStorage.setItem('kuzniaMissingView',JSON.stringify({limit:goalLimit,order:goalOrder}));}catch{}};
 let itemDetails=null,itemCatalog=null;
 const profile=()=>({race:$('profileRace').value,tattoo:$('profileTattoo').value,sex:$('profileSex').value});
 const profileActive=()=>!!(profile().tattoo||profile().race);
@@ -135,7 +143,7 @@ function goalPlanCosts(steps){
  }).join(' · ');
  return `<span class="goalPlanCosts" title="Łączny koszt spawów według katalogu R21, bez ulepszania i obniżania jakości.">${text}</span>`;
 }
-function clearGoalResults(){itemPopover.close();goalRun++;clearTimeout(goalDeadlineTimer);clearInterval(goalLoadingTimer);goalWorker?.terminate();goalWorker=null;goalResultState=null;goalMatchedPlans=[];goalVisibleLimit=100;$('goalStop').hidden=true;$('goalSearch').disabled=!data||!$('goalCategory').value;$('goalResults').innerHTML='';}
+function clearGoalResults(){itemPopover.close();goalRun++;clearTimeout(goalDeadlineTimer);clearInterval(goalLoadingTimer);goalWorker?.terminate();goalWorker=null;goalResultState=null;goalMatchedPlans=[];goalVisibleLimit=goalPageSize();$('goalStop').hidden=true;$('goalSearch').disabled=!data||!$('goalCategory').value;$('goalResults').innerHTML='';}
 function goalTargetName(target){return target.base?itemName(target):`Dowolna baza${target.prefix?` · prefiks: ${label(target.prefix)}`:''}${target.suffix?` · sufiks: ${label(target.suffix)}`:''}`;}
 function updateGoalPreview(){
  try{$('goalPreview').textContent=`Szukany wynik: ${goalTargetName(createGoalTarget(data,$('goalCategory').value,$('goalBase').value,$('goalPrefix').value,$('goalSuffix').value))}`;}
@@ -155,26 +163,28 @@ function updateGoalCategory(){
 }
 function renderGoalPlanCards(){
  if(!goalResultState)return;
- const {plans}=goalResultState,query=$('goalTextFilter').value.trim().toLocaleLowerCase('pl'),prefix=$('goalPrefixFilter').value,suffix=$('goalSuffixFilter').value;
- goalMatchedPlans=plans.filter(plan=>{const missing=ingredients(plan).filter(item=>item.missing);if(($('goalStepsFilter').value!==''&&plan.steps!==Number($('goalStepsFilter').value))||($('goalMissingFilter').value!==''&&missing.length!==Number($('goalMissingFilter').value)))return false;return missing.length?missing.some(item=>(!query||itemName(item).toLocaleLowerCase('pl').includes(query))&&(!prefix||item.prefix===prefix)&&(!suffix||item.suffix===suffix)):!query&&!prefix&&!suffix;});
+ const {plans,orderedPlans}=goalResultState,query=$('goalTextFilter').value.trim().toLocaleLowerCase('pl'),prefix=$('goalPrefixFilter').value,suffix=$('goalSuffixFilter').value;
+ goalMatchedPlans=orderedPlans.filter(plan=>{const missing=ingredients(plan).filter(item=>item.missing);if(($('goalStepsFilter').value!==''&&plan.steps!==Number($('goalStepsFilter').value))||($('goalMissingFilter').value!==''&&missing.length!==Number($('goalMissingFilter').value)))return false;return missing.length?missing.some(item=>(!query||itemName(item).toLocaleLowerCase('pl').includes(query))&&(!prefix||item.prefix===prefix)&&(!suffix||item.suffix===suffix)):!query&&!prefix&&!suffix;});
  const visible=goalMatchedPlans.slice(0,goalVisibleLimit),planNumbers=new Map(plans.map((plan,index)=>[plan,index+1]));
  $('goalResultCount').textContent=`Pokazano ${visible.length.toLocaleString('pl')} z ${goalMatchedPlans.length.toLocaleString('pl')} pasujących · ${plans.length.toLocaleString('pl')} łącznie`;
- $('goalPlanList').innerHTML=goalMatchedPlans.length?visible.map((plan,index)=>{const missing=ingredients(plan).filter(i=>i.missing),owned=ingredients(plan).filter(i=>!i.missing),steps=recipeSteps(plan);return `<details ${index===0?'open':''}><summary>Zestaw #${planNumbers.get(plan)} · ${plan.steps} ${plan.steps===1?'spaw':plan.steps<5?'spawy':'spawów'} · ${missing.length?`brakuje ${missing.length}: ${missing.map(i=>itemPopover.markup(i,itemName(i))).join(', ')}`:'wszystkie składniki masz'}${goalPlanCosts(steps)}</summary><div class="goalPlanBody"><p><strong>Masz:</strong> ${owned.length?owned.map(i=>`#${i.id+1} ${itemPopover.markup(i,i.original)}${requiresUpgrade(i)?' (podnieś do +1)':''}`).join(', '):'brak pasujących składników w ekwipunku'}</p><p><strong>Potrzebujesz:</strong> ${missing.length?missing.map(i=>itemPopover.markup(i,i.original)).join(', '):'niczego'}</p><ol>${steps.map(step=>`<li>${itemPopover.markup(step.left,step.left.left?fullItemName(step.left):step.left.original)} + ${itemPopover.markup(step.right,step.right.left?fullItemName(step.right):step.right.original)} → ${itemPopover.markup(step,fullItemName(step))}</li>`).join('')}</ol>${owned.some(requiresUpgrade)?'<p>Zwykłe składniki +0 trzeba podnieść do +1 przed spawem.</p>':''}</div></details>`;}).join(''):'<p class="goalNoMatches">Brak kombinacji pasujących do filtrów.</p>';
+ $('goalPlanList').innerHTML=goalMatchedPlans.length?visible.map((plan,index)=>{const missing=ingredients(plan).filter(i=>i.missing),owned=ingredients(plan).filter(i=>!i.missing),steps=recipeSteps(plan);return `<details ${index===0?'open':''}><summary>Zestaw #${planNumbers.get(plan)} · ${plan.steps} ${plan.steps===1?'spaw':plan.steps<5?'spawy':'spawów'} · ${missing.length?`brakuje ${missing.length}: ${missing.map(i=>itemPopover.markup(i,itemName(i))).join(', ')}`:'wszystkie składniki masz'}<span class="goalTierSummary">Tiery braków: ${goalResultState.stats.get(plan).sum} · do zdobycia: ${missing.length} szt.</span>${goalPlanCosts(steps)}</summary><div class="goalPlanBody"><p><strong>Masz:</strong> ${owned.length?owned.map(i=>`#${i.id+1} ${itemPopover.markup(i,i.original)}${requiresUpgrade(i)?' (podnieś do +1)':''}`).join(', '):'brak pasujących składników w ekwipunku'}</p><p><strong>Potrzebujesz:</strong> ${missing.length?missing.map(i=>itemPopover.markup(i,i.original)).join(', '):'niczego'}</p><ol>${steps.map(step=>`<li>${itemPopover.markup(step.left,step.left.left?fullItemName(step.left):step.left.original)} + ${itemPopover.markup(step.right,step.right.left?fullItemName(step.right):step.right.original)} → ${itemPopover.markup(step,fullItemName(step))}</li>`).join('')}</ol>${owned.some(requiresUpgrade)?'<p>Zwykłe składniki +0 trzeba podnieść do +1 przed spawem.</p>':''}</div></details>`;}).join(''):'<p class="goalNoMatches">Brak kombinacji pasujących do filtrów.</p>';
  $('goalShowMore').hidden=goalMatchedPlans.length<=goalVisibleLimit;
+ $('goalShowMore').textContent=`Pokaż kolejne ${Math.min(goalPageSize(),Math.max(0,goalMatchedPlans.length-goalVisibleLimit))}`;
  renderGoalMissingList();
 }
 function renderGoalMissingList(){
- const fullItems=missingItemList(goalMatchedPlans),isItems=goalMissingListMode==='items';
- const list=isItems?fullItems:missingAffixList(goalMatchedPlans,goalMissingListMode);
+ const selectedPlans=goalMatchedPlans.slice(0,goalVisibleLimit);
+ const fullItems=missingItemList(selectedPlans),isItems=goalMissingListMode==='items';
+ const list=isItems?fullItems:missingAffixList(selectedPlans,goalMissingListMode);
  const title=isItems?'Lista brakujących itemów':goalMissingListMode==='prefix'?'Unikalne prefiksy':'Unikalne sufiksy';
  $('goalMissingListTitle').textContent=title;
  $('goalMissingListHint').textContent=isItems
-  ?'Każdy zestaw odpowiada przepisowi o tym samym numerze. Zdobądź razem składniki jednego wybranego zestawu — pozostałe to alternatywy. Lista obejmuje wszystkie przepisy pasujące do filtrów. Składniki na poziomie +1.'
-  :'Afiksy brakujących składników ze wszystkich kombinacji pasujących do filtrów, każdy tylko raz. Pomijamy przedmioty bez wybranego afiksu. Właściwą bazę i drugi afiks sprawdź w przepisie.';
- $('goalMissingList').value=isItems?missingPlanListText(goalMatchedPlans,goalResultState.plans):list.join('\n');
+  ?'Każdy zestaw odpowiada przepisowi o tym samym numerze. Zdobądź razem składniki jednego wybranego zestawu — pozostałe to alternatywy. Lista obejmuje tylko pokazane zestawy, zgodnie z filtrami, sortowaniem i limitem. Składniki na poziomie +1.'
+  :'Afiksy brakujących składników z pokazanych zestawów, każdy tylko raz. Pomijamy przedmioty bez wybranego afiksu. Właściwą bazę i drugi afiks sprawdź w przepisie.';
+ $('goalMissingList').value=isItems?missingPlanListText(selectedPlans,goalResultState.plans):list.join('\n');
  $('goalMissingList').setAttribute('aria-label',isItems?'Brakujące itemy według zestawów: ilość - nazwa':title);
  $('goalMissingList').placeholder=!goalMatchedPlans.length?'Brak kombinacji pasujących do filtrów.':!fullItems.length?'Wszystkie składniki masz.':goalMissingListMode==='prefix'?'Brakujące składniki nie mają prefiksów.':'Brakujące składniki nie mają sufiksów.';
- $('goalMissingListCount').textContent=`${isItems?'Unikalne przedmioty':title}: ${list.length.toLocaleString('pl')} · kombinacje: ${goalMatchedPlans.length.toLocaleString('pl')}`;
+ $('goalMissingListCount').textContent=`${isItems?'Unikalne przedmioty':title}: ${list.length.toLocaleString('pl')} · pokazane zestawy: ${selectedPlans.length.toLocaleString('pl')}`;
  $('goalCopyList').disabled=!list.length;
  $('goalCopyStatus').textContent='';
 }
@@ -184,15 +194,20 @@ function renderGoalPlans(target,response){
  const partialMessage=stopReason==='memory'?'Osiągnięto limit pamięci wyszukiwania. Wyniki są częściowe; zawęź cel lub ekwipunek.':'Osiągnięto limit czasu. Wyniki są częściowe.';
  if(!plans.length){$('goalResults').innerHTML=`<p class="goalStatus">${partial?partialMessage:'Nie znaleziono przepisu w wybranym limicie spawów i najwyżej dwóch brakujących składnikach.'}</p>`;return;}
  const minMissing=plans.reduce((min,plan)=>Math.min(min,plan.missingCount),Infinity),lead=minMissing===0?'Ten przedmiot da się zbudować z Twojego ekwipunku.':`Z Twoich przedmiotów brakuje co najmniej ${minMissing} ${minMissing===1?'składnika':'składników'}`;
- goalResultState={target,plans};
+ const stats=new Map(plans.map(plan=>[plan,missingPlanStats(plan,data)]));
+ goalResultState={target,plans,stats,orderedPlans:sortMissingPlans(plans,stats,goalOrder)};
+ goalVisibleLimit=goalPageSize();
  const category=data.categories.find(item=>item.id===target.category),prefixes=category?.axes.prefix?.values||[],suffixes=category?.axes.suffix?.values||[];
- $('goalResults').innerHTML=`<p class="goalStatus"><strong>${esc(goalTargetName(target))}</strong> · ${lead}. ${partial?partialMessage:''} Pokazujemy wszystkie znalezione kombinacje; nowe składniki zakładamy na poziomie +1.</p><div class="goalFilters"><label for="goalTextFilter">Brakujący przedmiot<input id="goalTextFilter" type="search" placeholder="Szukaj nazwy, prefiksu lub sufiksu"></label><label for="goalPrefixFilter">Prefiks brakującego<select id="goalPrefixFilter"><option value="">Wszystkie prefiksy</option>${prefixes.map(value=>`<option value="${esc(value)}">${esc(label(value))}</option>`).join('')}</select></label><label for="goalSuffixFilter">Sufiks brakującego<select id="goalSuffixFilter"><option value="">Wszystkie sufiksy</option>${suffixes.map(value=>`<option value="${esc(value)}">${esc(label(value))}</option>`).join('')}</select></label><label for="goalStepsFilter">Liczba spawów<select id="goalStepsFilter"><option value="">Dowolna</option>${[...new Set(plans.map(plan=>plan.steps))].sort((a,b)=>a-b).map(count=>`<option value="${count}">${count}</option>`).join('')}</select></label><label for="goalMissingFilter">Brakujących sztuk<select id="goalMissingFilter"><option value="">Dowolna</option>${[...new Set(plans.map(plan=>plan.missingCount))].sort((a,b)=>a-b).map(count=>`<option value="${count}">${count}</option>`).join('')}</select></label><p id="goalResultCount" class="goalResultCount" aria-live="polite"></p></div><div class="goalResultsLayout"><div class="goalCardsColumn"><div id="goalPlanList" class="goalPlans"></div><button id="goalShowMore" class="secondary more" type="button" hidden>Pokaż kolejne 100</button></div><aside class="goalMissingSidebar" aria-labelledby="goalMissingListTitle"><h3 id="goalMissingListTitle">Lista brakujących itemów</h3><label class="missingListMode" for="goalMissingListMode">Pokaż na liście<select id="goalMissingListMode"><option value="items">Pełne przedmioty</option><option value="prefix">Unikalne prefiksy</option><option value="suffix">Unikalne sufiksy</option></select></label><p id="goalMissingListHint"></p><p id="goalMissingListCount" aria-live="polite"></p><textarea id="goalMissingList" readonly aria-label="Brakujące itemy według zestawów: ilość - nazwa" spellcheck="false"></textarea><button id="goalCopyList" class="secondary" type="button">Kopiuj listę</button><p id="goalCopyStatus" role="status"></p></aside></div>`;
+ $('goalResults').innerHTML=`<p class="goalStatus"><strong>${esc(goalTargetName(target))}</strong> · ${lead}. ${partial?partialMessage:''} Limit obejmuje przepisy i listę do skopiowania; nowe składniki zakładamy na poziomie +1.</p><div class="goalFilters"><label for="goalTextFilter">Brakujący przedmiot<input id="goalTextFilter" type="search" placeholder="Szukaj nazwy, prefiksu lub sufiksu"></label><label for="goalPrefixFilter">Prefiks brakującego<select id="goalPrefixFilter"><option value="">Wszystkie prefiksy</option>${prefixes.map(value=>`<option value="${esc(value)}">${esc(label(value))}</option>`).join('')}</select></label><label for="goalSuffixFilter">Sufiks brakującego<select id="goalSuffixFilter"><option value="">Wszystkie sufiksy</option>${suffixes.map(value=>`<option value="${esc(value)}">${esc(label(value))}</option>`).join('')}</select></label><label for="goalStepsFilter">Liczba spawów<select id="goalStepsFilter"><option value="">Dowolna</option>${[...new Set(plans.map(plan=>plan.steps))].sort((a,b)=>a-b).map(count=>`<option value="${count}">${count}</option>`).join('')}</select></label><label for="goalMissingFilter">Brakujących sztuk<select id="goalMissingFilter"><option value="">Dowolna</option>${[...new Set(plans.map(plan=>plan.missingCount))].sort((a,b)=>a-b).map(count=>`<option value="${count}">${count}</option>`).join('')}</select></label></div><div class="goalViewControls"><label for="goalOrder">Sortuj według<select id="goalOrder" aria-describedby="goalOrderHint"><option value="tiers">Najniższe tiery braków</option><option value="missing">Najmniej brakujących sztuk</option><option value="steps">Najmniej spawów</option></select></label><label for="goalLimit">Pokaż maksymalnie<select id="goalLimit"><option value="20">20 zestawów</option><option value="50">50 zestawów</option><option value="100">100 zestawów</option><option value="all">Wszystkie znalezione</option></select></label><p id="goalOrderHint">Tiery braków to suma tierów afiksów składników do zdobycia, nie cena rynkowa. Najpierw zestawy, do których masz wszystko.</p><p id="goalResultCount" class="goalResultCount" aria-live="polite"></p></div><div class="goalResultsLayout"><div class="goalCardsColumn"><div id="goalPlanList" class="goalPlans"></div><button id="goalShowMore" class="secondary more" type="button" hidden>Pokaż kolejne 100</button></div><aside class="goalMissingSidebar" aria-labelledby="goalMissingListTitle"><h3 id="goalMissingListTitle">Lista brakujących itemów</h3><label class="missingListMode" for="goalMissingListMode">Pokaż na liście<select id="goalMissingListMode"><option value="items">Pełne przedmioty</option><option value="prefix">Unikalne prefiksy</option><option value="suffix">Unikalne sufiksy</option></select></label><p id="goalMissingListHint"></p><p id="goalMissingListCount" aria-live="polite"></p><textarea id="goalMissingList" readonly aria-label="Brakujące itemy według zestawów: ilość - nazwa" spellcheck="false"></textarea><button id="goalCopyList" class="secondary" type="button">Kopiuj listę</button><p id="goalCopyStatus" role="status"></p></aside></div>`;
  $('goalMissingListMode').value=goalMissingListMode;
  $('goalMissingListMode').onchange=()=>{goalMissingListMode=$('goalMissingListMode').value;renderGoalMissingList();};
- const resetPage=()=>{goalVisibleLimit=100;renderGoalPlanCards();};
+ const resetPage=()=>{goalVisibleLimit=goalPageSize();renderGoalPlanCards();};
+ $('goalOrder').value=goalOrder;$('goalLimit').value=String(goalLimit);
+ $('goalOrder').onchange=()=>{goalOrder=$('goalOrder').value;goalResultState.orderedPlans=sortMissingPlans(plans,stats,goalOrder);saveGoalView();resetPage();};
+ $('goalLimit').onchange=()=>{goalLimit=$('goalLimit').value==='all'?'all':Number($('goalLimit').value);saveGoalView();resetPage();};
  $('goalTextFilter').oninput=resetPage;$('goalPrefixFilter').onchange=resetPage;$('goalSuffixFilter').onchange=resetPage;$('goalStepsFilter').onchange=resetPage;$('goalMissingFilter').onchange=resetPage;
  $('goalCopyList').onclick=async()=>{try{await navigator.clipboard.writeText($('goalMissingList').value);if($('goalCopyStatus'))$('goalCopyStatus').textContent='Skopiowano listę.';}catch{if($('goalMissingList')){$('goalMissingList').focus();$('goalMissingList').select();$('goalCopyStatus').textContent='Zaznaczono listę. Skopiuj ją skrótem Ctrl+C lub z menu urządzenia.';}}};
- $('goalShowMore').onclick=()=>{goalVisibleLimit+=100;renderGoalPlanCards();};
+ $('goalShowMore').onclick=()=>{goalVisibleLimit+=goalPageSize();renderGoalPlanCards();};
  renderGoalPlanCards();
 }
 function searchMissing(event){
