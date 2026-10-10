@@ -1,4 +1,4 @@
-import {liveAdvice,routeLayout,chanceLabel,chanceTone} from './journey-sim.js';
+import {validateJourneyRun,routeLayout,chanceLabel,chanceTone} from './journey-sim.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const STORAGE='kuzniaJourneyRun',ACTS={1:'I',2:'II',3:'III'};
 const plural=(n,one,few,many)=>n===1?one:n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?few:many;
@@ -14,20 +14,21 @@ export function routeText({nodes,miniAfter}){
 export function readSavedRun(data){
  try{
   const run=JSON.parse(localStorage.getItem(STORAGE)||'null');
-  if(run&&Array.isArray(run.log)&&data.locations.some(l=>l.id===run.locationId)){liveAdvice(data,run);return run;}
+  if(run&&Array.isArray(run.log)&&data.locations.some(l=>l.id===run.locationId)){validateJourneyRun(data,run);return run;}
  }catch{}
  return null;
 }
 
 // Live journey: the player reports each encounter, the planner says what to pay and recalculates the rest.
 export function createJourneyRun({data,root,onEnd}){
- let run=null,pending={},view=null,focus=null;
+ let run=null,pending={},view=null,focus=null,worker=null,advice=null;
  const label=id=>id==='blood'?'Krew':data.params.find(p=>p.id===id)?.label??id;
  const bossName=id=>data.bosses.find(b=>b.id===id)?.name??id;
  const encounters=data.encounters.map((e,i)=>({...e,i})).sort((a,b)=>a.name.localeCompare(b.name,'pl'));
  function save(){try{localStorage.setItem(STORAGE,JSON.stringify(run));}catch{}}
- function start(next){run={...next,log:next.log??[]};pending={};view=null;save();render();}
- function end(){run=null;root.innerHTML='';root.hidden=true;try{localStorage.removeItem(STORAGE);}catch{}onEnd();}
+ function start(next){stop();advice=null;root.innerHTML='';run={...next,log:next.log??[]};pending={};view=null;focus=null;save();render();}
+ function stop(){worker?.terminate();worker=null;root.removeAttribute('aria-busy');}
+ function end(){stop();run=null;advice=null;focus=null;root.innerHTML='';root.hidden=true;try{localStorage.removeItem(STORAGE);}catch{}onEnd();}
  function commit(entry){run.log=[...run.log,entry];pending={};view=null;save();render();}
 
  function optionName(o){
@@ -93,10 +94,29 @@ export function createJourneyRun({data,root,onEnd}){
   }).join('')}</ol>`;
  }
  function render(){
-  let advice=liveAdvice(data,run,pending);
-  if(!advice.valid){run.log=run.log.slice(0,advice.applied);save();advice=liveAdvice(data,run,pending);}
+  stop();advice=null;root.hidden=false;root.setAttribute('aria-busy','true');
+  if(!root.innerHTML)root.innerHTML='<div class="journeyRunActions"><button type="button" class="primary" data-action="end">Zakończ podróż</button></div>';
+  for(const control of root.querySelectorAll('button,select'))control.disabled=!['end','undo'].includes(control.dataset.action)||control.dataset.action==='undo'&&!run.log.length;
+  let status=root.querySelector('[data-calculation]');
+  if(!status){status=document.createElement('p');status.dataset.calculation='';status.setAttribute('role','status');root.prepend(status);}
+  status.textContent='Przeliczanie szans podróży…';
+  const fail=message=>{stop();status.textContent=message;const retry=document.createElement('button');retry.type='button';retry.dataset.action='retry';retry.textContent='Spróbuj ponownie';status.append(' ',retry);};
+  try{
+   const current=new Worker(new URL('./journey-worker.js',import.meta.url),{type:'module'});worker=current;
+   current.onerror=()=>{if(worker===current)fail('Nie udało się przeliczyć podróży.');};
+   current.onmessage=({data:result})=>{
+    if(worker!==current||!run)return;
+    if(result.error){fail(result.error);return;}
+    stop();advice=result.advice;
+    if(!advice.valid){run.log=run.log.slice(0,advice.applied);save();}
+    draw();
+   };
+   current.postMessage({data,run,pending});
+  }catch{fail('Nie udało się uruchomić obliczeń podróży.');}
+ }
+ function draw(){
   const location=data.locations.find(l=>l.id===run.locationId),boss=bossName(location.boss);
-  const chips=[...data.params.map(p=>[p.label,advice.stats[p.id],run.stats[p.id]??0]),['Krew',advice.blood,run.blood??0]].map(([name,now,was])=>`<span class="journeyStatChip${now<was?' used':''}"><b>${esc(name)}</b> ${now.toLocaleString('pl')} / ${was.toLocaleString('pl')}</span>`).join('');
+  const chips=[...data.params.map(p=>[p.label,advice.stats[p.id],run.stats?.[p.id]??0]),['Krew',advice.blood,run.blood??0]].map(([name,now,was])=>`<span class="journeyStatChip${now<was?' used':''}"><b>${esc(name)}</b> ${now.toLocaleString('pl')} / ${was.toLocaleString('pl')}</span>`).join('');
   const chance=advice.phase==='done'?'<span class="journeyChance certain">Ukończona</span>':`<span class="journeyChance ${chanceTone(advice.chance)}">${chanceLabel(advice.chance)}</span>`;
   const step=view!==null&&view!==advice.current?pastStep(advice,view):advice.phase==='done'?'<h3>Podróż ukończona</h3><p class="subtle">Boss pokonany. „Zakończ podróż” wraca do tabeli.</p>':advice.phase==='node'?nodeStep(advice):advice.phase==='miniPick'?miniStep(advice):fightStep(advice);
   root.hidden=false;
@@ -106,6 +126,7 @@ export function createJourneyRun({data,root,onEnd}){
  }
 
  root.addEventListener('change',e=>{
+  if(!advice||worker)return;
   const pick=e.target.closest('[data-pick]')?.dataset.pick;
   if(pick==='encounter'){const v=e.target.value;pending=v===''?{}:{encounter:Number(v)};focus='[data-pick="shown"],.journeyOption.recommended';}
   else if(pick==='shown'){pending={...pending,shown:e.target.value||undefined};focus='.journeyOption.recommended';}
@@ -117,14 +138,15 @@ export function createJourneyRun({data,root,onEnd}){
   if(!button||button.disabled)return;
   const {action,pay,mini,stage}=button.dataset;
   if(action==='end')return end();
+  if(action==='retry')return render();
   if(action==='undo'){run.log=run.log.slice(0,-1);pending={};view=null;save();return render();}
-  if(action==='rewind'){const advice=liveAdvice(data,run),i=advice.entryStage.indexOf(Number(stage));if(i>=0)run.log=run.log.slice(0,i);pending={};view=null;save();return render();}
+  if(!advice||worker)return;
+  if(action==='rewind'){const i=advice.entryStage.indexOf(Number(stage));if(i>=0)run.log=run.log.slice(0,i);pending={};view=null;save();return render();}
   if(mini)return commit({type:'mini',boss:mini});
   if(pay){
-   const advice=liveAdvice(data,run);
    return commit(advice.phase==='node'?{type:'node',encounter:pending.encounter,shown:pending.shown??null,pay}:{type:'round',shown:pending.shown??null,pay});
   }
-  if(stage!==undefined){const i=Number(stage);view=view===i?null:i;render();}
+  if(stage!==undefined){const i=Number(stage);view=view===i?null:i;draw();}
  });
  return {start,end,active:()=>!!run};
 }

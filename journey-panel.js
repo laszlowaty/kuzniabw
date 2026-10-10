@@ -1,4 +1,4 @@
-import {planJourneys,hardestCertain,routeLayout,chanceLabel,chanceTone,SIMULATIONS} from './journey-sim.js';
+import {routeLayout,chanceLabel,chanceTone,SIMULATIONS} from './journey-sim.js';
 import {parseCost} from './costs.js';
 import {createJourneyRun,readSavedRun,routeText} from './journey-run.js';
 import {createGearDialog} from './journey-gear.js';
@@ -24,7 +24,7 @@ function readSaved(){
 // Journey view: loads its own data on first open and recalculates while the form is edited.
 // `gear` gives the shared inventory and catalog to "Dopasuj sprzęt".
 export function createJourneyPanel(gear){
- let data=null,loading=null,timer=0,live=null,gearDialog=null;
+ let data=null,loading=null,timer=0,live=null,gearDialog=null,worker=null;
  async function open(){
   syncGear();
   if(data)return;
@@ -89,7 +89,16 @@ export function createJourneyPanel(gear){
   $('journeyLevelHint').textContent=`Trasa: ${routeText(routeLayout(data,Number(slider.value)))}`;
   slider.setAttribute('aria-valuetext',`Poziom ${slider.value}${locked?', zablokowany':''}`);
  }
- function schedule(){clearTimeout(timer);timer=setTimeout(calculate,250);}
+ function cancelCalculation(){
+  clearTimeout(timer);worker?.terminate();worker=null;
+  $('journeyTable').removeAttribute('aria-busy');
+ }
+ function schedule(){
+  cancelCalculation();
+  $('journeyTable').innerHTML='';
+  $('journeyStatus').textContent='Przeliczanie szans podróży…';
+  timer=setTimeout(calculate,250);
+ }
  // Matching starts once the inventory could fill all 8 slots.
  function syncGear(){
   const n=gear.getInventory().length,ok=n>=MIN_ITEMS;
@@ -111,20 +120,37 @@ export function createJourneyPanel(gear){
   return {invalid,values,level:Number($('journeyLevel').value),waitTimed:$('journeyWait').checked,hardest:$('journeyHardest').checked};
  }
  function calculate(){
+  cancelCalculation();
   if(live?.active())return;
+  $('journeyTable').innerHTML='';
   const form=read();
   if(form.invalid){$('journeyStatus').textContent='Popraw pola: wpisz całe liczby od 0.';return;}
   try{localStorage.setItem(STORAGE,JSON.stringify({values:form.values,level:form.level,waitTimed:form.waitTimed,hardest:form.hardest}));}catch{}
   const {blood=0,...stats}=form.values,input={stats,blood,level:form.level,waitTimed:form.waitTimed};
+  $('journeyTable').setAttribute('aria-busy','true');
+  $('journeyStatus').textContent='Przeliczanie szans podróży…';
   try{
-   if(form.hardest){
-    renderHardest(hardestCertain(data,input));
-    $('journeyStatus').textContent=`Najtrudniejszy poziom ze 100% · ${SIMULATIONS} tras na każdym poziomie · sprawdzane od poziomu ${data.costs.levels.max} w dół.`;
-   }else{
-    render(planJourneys(data,input));
-    $('journeyStatus').textContent=`Średnia z ${SIMULATIONS} tras · poziom ${form.level} · ${routeText(routeLayout(data,form.level))}.`;
-   }
-  }catch(error){$('journeyStatus').textContent=error.message;}
+   const current=new Worker(new URL('./journey-worker.js',import.meta.url),{type:'module'});
+   worker=current;
+   const fail=message=>{
+    if(worker!==current)return;
+    cancelCalculation();$('journeyStatus').textContent=message;
+   };
+   current.onerror=()=>fail('Nie udało się przeliczyć podróży. Zmień ustawienia, aby spróbować ponownie.');
+   current.onmessage=({data:result})=>{
+    if(worker!==current)return;
+    if(result.error){fail(result.error);return;}
+    cancelCalculation();
+    if(form.hardest){
+     renderHardest(result.rows);
+     $('journeyStatus').textContent=`Najtrudniejszy poziom ze 100% · ${SIMULATIONS} tras na każdym poziomie · sprawdzane od poziomu ${data.costs.levels.max} w dół.`;
+    }else{
+     render(result.rows);
+     $('journeyStatus').textContent=`Średnia z ${SIMULATIONS} tras · poziom ${form.level} · ${routeText(routeLayout(data,form.level))}.`;
+    }
+   };
+   current.postMessage({data,input,hardest:form.hardest});
+  }catch(error){cancelCalculation();$('journeyStatus').textContent=error.message;}
  }
  // Location and the key result come first so both fit on a phone without scrolling the table.
  function table(columns,rows,row){

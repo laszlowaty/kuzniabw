@@ -266,6 +266,8 @@ function livePhase(lc,pos){
  if(!pos.miniDone&&pos.done===lc.miniAt)return pos.miniBoss?'mini':'miniPick';
  return pos.done<lc.N?'node':'main';
 }
+// Validate saved settings without calculating any journey odds on the UI thread.
+export function validateJourneyRun(data,run){liveContext(data,run);}
 function stageOf(lc,pos){
  const phase=livePhase(lc,pos);
  if(phase==='done')return null;
