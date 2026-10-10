@@ -22,12 +22,12 @@ export function createInventoryPanel({getTables,getText,itemMarkup,canUse,onImpo
  }
  function reportError(error){$('inventoryChange').textContent=error.message;}
  function bind(){
-  $('editInventory').onclick=()=>{$('inventoryText').value=getText();$('parseFeedback').textContent='';$('inventoryDialog').showModal();};
+  $('editInventory').onclick=()=>{$('inventoryText').value=getText();$('parseFeedback').textContent='';$('inventoryDialog').showModal();$('inventoryDialog').querySelector('.dialogBody').scrollTop=0;};
   $('closeDialog').onclick=()=>$('inventoryDialog').close();
-  $('validateText').onclick=parseFeedback;
+  $('validateText').onclick=()=>{parseFeedback();$('parseFeedback').scrollIntoView({block:'start'});};
   $('importCategory').onchange=parseFeedback;
   $('inventoryForm').onsubmit=async e=>{
-   e.preventDefault();const parsed=parseFeedback();if(parsed.error)return;
+   e.preventDefault();const parsed=parseFeedback();if(parsed.error){$('parseFeedback').scrollIntoView({block:'start'});return;}
    const category=$('importCategory').value,text=$('inventoryText').value;
    $('inventoryDialog').close();
    try{await onImport(text,{category});}catch(error){reportError(error);}

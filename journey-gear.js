@@ -70,7 +70,7 @@ export function createGearDialog({data,getInventory,getDetails,getSettings,canUs
 
  function search(){
   const form=read();
-  if(form.error){$('gearStatus').textContent=form.error;return;}
+  if(form.error){$('gearStatus').textContent=form.error;dialog.querySelector('[aria-invalid=true]')?.focus();return;}
   try{localStorage.setItem(STORAGE,JSON.stringify({level:form.level,ease:form.ease,stats:form.stats,upgrade:form.upgrade}));}catch{}
   const inventory=getInventory(),details=getDetails();
   if([...new Set(inventory.map(i=>i.category))].some(c=>!details?.components?.[c])){$('gearStatus').textContent='Dane przedmiotów R21 jeszcze się wczytują. Spróbuj za chwilę.';return;}
@@ -157,6 +157,7 @@ export function createGearDialog({data,getInventory,getDetails,getSettings,canUs
   if(found&&(found.settings.blood!==settings.blood||found.settings.waitTimed!==settings.waitTimed)){found=null;picked=null;$('gearResults').innerHTML='';$('gearApply').disabled=true;}
   if(!found)$('gearStatus').textContent=`Ekwipunek: ${getInventory().length} szt. Uzupełnij postać i kliknij „Szukaj zestawów”. Szukanie trwa kilka sekund.`;
   dialog.showModal();
+  dialog.querySelector('.dialogBody').scrollTop=0;
  }
  // A new inventory makes old sets meaningless.
  function inventoryChanged(){stop();found=null;picked=null;$('gearResults').innerHTML='';$('gearApply').disabled=true;}

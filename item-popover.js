@@ -25,7 +25,7 @@ export function popoverItem(n){
  return {category,rarity,base,prefix,suffix,original:itemClass(n)===null?'Nieustalony (+99)':fullItemName(n),crafted:!!n.left};
 }
 export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getInventory=()=>[]){
- let target=null,mode='hover',skipFocusOnce=null,closeTimer;
+ let target=null,mode='hover',skipFocusOnce=null,closeTimer,anchorPoint=null;
  const panel=document.getElementById('itemInfo');
  const attrs=n=>{return `data-item-detail="${esc(detailKey(n))}" data-item-value="${esc(JSON.stringify(popoverItem(n)))}" aria-haspopup="dialog"`;};
  const inline=(n,text,decorated)=>{return `<span class="itemInfoTrigger" ${attrs(n)}>${decorated??esc(text)}</span>`;};
@@ -37,7 +37,12 @@ export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getI
   panel.innerHTML=detailContent(n,getDetails(),getCatalog(),getProfile(),getInventory());panel.hidden=false;
   target.setAttribute('aria-describedby','itemInfo');
   document.getElementById('closeItemInfo').onclick=()=>{const prior=target;close();skipFocusOnce=prior;prior?.focus();skipFocusOnce=null;};
-  const rect=element.getBoundingClientRect(),width=panel.offsetWidth,height=panel.offsetHeight,gap=14,margin=8;
+  anchorPoint=point?{clientX:point.clientX,clientY:point.clientY}:null;
+  position();
+ }
+ function position(){
+  if(panel.hidden||!target)return;
+  const point=anchorPoint,rect=target.getBoundingClientRect(),width=panel.offsetWidth,height=panel.offsetHeight,gap=14,margin=8;
   let left,top;
   if(point){
    left=Math.max(margin,Math.min(point.clientX+gap,window.innerWidth-width-margin));
@@ -49,6 +54,8 @@ export function createItemPopover(getDetails,getCatalog,getProfile=()=>({}),getI
   }
   panel.style.left=left+'px';panel.style.top=Math.max(margin,Math.min(top,window.innerHeight-height-margin))+'px';
  }
+ // Expanding advice changes the height after opening near the viewport edge.
+ new ResizeObserver(position).observe(panel);
  // Allow crossing the small gap from the name to the interactive panel.
  const inside=e=>e&&(target?.contains(e)||panel.contains(e));
  document.addEventListener('pointerover',e=>{

@@ -462,3 +462,60 @@ input,select,textarea{scroll-margin-block:24px}
 .gearLocation.isPending{cursor:default;opacity:.6}
 .gearLocSum .journeyChance{min-width:0}
 .gearDialog .gearDetailMeta{margin:-4px 0 8px;font-size:12px}
+
+/* Dialog chrome stays reachable; only the form content scrolls. */
+body:has(dialog[open]){overflow:hidden}
+dialog,#inventoryDialog{width:min(680px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:hidden;border-radius:12px}
+dialog.gearDialog{width:min(840px,calc(100% - 24px))}
+dialog form,#inventoryDialog form{display:flex;flex-direction:column;max-height:calc(100dvh - 26px);padding:0;min-width:0}
+dialog .panelHead,#inventoryDialog .panelHead{position:static;flex:0 0 auto;flex-wrap:nowrap;padding:12px 18px;background:var(--panel);gap:12px}
+dialog .panelHead .textButton{flex:0 0 auto;min-height:44px;padding:0 4px}
+.dialogBody{min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 18px 16px;overflow-wrap:anywhere;scroll-padding-block:12px}
+dialog .dialogLead{margin:12px 0 8px}
+.dialogHelp{margin:0 0 12px;color:var(--muted);font-size:13px}
+.dialogHelp summary{padding:8px 0;cursor:pointer;color:var(--accent)}
+.dialogHelp p{margin:4px 0 12px}
+dialog .dialogActions{position:static;flex:0 0 auto;flex-direction:row;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0;padding:12px 18px;background:var(--panel)}
+dialog .dialogActions button{min-width:0;min-height:44px;white-space:normal;line-height:1.35;padding:10px 12px}
+#inventoryDialog label{margin:10px 0 6px}
+#importCategory{margin-bottom:10px;min-height:44px}
+#inventoryText{min-height:120px;height:160px;max-height:40dvh;line-height:1.5;padding:10px 12px}
+#inventoryDialog .pasteExample{margin-bottom:6px}
+.importPreview{max-height:none;margin:8px 0;padding-left:24px;line-height:1.55;overflow:visible}
+.gearPaste summary{min-height:44px}
+.gearPaste textarea{line-height:1.5;padding:10px 12px}
+.itemPopover header{position:sticky;top:-14px;z-index:1;background:#1b212b;padding-top:4px}
+.itemPopover header button{flex-basis:44px;min-width:44px;min-height:44px}
+.itemPopover .itemExtra summary{min-height:44px;display:list-item;padding-block:10px}
+@media(max-width:760px){
+ dialog .panelHead,#inventoryDialog .panelHead{padding:6px 12px}
+ .dialogBody{padding:0 12px 12px}
+ dialog p,#inventoryDialog p{font-size:13px;line-height:1.5}
+ dialog .dialogActions{padding:8px 12px;gap:8px}
+ dialog .dialogActions button{font-size:13px;padding:8px}
+ .gearDialog fieldset{margin-bottom:12px}
+ .gearDialog input[type=number]{margin-top:4px;padding:8px 10px}
+ .gearDialog legend{line-height:1.5;margin-bottom:6px}
+ .gearGrid{gap:8px 10px}
+ .itemPopover header{top:-10px}
+ .toolHeading{padding:0;margin-bottom:12px}
+ .toolHeading h1{font-size:23px}
+ .toolHeading p:last-child,.goalSearch .formIntro p{font-size:13px;line-height:1.5}
+ .goalSearch .formIntro h2{font-size:15px}
+ .goalPlans summary{padding:10px 12px;font-size:13px;line-height:1.45}
+ .goalPlanBody{padding:0 12px 12px}
+ .profileSettings{padding:12px;gap:12px}
+ .inventoryGroup{padding:12px 12px 4px}
+ .inventoryFoot{padding:12px}
+ .recipeCosts{padding:12px}
+ .gearSlots li{grid-template-columns:76px minmax(0,1fr);gap:4px 8px;font-size:13px}
+ .gearGains{grid-column:2}
+}
+@media(max-height:500px){
+ dialog,#inventoryDialog{max-height:calc(100dvh - 12px)}
+ dialog form,#inventoryDialog form{max-height:calc(100dvh - 14px)}
+ dialog .panelHead,#inventoryDialog .panelHead{padding-block:4px}
+ dialog .dialogActions{padding-block:6px}
+ #inventoryText{height:120px;min-height:90px}
+ .itemPopover{max-height:calc(100dvh - 16px)}
+}
