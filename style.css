@@ -526,3 +526,10 @@ dialog .dialogActions button{min-width:0;min-height:44px;white-space:normal;line
 .goalViewControls .goalResultCount{color:var(--gold);font-weight:600}
 .goalTierSummary{display:block;margin-top:5px;color:var(--text);font-size:12px;font-weight:400}
 @media(max-width:680px){.goalViewControls{grid-template-columns:minmax(0,1fr);padding:12px}.goalViewControls select{font-size:16px}.goalCardsColumn>.more{width:100%;min-height:46px;white-space:normal}}
+.journeySpecial{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:8px;min-width:0}
+.journeySpecial select,.journeySpecial input{width:100%;min-width:0;max-width:100%}
+.journeySpecial>label{display:grid;gap:5px;margin-bottom:10px}
+.journeySpecial p{overflow-wrap:anywhere}
+.journeySpecial.recommended{border-color:var(--accent)}
+.journeyBase{margin-top:12px}
+.journeyBase summary{cursor:pointer}

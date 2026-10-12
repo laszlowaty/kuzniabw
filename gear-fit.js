@@ -218,7 +218,7 @@ export function bestGear(items,character,target,{chance=null,levels=null,focus=[
   const simulate=(l,s)=>{const m=at(l),key=s.join();if(!m.sim.has(key)){evals++;const c=m.fn(s);m.sim.set(key,c);m.seen.push({s,c});}return m.sim.get(key);};
   const chanceAt=(l,s)=>{
    const m=at(l),key=s.join();let c=m.sim.get(key)??m.known.get(key);if(c!==undefined)return c;
-   for(const e of m.seen)if(e.c>=1-EPS&&covers(s,e.s)||e.c<=EPS&&covers(e.s,s)){c=e.c;break;}
+   if(m.fn.monotone!==false)for(const e of m.seen)if(e.c>=1-EPS&&covers(s,e.s)||e.c<=EPS&&covers(e.s,s)){c=e.c;break;}
    if(c===undefined)return simulate(l,s);
    m.known.set(key,c);return c;
   };
@@ -233,7 +233,7 @@ export function bestGear(items,character,target,{chance=null,levels=null,focus=[
   level=hardestLevel(l=>{
    // Nothing clears a level the best item of every slot cannot; above the pivot only sets certain there are tried.
    const from=levels.pivot!=null&&l>levels.pivot&&certain.has(levels.pivot)?certain.get(levels.pivot):pool;
-   const list=chanceAt(l,top)<1-EPS?[]:from.filter(s=>chanceAt(l,s.stats)>=1-EPS);
+   const list=at(l).fn.monotone!==false&&chanceAt(l,top)<1-EPS?[]:from.filter(s=>chanceAt(l,s.stats)>=1-EPS);
    certain.set(l,list);return list.length>0;
   },levels);
   goal=level===null?levels.min:level<levels.max?level+1:null;

@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
+import {tmpdir} from 'node:os';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 import {planJourneys,hardestCertain,chanceLabel,liveAdvice} from '../journey-sim.js';
@@ -10,8 +11,9 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const data=JSON.parse(fs.readFileSync(new URL('../journey-data.json',import.meta.url)));
 const stats=Object.fromEntries(data.params.map(p=>[p.id,300]));
 const input={stats,blood:1000,level:9,waitTimed:false};
-const expected=planJourneys(data,input).map(r=>chanceLabel(r.completion));
-const hardest=hardestCertain(data,{...input,waitTimed:true}).map(r=>r.level?`Poziom ${r.level}`:'Brak');
+const specialsOnly=process.argv.includes('--specials-only');
+const expected=specialsOnly?[]:planJourneys(data,input).map(r=>chanceLabel(r.completion));
+const hardest=specialsOnly?[]:hardestCertain(data,{...input,waitTimed:true}).map(r=>r.level?`Poziom ${r.level}`:'Brak');
 const server=http.createServer((req,res)=>{
  const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html')));
  if(!file.startsWith(root)||!fs.existsSync(file)){res.writeHead(404);res.end();return;}
@@ -22,7 +24,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin=`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({channel:'msedge',headless:true});
 try{
- for(const width of [1440,390]){
+ for(const width of specialsOnly?[]:[1440,390]){
   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(({stats})=>{
@@ -53,7 +55,7 @@ try{
   await page.close();
  }
  // The previously blocking live path: low CPU speed, waiting, reload and cancellation.
- for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
+ for(const viewport of specialsOnly?[]:[{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
   const page=await browser.newPage({viewport}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>{
@@ -116,7 +118,7 @@ try{
   await page.close();
  }
  // Full route through the mini boss and final boss, including repairing a broken saved log.
- {
+ if(!specialsOnly){
   const page=await browser.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin);
@@ -140,16 +142,87 @@ try{
     await page.locator('[data-mini]').first().click();
    }else{
     const boss=data.bosses.find(b=>b.id===(expected.phase==='mini'?mini:data.locations.find(l=>l.id===run.locationId).boss));
-    if(expected.round<2){await page.locator('[data-pick="shown"]').selectOption(boss.rounds[expected.round].random[0]);await ready();}
+    if(expected.offer===undefined){
+     await page.locator('[data-pick="offer"]').selectOption(expected.phase==='mini'?'ignore':'calm');await ready();
+     await page.locator('[data-action="offer"]').click();await ready();continue;
+    }
+    if(expected.round<2&&!expected.shownLocked){await page.locator('[data-pick="shown"]').selectOption(boss.rounds[expected.round].random[0]);await ready();}
+    if(!expected.specialUsed){
+     if(expected.phase==='mini')await page.locator('[data-special-result]').selectOption('0');
+     await page.locator('[data-action="use-special"]').click();await ready();continue;
+    }
     await page.locator('.journeyOption.recommended').click();
    }
    await ready();
   }
   assert.match(await page.locator('.journeyStep h3').textContent(),/Podróż ukończona/);
   assert.equal(await page.locator('.journeyNode.done').count(),9);
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('kuzniaJourneyRun')).log.length),14);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('kuzniaJourneyRun')).log.length),17);
   assert.deepEqual(errors,[]);
-  console.log('Live journey: damaged saved log repaired; all route nodes, mini boss and final boss completed');
+  console.log('Live journey: damaged log repaired; separate mini/final specials, successful skip, all stages completed');
+  await page.close();
+ }
+ // A skip can rescue round three even when every regular payment is unavailable.
+ for(const mini of [false,true])for(const success of [false,true]){
+  const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(origin);
+  await page.evaluate(async({data,mini})=>{
+   const d=structuredClone(data);d.routes[1]={nodes:0,...(mini?{miniAfter:0}:{})};
+   d.costs={acts:{1:{base:10,perLevel:0}},levels:{min:1,max:1},type:{monster:1,miniboss:1,boss:1},blood:5,combo:0.75};
+   d.bosses=['main','mini'].map(id=>({id,name:id,rounds:[{fixed:'sila',random:['sila']},{fixed:'sila',random:['sila']},{combo:['sila','zwinnosc'],single:'sila'}],specials:[{id:'ignore',param:'odpornosc',effect:'20% szans na pominięcie rundy'}]}));
+   d.locations=d.bosses.map(b=>({id:b.id,name:b.name,act:1,boss:b.id}));
+   const root=document.createElement('div');root.id='qaRun';document.body.append(root);
+   const {createJourneyRun}=await import('/journey-run.js');
+   createJourneyRun({data:d,root,onEnd(){}}).start({stats:{sila:20,odpornosc:8},level:1,locationId:'main',simulations:1,
+    log:[...(mini?[{type:'mini',boss:'mini'}]:[]),{type:'offer',special:'ignore'},{type:'round',shown:'sila',pay:'sila'},{type:'round',shown:'sila',pay:'sila'}]});
+  },{data,mini});
+  const ready=()=>page.waitForFunction(()=>document.querySelector('#qaRun .journeyStep')&&!document.querySelector('#qaRun').hasAttribute('aria-busy'));
+  await ready();
+  assert.equal(await page.locator('#qaRun [data-pay]:enabled').count(),0);
+  assert.equal(await page.locator('#qaRun .journeyStuck').count(),0,'affordable special must prevent false stuck warning');
+  assert.equal(await page.locator('#qaRun [data-action="use-special"]').isEnabled(),true);
+  await page.locator('#qaRun [data-special-result]').selectOption(success?'0':'1');
+  await page.locator('#qaRun [data-action="use-special"]').click();await ready();
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('kuzniaJourneyRun')));
+  assert.deepEqual(saved.log.at(-1).result,{success});
+  if(!success){
+   assert.equal(await page.locator('#qaRun .journeyStuck').count(),1);
+   assert.equal(await page.locator('#qaRun [data-action="use-special"]').count(),0);
+  }else if(mini){
+   assert.match(await page.locator('#qaRun .journeyStep h3').textContent(),/^Boss: main/);
+   assert.equal(await page.locator('#qaRun [data-pick="offer"]').count(),1,'fresh final boss offer');
+  }else assert.match(await page.locator('#qaRun .journeyStep h3').textContent(),/Podróż ukończona/);
+  assert.deepEqual(errors,[]);await page.close();
+ }
+ console.log('Special rescue UI: mini/final, failed/successful last-round skip, fresh final offer and stuck warning OK');
+ for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
+  const page=await browser.newPage({viewport}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(origin);
+  const timed=data.encounters.findIndex(e=>e.type==='timed');
+  const run={stats:Object.fromEntries(data.params.map(p=>[p.id,100])),level:1,locationId:'ochrona-karawany',simulations:3,
+   log:Array.from({length:3},()=>({type:'node',encounter:timed,pay:'wait'}))};
+  await page.evaluate(run=>localStorage.setItem('kuzniaJourneyRun',JSON.stringify(run)),run);
+  await page.locator('#journeyTab').click();
+  const ready=()=>page.waitForFunction(()=>document.querySelector('#journeyRun .journeyStep')&&!document.querySelector('#journeyRun').hasAttribute('aria-busy'),null,{timeout:60000});
+  await ready();await page.locator('[data-pick="offer"]').selectOption('calm');await ready();
+  assert.equal(await page.locator('[data-special-cost]').inputValue(),'25');
+  await page.locator('[data-special-cost]').fill('23');await page.locator('[data-action="offer"]').click();await ready();
+  await page.locator('[data-pick="shown"]').selectOption('wyglad');await ready();
+  await page.locator('[data-action="use-special"]').evaluate(b=>{b.click();b.click();});await ready();
+  let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('kuzniaJourneyRun')));
+  assert.equal(saved.log.length,5,'one offer and one use despite double click');
+  assert.equal(liveAdvice(data,saved).stats.wyglad,77);
+  assert.equal(await page.locator('[data-pick="shown"]').isDisabled(),true);
+  assert.equal(await page.locator('[data-action="use-special"]').count(),0);
+  await page.reload();await page.locator('#journeyTab').click();await ready();
+  assert.match(await page.locator('.journeyStep').textContent(),/wykorzystany/);
+  await page.locator('[data-action="undo"]').click();await ready();
+  await page.locator('[data-pick="shown"]').selectOption('wyglad');await ready();
+  assert.equal(await page.locator('[data-action="use-special"]').isEnabled(),true);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal page overflow');
+  assert.deepEqual(errors,[]);
+  await page.screenshot({path:path.join(tmpdir(),`journey-special-${viewport.width}.png`),fullPage:true});
+  console.log(`Special UI: override cost, use once, reload, undo and layout OK at ${viewport.width}x${viewport.height}`);
   await page.close();
  }
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

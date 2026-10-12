@@ -10,10 +10,11 @@ const number=v=>v.toLocaleString('pl',{maximumFractionDigits:1});
 const costList=r=>[r.monsterCost,r.miniBossCost,r.bossCost].filter(v=>v!=null).map(v=>v.toLocaleString('pl')).join(' / ');
 
 function readSaved(){
- const out={values:{},level:null,waitTimed:true,hardest:false};
+ const out={values:{},baseStats:{},level:null,waitTimed:true,hardest:false};
  try{
   const saved=JSON.parse(localStorage.getItem(STORAGE)||'{}');
   for(const [key,value]of Object.entries(saved.values??{}))if(/^[a-z]+$/.test(key)&&Number.isSafeInteger(value)&&value>=0)out.values[key]=value;
+  for(const [key,value]of Object.entries(saved.baseStats??{}))if(/^[a-z]+$/.test(key)&&Number.isSafeInteger(value)&&value>=0)out.baseStats[key]=value;
   if(Number.isSafeInteger(saved.level))out.level=saved.level;
   if(typeof saved.waitTimed==='boolean')out.waitTimed=saved.waitTimed;
   if(typeof saved.hardest==='boolean')out.hardest=saved.hardest;
@@ -53,12 +54,13 @@ export function createJourneyPanel(gear){
   if(form.invalid)return;
   const {blood=0,...stats}=form.values;
   setRunMode(true);
-  live.start({locationId,level,waitTimed:form.waitTimed,stats,blood,log:[]});
+  live.start({locationId,level,waitTimed:form.waitTimed,stats,baseStats:form.baseStats,blood,log:[]});
   $('journeyRun').scrollIntoView({block:'start'});
  }
  function build(saved){
   const fields=[...data.params.map(p=>[p.id,p.label,'']),['blood','Punkty krwi',`${data.costs.blood} krwi = 1 punkt parametru`]];
   $('journeyStats').innerHTML=fields.map(([id,label,hint])=>`<label for="journey-${id}">${esc(label)}<input id="journey-${id}" data-key="${id}" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${saved.values[id]??''}"${hint?` aria-describedby="journey-${id}-hint"`:''}>${hint?`<span id="journey-${id}-hint" class="hint">${esc(hint)}</span>`:''}</label>`).join('');
+  $('journeyBaseStats').innerHTML=data.params.map(p=>`<label>${esc(p.label)}<input data-base="${p.id}" type="number" min="0" step="1" inputmode="numeric" placeholder="Jak wyżej" value="${saved.baseStats[p.id]??''}"></label>`).join('');
   const {min,max}=data.costs.levels,slider=$('journeyLevel');
   slider.min=min;slider.max=max;slider.value=saved.level>=min&&saved.level<=max?saved.level:min;
   $('journeyHardestHint').textContent=`Dla każdej lokacji szuka najwyższego poziomu ze 100% szans, od ${max} w dół. Blokuje suwak.`;
@@ -68,14 +70,17 @@ export function createJourneyPanel(gear){
   const miniLevel=Array.from({length:max-min+1},(_,i)=>min+i).find(l=>routeLayout(data,l).miniAfter!=null);
   const pct=v=>`${Math.round(v*100)}%`;
   $('journeyNotes').innerHTML=[
-   `Każda z ${SIMULATIONS} tras ma własne wylosowane spotkania; te same trasy służą wszystkim lokacjom i poziomom. Walki z bossami są liczone dokładnie dla każdego losowego parametru rundy.`,
+   `Szacunek z ${SIMULATIONS} scenariuszy: losujemy trasę, mini bossa i jego specjal. Parametry rund i losowe efekty specjali rozpatrujemy według modelu. 100% oznacza ukończenie wszystkich badanych scenariuszy, nie gwarancję każdej możliwej podróży.`,
    `Planer płaci tym parametrem, który zostawia największą szansę na pokonanie bossa. Krew zastępuje cały koszt (${data.costs.blood} krwi = 1 punkt), nie uzupełnia brakującej części.`,
    `Mini boss kosztuje +${pct(data.costs.type.miniboss-1)} kosztu parametru, boss +${pct(data.costs.type.boss-1)}${Object.entries(data.costs.acts).filter(([,a])=>a.boss!=null).map(([act,a])=>` (Akt ${ACTS[act]??act}: +${pct(a.boss-1)})`).join('')}, a na poziomach z mini bossem co najmniej +${pct(data.costs.type.bossAfterMini-1)}. Kombo w 3. rundzie to ${pct(data.costs.combo)} stawki tej walki za każdy z dwóch parametrów.`,
    `Układ trasy zależy tylko od poziomu.${miniLevel?` Od poziomu ${miniLevel} po ${routeLayout(data,miniLevel).miniAfter}. węźle pojawia się mini boss: boss jednej z pozostałych lokacji.`:''}`,
-   'Ataki specjalne bossów nie są uwzględnione — ich koszt nie jest znany, więc realna szansa może być wyższa.',
+   'Specjal jest losowany osobno dla mini bossa i bossa; można użyć go raz w danej walce. Planer wybiera moment użycia i uwzględnia efekty oraz koszt. Za specjal nie można płacić krwią.',
+   'Model losowania: 50% na akcję charakterystyczną bossa, pozostałe 50% równo na sześć akcji wspólnych. To przybliżenie na podstawie obserwacji opisanych w BWpedii, nie oficjalne częstości. W podróży w toku wybierz rzeczywiście wylosowany specjal.',
+   'Podpowiedzi podczas walki z mini bossem sprawdzają do 12 próbek dalszej trasy.',
+   'Koszty specjali liczymy od początkowych parametrów bez bonusów dziennych, z zaokrągleniem w górę. Koszt widoczny w grze możesz wpisać podczas walki.',
    'Przeciwnicy na trasie są losowani z jednakowym prawdopodobieństwem.',
    'Szansa dotyczy jednego zapasu parametrów, bez odpoczynku i regeneracji następnego dnia.'
-  ].map(t=>`<li>${esc(t)}</li>`).join('');
+  ].map(t=>`<li>${esc(t)}</li>`).join('')+'<li>Źródła: <a href="https://wiki.bloodwars.pl/index.php?title=Podr%C3%B3%C5%BC" target="_blank" rel="noopener">BWpedia PL</a>, <a href="https://wiki.fr.bloodwars.net/index.php?title=Le_voyage" target="_blank" rel="noopener">BWpedia FR — efekty i koszty</a>.</li>';
   $('journeyForm').addEventListener('input',e=>{if(e.target===slider||e.target===$('journeyHardest'))syncLevel();schedule();});
   $('journeyForm').addEventListener('change',schedule);
   $('journeyForm').addEventListener('submit',e=>{e.preventDefault();clearTimeout(timer);calculate();});
@@ -106,6 +111,7 @@ export function createJourneyPanel(gear){
   $('journeyGearHint').textContent=ok?`Najlepszy zestaw z ${n} przedmiotów ekwipunku dla każdej lokacji. Wynik możesz wpisać w parametry.`:`Potrzeba co najmniej ${MIN_ITEMS} przedmiotów w ekwipunku — masz ${n}.`;
  }
  function applyGear(values){
+  for(const input of $('journeyBaseStats').querySelectorAll('input'))input.value='';
   for(const [id,value]of Object.entries(values)){const input=$(`journey-${id}`);if(input){input.value=Math.max(0,value);input.setAttribute('aria-invalid','false');}}
   clearTimeout(timer);calculate();
  }
@@ -117,7 +123,12 @@ export function createJourneyPanel(gear){
    input.setAttribute('aria-invalid',String(bad));invalid||=bad;
    if(!bad)values[input.dataset.key]=value??0;
   }
-  return {invalid,values,level:Number($('journeyLevel').value),waitTimed:$('journeyWait').checked,hardest:$('journeyHardest').checked};
+  const baseStats={};
+  for(const input of $('journeyBaseStats').querySelectorAll('input')){
+   const value=parseCost(input.value),bad=Number.isNaN(value);input.setAttribute('aria-invalid',String(bad));invalid||=bad;
+   if(!bad&&value!=null)baseStats[input.dataset.base]=value;
+  }
+  return {invalid,values,baseStats,level:Number($('journeyLevel').value),waitTimed:$('journeyWait').checked,hardest:$('journeyHardest').checked};
  }
  function calculate(){
   cancelCalculation();
@@ -125,8 +136,8 @@ export function createJourneyPanel(gear){
   $('journeyTable').innerHTML='';
   const form=read();
   if(form.invalid){$('journeyStatus').textContent='Popraw pola: wpisz całe liczby od 0.';return;}
-  try{localStorage.setItem(STORAGE,JSON.stringify({values:form.values,level:form.level,waitTimed:form.waitTimed,hardest:form.hardest}));}catch{}
-  const {blood=0,...stats}=form.values,input={stats,blood,level:form.level,waitTimed:form.waitTimed};
+  try{localStorage.setItem(STORAGE,JSON.stringify({values:form.values,baseStats:form.baseStats,level:form.level,waitTimed:form.waitTimed,hardest:form.hardest}));}catch{}
+  const {blood=0,...stats}=form.values,input={stats,baseStats:form.baseStats,blood,level:form.level,waitTimed:form.waitTimed};
   $('journeyTable').setAttribute('aria-busy','true');
   $('journeyStatus').textContent='Przeliczanie szans podróży…';
   try{

@@ -45,7 +45,7 @@ test('route layout per level is the same for every location: nodes, then the min
 });
 
 test('round 3 single stat costs the normal boss cost (Skarbiec, level 5: 162)',()=>{
- const bossOnly={...data,routes:{...data.routes,5:{nodes:0}}};
+ const bossOnly={...data,bosses:data.bosses.map(b=>({...b,specials:[]})),routes:{...data.routes,5:{nodes:0}}};
  const stats={...allStats(0),wplywy:162,spostrzegawczosc:162,odpornosc:162};
  assert.equal(routeChance(bossOnly,{stats,level:5},'skarbiec',[]).chance,1);
  assert.equal(routeChance(bossOnly,{stats:{...stats,odpornosc:161},level:5},'skarbiec',[]).chance,0);

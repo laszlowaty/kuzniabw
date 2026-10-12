@@ -1,4 +1,5 @@
 // Journey odds: route encounters are rolled, boss fights are solved exactly (expectimax over random slots).
+import {freshFight,fightOptions,specialPrice,specialOutcomes,offeredFight} from './journey-fight.js';
 export const SIMULATIONS=100;
 
 export function mulberry32(seed){
@@ -30,7 +31,7 @@ function compile(data){
  const index=new Map(data.params.map((p,i)=>[p.id,i]));
  const at=id=>{const i=index.get(id);if(i===undefined)throw new RangeError(`Nieznany parametr: ${id}`);return i;};
  const rounds=b=>b.rounds.map(r=>r.combo?{combo:r.combo.map(at),single:at(r.single)}:{fixed:at(r.fixed),random:r.random.map(at)});
- const out={at,blood:data.params.length,bosses:new Map(data.bosses.map(b=>[b.id,{name:b.name,rounds:rounds(b)}])),encounters:data.encounters.map(e=>({type:e.type,fixed:at(e.fixed)}))};
+ const out={at,blood:data.params.length,bosses:new Map(data.bosses.map(b=>[b.id,{name:b.name,rounds:rounds(b),specials:(b.specials??[]).map(s=>({...s,at:at(s.param)}))}])),encounters:data.encounters.map(e=>({type:e.type,fixed:at(e.fixed)}))};
  compiled.set(data,out);return out;
 }
 // Route layout of a level, the same for every location: route nodes, and the mini boss after `miniAfter` of them.
@@ -44,6 +45,7 @@ function normalize(data,input){
  const {min,max}=data.costs.levels,level=whole(input.level,'Poziom trudności',min,max),layout=routeLayout(data,level);
  return {
   stats:data.params.map(p=>whole(input.stats?.[p.id]??0,p.label)),
+  base:data.params.map(p=>whole(input.baseStats?.[p.id]??input.stats?.[p.id]??0,p.label)),
   blood:whole(input.blood??0,'Punkty krwi'),
   level,routeLength:layout.nodes,miniAfter:layout.miniAfter,
   waitTimed:input.waitTimed!==false,
@@ -65,6 +67,7 @@ export function rollRoute(data,length,rng){
 
 // Main boss: exact win chance, best choice per round, random slots averaged.
 function win(s,f,round){
+ if(f.specials?.length)return offeredFight(s,f,()=>[1,1,0],{...freshFight(),round})[0];
  if(round===f.rounds.length)return 1;
  const r=f.rounds[round];
  if(r.combo){
@@ -92,6 +95,7 @@ function winCombo(s,f,round,[a,b],n){
 const FAIL=[0,0,0];
 const better=(a,b)=>!b||(a[0]!==b[0]?a[0]>b[0]:a[1]!==b[1]?a[1]>b[1]:a[2]>b[2]);
 function solve(s,f,leaf,round){
+ if(f.specials?.length)return offeredFight(s,f,leaf,{...freshFight(),round});
  if(round===f.rounds.length)return leaf(s);
  const r=f.rounds[round];
  const pick=(...values)=>values.reduce((best,v)=>v&&better(v,best)?v:best,null);
@@ -143,16 +147,17 @@ function memoMain(fight){
 function prepare(data,opts,location){
  const c=compile(data),boss=c.bosses.get(location.boss);
  if(!boss)throw new RangeError(`Nieznany boss: ${location.boss}`);
- const fight=(rounds,stat)=>({rounds,stat,combo:comboCost(data,stat),blood:stat*data.costs.blood,bloodAt:c.blood});
+ const fight=(b,stat)=>({rounds:b.rounds,specials:b.specials,base:opts.base,ids:data.params.map(p=>p.id),stat,combo:comboCost(data,stat),blood:stat*data.costs.blood,bloodMult:data.costs.blood,bloodAt:c.blood});
  const bossCost=stageCost(data,location.act,opts.level,'boss'),miniCost=stageCost(data,location.act,opts.level,'miniboss');
- const mainFight=fight(boss.rounds,bossCost),mini=opts.miniAfter!=null;
+ const mainFight=fight(boss,bossCost),mini=opts.miniAfter!=null;
+ mainFight.final=true;
  // Mini boss is the boss of one of the other locations.
  const miniIds=mini?data.locations.filter(l=>l.boss!==location.boss).map(l=>l.boss):[];
  return {
   start:Float64Array.from([...opts.stats,opts.blood]),bloodAt:c.blood,bloodMult:data.costs.blood,waitTimed:opts.waitTimed,
   monster:stageCost(data,location.act,opts.level,'monster'),bossCost,miniCost,bossName:boss.name,
   mainFight,main:memoMain(mainFight),mini,afterNode:opts.miniAfter,
-  miniIds,minis:miniIds.map(id=>fight(c.bosses.get(id).rounds,miniCost))
+  miniIds,minis:miniIds.map(id=>fight(c.bosses.get(id),miniCost))
  };
 }
 function compileRoute(data,route){
@@ -171,8 +176,16 @@ function chanceFor(ctx,route,start=ctx.start,miniAt=ctx.mini?ctx.afterNode??rout
   return [ctx.main(t),1,route.length-after];
  };
  const sum=[0,0,0];
- for(const f of ctx.minis){const v=solve(s,f,rest,0);for(let k=0;k<3;k++)sum[k]+=v[k];}
- const n=ctx.minis.length||1;
+ const minis=route.miniDraw==null||!ctx.minis.some(f=>f.specials.length)?ctx.minis:[ctx.minis[Math.floor(route.miniDraw*ctx.minis.length)]];
+ for(let f of minis){
+  if(route.specialDraw!=null&&f.specials.length){
+   let draw=route.specialDraw*f.specials.reduce((n,sp)=>n+(sp.weight??1),0),chosen=f.specials.at(-1);
+   for(const sp of f.specials){draw-=sp.weight??1;if(draw<0){chosen=sp;break;}}
+   f={...f,specials:[chosen]};
+  }
+  const v=solve(s,f,rest,0);for(let k=0;k<3;k++)sum[k]+=v[k];
+ }
+ const n=minis.length||1;
  return {chance:sum[0]/n,nodes:after+sum[2]/n,miniKill:sum[1]/n,bossKill:sum[0]/n};
 }
 
@@ -184,8 +197,8 @@ export function routeChance(data,input,locationId,route){
 
 // The same rolled routes are used for every location and level, so rows differ only by bosses and costs.
 function rolledRoutes(data,opts){
- const rng=mulberry32(opts.seed);
- return Array.from({length:opts.simulations},()=>compileRoute(data,rollRoute(data,opts.routeLength,rng)));
+ const rng=mulberry32(opts.seed),bossRng=mulberry32((opts.seed>>>0)^0x51ec1a1);
+ return Array.from({length:opts.simulations},()=>Object.assign(compileRoute(data,rollRoute(data,opts.routeLength,rng)),{miniDraw:bossRng(),specialDraw:bossRng()}));
 }
 function summary(data,opts,location,routes){
  const ctx=prepare(data,opts,location),runs=routes.map(r=>chanceFor(ctx,r));
@@ -208,12 +221,15 @@ export function chanceEvaluator(data,input,locationId){
  const location=data.locations.find(l=>l.id===locationId);
  if(!location)throw new RangeError(`Nieznana lokacja: ${locationId}`);
  const opts=normalize(data,{...input,stats:{}}),routes=rolledRoutes(data,opts);
- // Boss fights depend only on location and level, so their memo is shared by every stats vector.
- const ctx=prepare(data,opts,location);
- return stats=>{
-  ctx.start=Float64Array.from([...stats.map(v=>Math.max(0,Math.round(v))),opts.blood]);
+ const evaluate=stats=>{
+  const base=stats.map(v=>Math.max(0,Math.round(v)));
+  // Costs and regeneration depend on the starting equipment too.
+  const ctx=prepare(data,{...opts,stats:base,base},location);
   return routes.reduce((t,r)=>t+chanceFor(ctx,r).chance,0)/routes.length;
  };
+ // The most-spent/highest-stat effects can change targets with equipment.
+ evaluate.monotone=!data.bosses.some(b=>b.specials?.length);
+ return evaluate;
 }
 
 // Highest level with a certain finish on every rolled route, checked from the top down; input.level is ignored.
@@ -256,7 +272,7 @@ function liveContext(data,run){
  const routes=new Map();
  // Unknown nodes still ahead are rolled the same way as in the planner (same seed, same count).
  const routesOf=len=>{
-  if(!routes.has(len)){const rng=mulberry32(opts.seed);routes.set(len,len?Array.from({length:opts.simulations},()=>compileRoute(data,rollRoute(data,len,rng))):[[]]);}
+  if(!routes.has(len))routes.set(len,rolledRoutes(data,{...opts,routeLength:len}));
   return routes.get(len);
  };
  return {data,c:compile(data),location,opts,ctx,N,miniAt,stages,routesOf};
@@ -275,6 +291,8 @@ function stageOf(lc,pos){
  if(phase!=='node')return lc.stages.findIndex(s=>s.type==='mini');
  return lc.stages.findIndex(s=>s.type==='node'&&s.index===pos.done);
 }
+function currentFight(lc,pos){return livePhase(lc,pos)==='mini'?lc.ctx.minis[lc.ctx.miniIds.indexOf(pos.miniBoss)]:lc.ctx.mainFight;}
+function currentState(pos){return {...(pos.fightState??freshFight()),round:pos.round};}
 function liveOptions(lc,pos,entry){
  const {c,ctx,data}=lc,phase=livePhase(lc,pos),stat=(id,n)=>({pay:id,costs:[[c.at(id),n]]});
  const blood=n=>({pay:'blood',costs:[[c.blood,n*data.costs.blood]]});
@@ -285,11 +303,10 @@ function liveOptions(lc,pos,entry){
   if(!e.random.includes(entry.shown))throw new RangeError(`Nieprawidłowy drugi parametr: ${entry.shown}`);
   return [stat(e.fixed,ctx.monster),...(entry.shown!==e.fixed?[stat(entry.shown,ctx.monster)]:[]),blood(ctx.monster)];
  }
- const mini=phase==='mini',cost=mini?ctx.miniCost:ctx.bossCost;
- const round=data.bosses.find(b=>b.id===(mini?pos.miniBoss:lc.location.boss)).rounds[pos.round];
- if(round.combo){const n=comboCost(data,cost);return [{pay:'combo',costs:round.combo.map(id=>[c.at(id),n])},stat(round.single,cost),blood(cost)];}
- if(!round.random.includes(entry.shown))throw new RangeError(`Nieprawidłowy drugi parametr: ${entry.shown}`);
- return [stat(round.fixed,cost),...(entry.shown!==round.fixed?[stat(entry.shown,cost)]:[]),blood(cost)];
+ const f=currentFight(lc,pos),round=f.rounds[pos.round],shown=entry.shown??pos.shown;
+ if(pos.shown!=null&&shown!==pos.shown)throw new RangeError('Drugi parametr tej rundy został już zapisany');
+ if(!round.combo&&!round.random.includes(c.at(shown)))throw new RangeError(`Nieprawidłowy drugi parametr: ${shown}`);
+ return fightOptions(entry.stats??lc.ctx.start,f,currentState(pos),round.combo?null:c.at(shown));
 }
 function payWith(s,costs){
  const t=Float64Array.from(s);
@@ -300,7 +317,8 @@ function advance(lc,pos,entry){
  const phase=livePhase(lc,pos),next={...pos};
  if(phase==='node')next.done++;
  else if(phase==='miniPick'){next.miniBoss=entry.boss;next.round=0;}
- else if(++next.round===3){next.round=0;if(phase==='mini')next.miniDone=true;else next.finished=true;}
+ else if(++next.round===3){next.round=0;next.fightState=freshFight();delete next.offer;delete next.specialCost;delete next.shown;if(phase==='mini')next.miniDone=true;else next.finished=true;}
+ else delete next.shown;
  return next;
 }
 function liveReplay(lc,log){
@@ -308,11 +326,32 @@ function liveReplay(lc,log){
  const entryStage=[];
  for(const entry of log){
   const phase=livePhase(lc,pos);
+  if((phase==='mini'||phase==='main')&&(entry?.type==='offer'||entry?.type==='special')){
+   const f=currentFight(lc,pos);
+   if(entry.type==='offer'){
+    if(pos.offer!==undefined||pos.fightState?.used)break;
+    if(entry.special!==null&&!f.specials.some(s=>s.id===entry.special))break;
+    try{if(entry.special!==null)specialPrice(f,f.specials.find(s=>s.id===entry.special),entry.cost);}catch{break;}
+    entryStage.push(stageOf(lc,pos));pos={...pos,offer:entry.special,specialCost:entry.cost};continue;
+   }
+   const special=f.specials.find(x=>x.id===pos.offer);
+   if(!special||pos.fightState?.used)break;
+   const r=f.rounds[pos.round];
+   if(!r.combo&&!r.random.some(i=>f.ids[i]===entry.shown))break;
+   const outcomes=specialOutcomes(s,f,currentState(pos),special,pos.specialCost);
+   const result=entry.result??{};
+   const branch=outcomes.find(b=>JSON.stringify(b.result)===JSON.stringify(result));
+   if(!branch)break;
+   entryStage.push(stageOf(lc,pos));s=branch.stats;
+   const oldRound=pos.round;pos={...pos,round:branch.state.round,fightState:branch.state,shown:branch.state.round===oldRound?entry.shown:undefined};
+   if(pos.round===3){pos={...pos,round:0,fightState:freshFight(),offer:undefined,specialCost:undefined,shown:undefined};if(phase==='mini')pos.miniDone=true;else pos.finished=true;}
+   continue;
+  }
   if(phase==='done'||entry?.type!==(phase==='node'?'node':phase==='miniPick'?'mini':'round'))break;
   if(phase==='miniPick'){if(!lc.ctx.miniIds.includes(entry.boss))break;}
   else{
    let option;
-   try{option=liveOptions(lc,pos,entry).find(o=>o.pay===entry.pay);}catch{break;}
+   try{option=liveOptions(lc,pos,{...entry,stats:s}).find(o=>o.pay===entry.pay);}catch{break;}
    const t=option&&payWith(s,option.costs);
    if(!t)break;
    s=t;
@@ -323,20 +362,26 @@ function liveReplay(lc,log){
 }
 // Route nodes left after the mini boss, then the main boss.
 function afterMini(lc,pos){
+ lc.afterMiniCache??=new Map();
+ if(lc.afterMiniCache.has(pos.done))return lc.afterMiniCache.get(pos.done);
  const left=lc.N-pos.done;
  if(!left)return s=>[lc.ctx.main(s),1,0];
- const routes=lc.routesOf(left);
- return s=>{
+ // Bounded look-ahead for interactive mini-boss decisions; the planner still
+ // samples 100 complete scenarios. Share the same prefix across every option.
+ const routes=lc.routesOf(left).slice(0,12);
+ const cache=new Map();
+ const leaf=s=>{
+  const key=s.join(),cached=cache.get(key);if(cached)return cached;
   let p=0,nodes=0;
   for(const r of routes){const v=chanceFor(lc.ctx,r,s,null);p+=v.chance;nodes+=v.nodes;}
-  return [p/routes.length,1,nodes/routes.length];
+  const value=[p/routes.length,1,nodes/routes.length];cache.set(key,value);return value;
  };
+ lc.afterMiniCache.set(pos.done,leaf);return leaf;
 }
 function liveChance(lc,s,pos){
  const phase=livePhase(lc,pos),{ctx}=lc;
  if(phase==='done')return 1;
- if(phase==='main')return win(s,ctx.mainFight,pos.round);
- if(phase==='mini')return solve(s,ctx.minis[ctx.miniIds.indexOf(pos.miniBoss)],afterMini(lc,pos),pos.round)[0];
+ if(phase==='main'||phase==='mini')return offeredFight(s,currentFight(lc,pos),phase==='main'?()=>[1,1,0]:afterMini(lc,pos),currentState(pos),pos.offer,pos.shown==null?null:lc.c.at(pos.shown),pos.specialCost)[0];
  const routes=lc.routesOf(lc.N-pos.done),miniAt=pos.miniDone?null:lc.miniAt-pos.done;
  return routes.reduce((t,r)=>t+chanceFor(ctx,r,s,miniAt).chance,0)/routes.length;
 }
@@ -349,26 +394,45 @@ function recommend(options,waitTimed){
 export function liveAdvice(data,run,pending={}){
  const lc=liveContext(data,run),log=run.log??[],{s,pos,entryStage}=liveReplay(lc,log);
  const phase=livePhase(lc,pos),{c,ctx}=lc;
+ pending={...pending,shown:pos.shown??pending.shown};
  const out={
   phase,valid:entryStage.length===log.length,applied:entryStage.length,entryStage,stages:lc.stages,current:stageOf(lc,pos),routeLength:lc.N,
   done:pos.done,round:pos.round,miniBoss:pos.miniBoss,
+  offer:pos.offer,specialUsed:pos.fightState?.used??false,shown:pending.shown??null,shownLocked:pos.shown!=null,
   stats:Object.fromEntries(data.params.map((p,i)=>[p.id,s[i]])),blood:s[c.blood],
   costs:{monster:ctx.monster,miniBoss:ctx.mini?ctx.miniCost:null,boss:ctx.bossCost},
   chance:liveChance(lc,s,pos),candidates:null,options:null,recommended:null
  };
  if(phase==='miniPick'){
   const leaf=afterMini(lc,pos);
-  out.candidates=ctx.miniIds.map((id,i)=>({boss:id,name:c.bosses.get(id).name,chance:solve(s,ctx.minis[i],leaf,0)[0]}));
+  out.candidates=ctx.miniIds.map((id,i)=>({boss:id,name:c.bosses.get(id).name,chance:ctx.minis[i].specials.length?null:solve(s,ctx.minis[i],leaf,0)[0]}));
  }
  const fight=phase==='mini'||phase==='main',needsShown=phase==='node'?data.encounters[pending.encounter]?.type==='enemy':fight&&pos.round<2;
  if((phase==='node'&&pending.encounter!=null||fight)&&(!needsShown||pending.shown)){
   const entry={type:phase==='node'?'node':'round',encounter:pending.encounter,shown:pending.shown??null},next=advance(lc,pos,entry);
-  out.options=liveOptions(lc,pos,entry).map(o=>{
+  out.options=liveOptions(lc,pos,{...entry,stats:s}).map(o=>{
    const t=payWith(s,o.costs);
    return {pay:o.pay,costs:o.costs.map(([i,n])=>({param:i===c.blood?'blood':data.params[i].id,amount:n})),affordable:!!t,
     chance:t?liveChance(lc,t,next):null,left:t?Math.min(...o.costs.map(([i])=>t[i])):null};
   });
   out.recommended=recommend(out.options,lc.opts.waitTimed)?.pay??null;
+ }
+ if(fight){
+  const f=currentFight(lc,pos),state=currentState(pos);
+  out.specials=f.specials.map(sp=>({id:sp.id,effect:sp.effect,param:sp.param,cost:specialPrice(f,sp)}));
+  const sp=f.specials.find(x=>x.id===pos.offer);
+  if(sp&&!state.used){
+   const cost=specialPrice(f,sp,pos.specialCost),branches=specialOutcomes(s,f,state,sp,pos.specialCost);
+   const leaf=phase==='main'?()=>[1,1,0]:afterMini(lc,pos);
+   const known=pos.round===2||!!pending.shown;
+   const outcomeChance=b=>offeredFight(b.stats,f,leaf,b.state,pos.offer,b.state.round===pos.round&&pending.shown?c.at(pending.shown):null,pos.specialCost)[0];
+   const chances=known?branches.map(outcomeChance):[];
+   const chance=chances.length?(chances.every(v=>v===chances[0])?chances[0]:branches.reduce((p,b,i)=>p+b.probability*chances[i],0)):null;
+   out.special={id:sp.id,effect:sp.effect,param:sp.param,cost,affordable:branches.length>0,chance,
+    outcomes:known?branches.map(b=>({result:b.result,probability:b.probability})):[]};
+   if(out.special.chance!=null&&out.special.chance>(out.options?.find(o=>o.pay===out.recommended)?.chance??-1)+1e-12)out.recommended='special';
+  }
+  if(out.options&&pos.offer!==undefined)out.chance=Math.max(0,...out.options.filter(o=>o.affordable).map(o=>o.chance),out.special?.chance??0);
  }
  return out;
 }

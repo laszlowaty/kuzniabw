@@ -85,6 +85,12 @@ test('levels are tried from the first mini boss: up from the top when it is cert
 // Synthetic journey: level l is certain with stat a ≥ 10·l; below that the chance is a/(10·l).
 const reach=level=>stats=>Math.min(1,stats[0]/(10*level));
 const levels={min:1,max:9,pivot:6};
+test('non-monotone special effects do not prune real sets using an artificial upper vector',()=>{
+ const make=kit(),a=make('head',{bonus:[30,0,0]}),b=make('head',{bonus:[0,40,40]});
+ const chance=()=>Object.assign(stats=>stats[0]>=30&&stats[1]===0?1:0,{monotone:false});
+ const r=bestGear([a,b],char([0,0,0]),[0],{chance,levels:{min:1,max:1}});
+ assert.equal(r.level,1);assert.deepEqual(r.items,[a.id]);
+});
 test('with simulation the set clearing the hardest level wins over more stats',()=>{
  const make=kit(),strong=make('head',{bonus:[30,0,0]}),wide=make('head',{bonus:[0,40,40]});
  const character=char([20,0,0]);

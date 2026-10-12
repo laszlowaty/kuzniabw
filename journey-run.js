@@ -44,7 +44,7 @@ export function createJourneyRun({data,root,onEnd}){
  }
  function options(advice){
   if(!advice.options)return '';
-  const any=advice.options.some(o=>o.affordable);
+  const any=advice.options.some(o=>o.affordable)||advice.special?.affordable;
   return `<p class="journeyOptionsHint">Kliknij to, czym zapłaciłeś w grze:</p><div class="journeyOptions">${advice.options.map(o=>{
    const rec=o.pay===advice.recommended,left=o.affordable&&o.pay!=='wait'&&o.pay!=='combo'?` · zostanie ${o.left.toLocaleString('pl')}`:'';
    return `<button type="button" class="journeyOption${rec?' recommended':''}" data-pay="${esc(o.pay)}"${o.affordable?'':' disabled'}><span class="journeyOptionName">${esc(optionName(o))}</span><span class="journeyOptionCost">${esc(optionCost(o))}${left}</span><span class="journeyOptionChance">${o.affordable?`szansa po: <b class="journeyTone ${chanceTone(o.chance)}">${chanceLabel(o.chance)}</b>`:'za mało'}</span>${rec?'<em>Polecane</em>':''}</button>`;
@@ -64,19 +64,33 @@ export function createJourneyRun({data,root,onEnd}){
  function fightStep(advice){
   const mini=advice.phase==='mini',id=mini?advice.miniBoss:data.locations.find(l=>l.id===run.locationId).boss;
   const round=data.bosses.find(b=>b.id===id).rounds[advice.round];
-  const head=`<h3>${mini?'Mini boss':'Boss'}: ${esc(bossName(id))} · runda ${advice.round+1} z 3</h3>`;
+  const head=`<h3>${mini?'Mini boss':'Boss'}: ${esc(bossName(id))} · runda ${advice.round+1} z 3</h3>${specialControls(advice)}`;
   if(round.combo)return `${head}<p class="subtle">Kombo ${esc(round.combo.map(label).join(' + '))} albo sam parametr ${esc(label(round.single))}.</p>${options(advice)}`;
-  const pick=pickSelect('shown',`Drugi parametr rundy (pierwszy: ${esc(label(round.fixed))})`,round.random.map(p=>`<option value="${p}">${esc(label(p))}</option>`).join(''),pending.shown??'');
+  const pick=pickSelect('shown',`Drugi parametr rundy (pierwszy: ${esc(label(round.fixed))})`,round.random.map(p=>`<option value="${p}">${esc(label(p))}</option>`).join(''),pending.shown??advice.shown??'').replace('<select ',`<select ${advice.shownLocked?'disabled ':''}`);
   return `${head}<div class="journeyPick">${pick}</div>${advice.options?options(advice):'<p class="subtle">Wybierz drugi parametr, który pokazała gra.</p>'}`;
  }
+ function specialControls(a){
+  if(!a.specials?.length)return '';
+  if(a.specialUsed)return '<p class="hint">Atak specjalny wykorzystany w tej walce.</p>';
+  if(a.offer===null)return '<p class="hint">Ta walka jest liczona bez ataku specjalnego.</p>';
+  if(a.offer===undefined){
+   const selected=a.specials.find(s=>s.id===pending.offer),choices=a.specials.map(s=>`<option value="${s.id}">${esc(s.effect)} (${esc(label(s.param))})</option>`).join('')+'<option value="none">Bez specjala / inny niż na liście</option>';
+   return `<div class="journeySpecial"><div class="journeyPick">${pickSelect('offer','Atak specjalny pokazany przez grę',choices,pending.offer??'')}${selected?`<label>Koszt: ${esc(label(selected.param))}<input type="number" min="0" step="1" inputmode="numeric" data-special-cost value="${pending.specialCost??selected.cost}"></label>`:''}</div><button type="button" class="secondary" data-action="offer"${pending.offer?'':' disabled'}>Zapisz specjal</button><p class="hint">Jeden wylosowany specjal, jedno użycie na tę walkę. Koszt możesz poprawić według gry.</p></div>`;
+  }
+  const sp=a.special;if(!sp)return '';
+  const resultText=r=>r.success!==undefined?(r.success?'Runda wygrana':'Nie udało się wygrać rundy'):r.params?`Wzmocnione: ${r.params.map(label).join(', ')}`:r.param?`Wylosowany parametr: ${label(r.param)}`:'Zastosuj efekt';
+  return `<div class="journeySpecial${a.recommended==='special'?' recommended':''}"><p><b>${a.recommended==='special'?'Polecane teraz · ':''}Specjal: ${esc(label(sp.param))} · ${sp.cost} pkt</b><br>${esc(sp.effect)}</p><p class="hint">${sp.chance==null?'Wybierz drugi parametr rundy, aby obliczyć szansę.':`Szansa po użyciu: ${chanceLabel(sp.chance)} (przed losowaniem efektu).`}</p>${sp.outcomes.length>1?`<label>Wynik pokazany przez grę<select data-special-result><option value="">Wybierz…</option>${sp.outcomes.map((o,i)=>`<option value="${i}">${esc(resultText(o.result))}</option>`).join('')}</select></label>`:''}<button type="button" class="secondary" data-action="use-special"${sp.affordable&&sp.outcomes.length?'':' disabled'}>Użyłem specjala w grze</button>${!sp.affordable?'<p class="hint">Za mało punktów wymaganego parametru.</p>':''}</div>`;
+ }
  function miniStep(advice){
-  return `<h3>Mini boss</h3><p class="subtle">Który boss pojawił się jako mini boss?</p><div class="journeyOptions">${advice.candidates.map(c=>`<button type="button" class="journeyOption" data-mini="${esc(c.boss)}"><span class="journeyOptionName">${esc(c.name)}</span><span class="journeyOptionChance">szansa: <b class="journeyTone ${chanceTone(c.chance)}">${chanceLabel(c.chance)}</b></span></button>`).join('')}</div>`;
+  return `<h3>Mini boss</h3><p class="subtle">Który boss pojawił się jako mini boss?</p><div class="journeyOptions">${advice.candidates.map(c=>`<button type="button" class="journeyOption" data-mini="${esc(c.boss)}"><span class="journeyOptionName">${esc(c.name)}</span><span class="journeyOptionChance">${c.chance==null?'Wybierz przeciwnika z gry':`szansa: <b class="journeyTone ${chanceTone(c.chance)}">${chanceLabel(c.chance)}</b>`}</span></button>`).join('')}</div>`;
  }
  function pastStep(advice,stage){
   const entries=run.log.map((entry,i)=>[entry,advice.entryStage[i]]).filter(([,s])=>s===stage).map(([entry])=>entry);
   let round=0;
   const lines=entries.map(entry=>{
    if(entry.type==='mini')return `Mini boss: ${esc(bossName(entry.boss))}`;
+   if(entry.type==='offer'){const sp=data.bosses.flatMap(b=>b.specials).find(s=>s.id===entry.special);return `Specjal: ${esc(sp?.effect??'bez specjala')}${entry.cost!=null?` · ${entry.cost} pkt`:''}`;}
+   if(entry.type==='special'){const r=entry.result??{},success=r.success;if(success)round++;return `Użycie specjala${success===undefined?'':success?' — runda wygrana':' — bez wygrania rundy'}${r.params?` · wzmocnione: ${esc(r.params.map(label).join(', '))}`:r.param?` · parametr: ${esc(label(r.param))}`:''}`;}
    const pay=entry.pay==='wait'?'przeczekano':entry.pay==='combo'?'kombo':label(entry.pay);
    if(entry.type==='round')return `Runda ${++round}: ${esc(pay)}`;
    const e=data.encounters[entry.encounter];
@@ -96,7 +110,7 @@ export function createJourneyRun({data,root,onEnd}){
  function render(){
   stop();advice=null;root.hidden=false;root.setAttribute('aria-busy','true');
   if(!root.innerHTML)root.innerHTML='<div class="journeyRunActions"><button type="button" class="primary" data-action="end">Zakończ podróż</button></div>';
-  for(const control of root.querySelectorAll('button,select'))control.disabled=!['end','undo'].includes(control.dataset.action)||control.dataset.action==='undo'&&!run.log.length;
+  for(const control of root.querySelectorAll('button,select,input'))control.disabled=!['end','undo'].includes(control.dataset.action)||control.dataset.action==='undo'&&!run.log.length;
   let status=root.querySelector('[data-calculation]');
   if(!status){status=document.createElement('p');status.dataset.calculation='';status.setAttribute('role','status');root.prepend(status);}
   status.textContent='Przeliczanie szans podróży…';
@@ -130,6 +144,8 @@ export function createJourneyRun({data,root,onEnd}){
   const pick=e.target.closest('[data-pick]')?.dataset.pick;
   if(pick==='encounter'){const v=e.target.value;pending=v===''?{}:{encounter:Number(v)};focus='[data-pick="shown"],.journeyOption.recommended';}
   else if(pick==='shown'){pending={...pending,shown:e.target.value||undefined};focus='.journeyOption.recommended';}
+  else if(pick==='offer'){pending={...pending,offer:e.target.value||undefined,specialCost:undefined};}
+  else if(e.target.matches('[data-special-cost]')){pending.specialCost=e.target.value===''?undefined:Number(e.target.value);return;}
   else return;
   render();
  });
@@ -141,10 +157,22 @@ export function createJourneyRun({data,root,onEnd}){
   if(action==='retry')return render();
   if(action==='undo'){run.log=run.log.slice(0,-1);pending={};view=null;save();return render();}
   if(!advice||worker)return;
+  if(action==='offer'){
+   const costField=root.querySelector('[data-special-cost]');
+   if(costField&&(!costField.checkValidity()||costField.value==='')){costField.reportValidity();return;}
+   const shown=pending.shown??advice.shown;
+   run.log=[...run.log,{type:'offer',special:pending.offer==='none'?null:pending.offer,cost:costField?Number(costField.value):undefined}];pending={shown};save();return render();
+  }
+  if(action==='use-special'){
+   const sp=advice.special,select=root.querySelector('[data-special-result]');
+   if(select&&select.value===''){select.focus();return;}
+   const outcome=sp?.outcomes[select?Number(select.value):0];if(!outcome)return;
+   return commit({type:'special',shown:pending.shown??advice.shown,result:outcome.result});
+  }
   if(action==='rewind'){const i=advice.entryStage.indexOf(Number(stage));if(i>=0)run.log=run.log.slice(0,i);pending={};view=null;save();return render();}
   if(mini)return commit({type:'mini',boss:mini});
   if(pay){
-   return commit(advice.phase==='node'?{type:'node',encounter:pending.encounter,shown:pending.shown??null,pay}:{type:'round',shown:pending.shown??null,pay});
+   return commit(advice.phase==='node'?{type:'node',encounter:pending.encounter,shown:pending.shown??null,pay}:{type:'round',shown:pending.shown??advice.shown??null,pay});
   }
   if(stage!==undefined){const i=Number(stage);view=view===i?null:i;draw();}
  });
