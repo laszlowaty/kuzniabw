@@ -20,7 +20,7 @@ export function importInventory(raw,data,category='all'){
  const compiled=getPatterns(data);
  for(const [lineIndex,line]of source.split('\n').entries()){
   const original=line.trim();if(!original)continue;
-  const clean=original.replace(/\b(?:Leg\.)\s*/gi,'Legendarny ').replace(/\b(?:Dsk\.)\s*/gi,'Doskonały ').replace(/\b(?:Db\.)\s*/gi,'Dobry ').replace(/\(\s*\+\s*(\d+)\s*\)/g,'(+$1)').replace(/\s+/g,' ');
+  const clean=original.replace(/^\s*\d+\s*\/\s*\d+\s*/,'').replace(/\b(?:Leg\.)\s*/gi,'Legendarny ').replace(/\b(?:Dsk\.)\s*/gi,'Doskonały ').replace(/\b(?:Db\.)\s*/gi,'Dobry ').replace(/\(\s*\+\s*(\d+)\s*\)\s*\d+\s*\/\s*\d+\s*$/,'(+$1)').replace(/\(\s*\+\s*(\d+)\s*\)/g,'(+$1)').replace(/\s+/g,' ');
   const s=normalize(clean);
   if(/^(?:cena|wartosc|mana|nanity|wymagania|cechy|obrona|obrazenia|plec|poziom|sila|zwinnosc|odpornosc|wyglad|charyzma|wplywy|wiedza|inteligencja|strefa|rzadkosc)\s*[:\d]/.test(s)){ignored.push({line:lineIndex+1,text:original});continue;}
   const hits=[];
