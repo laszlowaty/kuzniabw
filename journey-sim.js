@@ -9,7 +9,7 @@ export function mulberry32(seed){
 export function stageCost(data,act,level,type){
  const a=data.costs.acts[act],{min,max}=data.costs.levels;
  if(!a)throw new RangeError(`Nieznany akt: ${act}`);
- // An act can set its own boss rate (Act II: +100%). The final boss costs at least bossAfterMini on levels where a
+ // An act can optionally override the default boss rate. The final boss costs at least bossAfterMini on levels where a
  // mini boss stands on the route.
  const rates=data.costs.type,boss=a.boss??rates.boss;
  const rate=type!=='boss'?rates[type]:data.routes?.[level]?.miniAfter!=null?Math.max(boss,rates.bossAfterMini??boss):boss;
