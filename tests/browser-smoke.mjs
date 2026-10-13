@@ -135,8 +135,25 @@ try{
  assert.match(await page.locator('#resultsList .result .pill.cost').first().textContent(),/^1 spaw$/);
  await page.locator('#resultOrder [data-order="best"]').click();
  assert.equal(await page.locator('#resultOrder [data-order="best"]').getAttribute('aria-pressed'),'true');
+ assert.equal(await page.locator('#resultOrder [data-order="best"]').textContent(),'Najlepsze spawy pod postać');
+ await inventory('Czapka (+1)\nCzapka (+1)\nTygrysia Czapka Adrenaliny (+1)\nTygrysia Czapka Adrenaliny (+1)');
+ await page.locator('#resultOrder [data-order="tiers"]').click();
+ assert.equal(await page.locator('#resultOrder [data-order="tiers"]').getAttribute('aria-pressed'),'true');
+ const tierSums=await page.evaluate(async()=>{
+  const {parseInventory}=await import('/engine.js');
+  const data=await (await fetch('/data.json')).json();
+  return [...document.querySelectorAll('#resultsList .result .itemInfoTrigger')].map(el=>{
+   const item=parseInventory(el.textContent,data).items[0];
+   const category=data.categories.find(c=>c.id===item.category);
+   return ['prefix','suffix'].reduce((sum,axis)=>sum+(item[axis]?(category.axes[axis]?.values.indexOf(item[axis])??-1)+1:0),0);
+  });
+ });
+ assert.ok(new Set(tierSums).size>1);
+ assert.deepEqual(tierSums,[...tierSums].sort((a,b)=>b-a));
+ await page.locator('#gunExample').click();
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  await page.setViewportSize({width:375,height:800});
- for(const order of ['best','fewest','most'])assert.ok(await page.locator(`#resultOrder [data-order="${order}"]`).isVisible());
+ for(const order of ['best','tiers','fewest','most'])assert.ok(await page.locator(`#resultOrder [data-order="${order}"]`).isVisible());
  await page.locator('#resultOrder [data-order="most"]').click();
  assert.match(await page.locator('#resultsList .result .pill.cost').first().textContent(),/^2 spawy$/);
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);

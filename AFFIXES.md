@@ -8,7 +8,8 @@ Strona ocenia przedmioty na podstawie zapisanego katalogu R21 w `item-components
 - Statystyki bojowe otrzymują wagi zależne od rodzaju broni i wybranego tatuażu. Ataki, obrażenia, trafienie, krytyki, zwinność i spostrzegawczość mają znaczenie dla różnych stylów walki. Rasa zmienia wagę korzyści, którą już częściowo zapewnia jej bonus.
 - Afiks otrzymuje etykietę „dobry”, gdy jego dodatni wynik mieści się w najlepszych 30% dodatnich wyników afiksów tej samej osi i kategorii. „Dobra para” oznacza dwa takie afiksy w jednym przedmiocie. Nie oznacza dodatkowego bonusu synergii.
 - Osobna etykieta tatuażu lub rasy używa tych samych obliczeń dla profilu. Tatuaż wyklucza niezgodną broń oraz zbroję, której obrona nie mieści się w możliwym zakresie limitów. Poziomy poszczególnych tatuaży nie są znane, więc zgodność nie potwierdza aktywacji bonusu.
-- Przy sortowaniu „Najlepsze spawy” najpierw liczy się ocena dla profilu i zgodność z tatuażem, później ogólne afiksy i wynik statystyk uwzględniający bazę, a przy remisie liczba spawów.
+- Przy sortowaniu „Najlepsze spawy pod postać” najpierw liczy się ocena dla profilu i zgodność z tatuażem, później ogólne afiksy i wynik statystyk uwzględniający bazę, a przy remisie liczba spawów.
+- „Najlepsze spawy wg tierów” sortują malejąco po sumie tierów prefiksu i sufiksu wynikowego przedmiotu, a przy remisie po mniejszej liczbie spawów. Tier to pozycja afiksu w tabeli kategorii; brak afiksu liczy się jako 0. Ta kolejność nie zależy od profilu, jakości ani ulepszenia przedmiotu i nie stanowi oceny bojowej lub rynkowej.
 
 Jeżeli w ekwipunku są pozostałe części zestawu, prefiks z niekompletnym bonusem może dostać niewielką premię za możliwość ułożenia zestawu. To tylko potencjał: lista ekwipunku nie mówi, co jest aktualnie założone ani czy części spełniają wszystkie warunki zestawu. Sam niekompletny bonus nadal nie wchodzi do oceny aktywnych cech.
 

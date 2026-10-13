@@ -91,7 +91,7 @@ function searchFilters(){
 }
 function filtered(){
  const matching=results.filter(n=>matchesCurrentFilters(n)&&possibleForSex(n,profile().sex,itemDetails,itemCatalog));
- return sortResults(matching,resultOrder,profileActive()?profile():undefined,itemDetails,itemCatalog,inventory);
+ return sortResults(matching,resultOrder,profileActive()?profile():undefined,itemDetails,itemCatalog,inventory,data);
 }
 function renderResults(){
  itemPopover.close();
