@@ -277,7 +277,7 @@ function loadInventory(text,{preserveHistory=false,category='all'}={}){
  const parsed=importInventory(text,data,category);if(parsed.error)throw new Error(parsed.error);
  clearGoalResults();
  if(!preserveHistory){enteredCosts.clear();simulationHistory.length=0;$('inventoryChange').textContent=parsed.ignored.length?`Zaimportowano ${parsed.items.length} szt. Pominięto ${parsed.ignored.length} fragmentów tekstu.`:'';}
- inventoryText=text;inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();for(const id of ['filterBase','filterPrefix','filterSuffix'])$(id).value='all';if(!$('tiersPanel').hidden){craftingDirty=true;return Promise.resolve();}return calculate();
+ inventoryText=text;inventory=parsed.items;renderInventory();visibleLimit=50;filterOptions();if(!$('tiersPanel').hidden){craftingDirty=true;return Promise.resolve();}return calculate();
 }
 async function applyPlan(node){
  if(running)throw new Error('Poczekaj na zakończenie obliczeń.');
